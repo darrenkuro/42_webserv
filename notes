@@ -1,0 +1,1 @@
+kill still kills even though child process already exited
