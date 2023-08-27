@@ -50,7 +50,7 @@ void Webserv::launch()
 	if (pid == 0) {
 		try {
 			initSocket();
-			LOG(m_config.serverName + " launched successfully");
+			LOG(m_config.serverName + ": Launched successfully");
 
 			mainloop();
 
@@ -96,8 +96,13 @@ void Webserv::mainloop()
 void Webserv::connectNewClient()
 {
 	// Could save client address but not necessary for now
-	int newClient = accept(m_listeningSock, nullptr, nullptr);
-	m_pollFds.push_back({newClient, POLLIN, 0});
+	int newClientFd = accept(m_listeningSock, NULL, NULL);
+	struct pollfd newClient;
+	newClient.fd = newClientFd;
+	newClient.events = POLLIN;
+	newClient.revents = 0;
+	m_pollFds.push_back(newClient);
+	LOG(m_config.serverName + ": Accepted a new client");
 }
 
 //-----------------------------------------------------------------------------------------
@@ -112,18 +117,19 @@ void Webserv::clientErrorHandling(ssize_t bytesRead, int clientIdx)
 }
 
 //-----------------------------------------------------------------------------------------
-void Webserv::processClientEvents(int idx)
+void Webserv::processClientEvents(int clientIdx)
 {
-
+	(void)clientIdx;
 }
 
 //-----------------------------------------------------------------------------------------
 void Webserv::cleanupDisconnClients()
 {
-	for (int i = 0; i < m_disconnClientIdxs.size(); i++) {
+	for (size_t i = 0; i < m_disconnClientIdxs.size(); i++) {
 		int dynamicClientIdx = m_disconnClientIdxs[i] - i;
 		close(m_pollFds[dynamicClientIdx].fd);
 		m_pollFds.erase(m_pollFds.begin() + dynamicClientIdx);
+		LOG(m_config.serverName + ": Disconnected a client");
 	}
 	m_disconnClientIdxs.clear();
 }

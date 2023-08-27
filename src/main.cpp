@@ -23,13 +23,13 @@ int main(int argc, char **argv)
 	Webserv webserv2(config2);
 
 	webserv1.launch();
-	webserv2.launch();
+	//webserv2.launch();
 
 	while (true) {}
 	sleep(10);
 	webserv1.stop();
 	sleep(5);
-	webserv2.stop();
+	//webserv2.stop();
 
 	wait(NULL);
 	
