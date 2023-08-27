@@ -76,7 +76,7 @@ void Webserv::mainloop()
 		if (m_pollFds[0].revents & POLLIN) {
 			connectNewClient();
 		}
-		
+
 		for (size_t i = 1; i < m_pollFds.size(); i++) {
 			if (m_pollFds[i].revents & POLLIN) {
 				char buffer[RECV_SIZE];
@@ -131,10 +131,17 @@ void Webserv::processClientEvents(int clientIdx, char* buffer)
 		std::cout << "<=" << std::endl;
 	} catch (std::exception &e) {
 		std::cerr << "[Error] Invalid HTTPRequest!" << std::endl;
+
+		// Send back 400 Bad request
+		HttpResponse response(400, "resources/error_html/400.html");
+		send(m_pollFds[clientIdx].fd, response.toString().c_str(), response.length(), 0);
+		m_disconnClientIdxs.push_back(clientIdx);
 	}
 
-	std::string response = "HTTP/1.1\n200 OK\nContent-Type: text/html\nContent-Length: 53\n<!DOCTYPE html>\n<html>\n<head>\n    <title>Minimal Webpage</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>";
-	send(m_pollFds[clientIdx].fd, response.c_str(), strlen(response.c_str()), 0);
+	HttpResponse response(400, "resources/error_html/400.html");
+	send(m_pollFds[clientIdx].fd, response.toString().c_str(), response.length(), 0);
+	// close connection right away? add Connection: close, to let client know, static ok
+	m_disconnClientIdxs.push_back(clientIdx);
 }
 
 //-----------------------------------------------------------------------------------------

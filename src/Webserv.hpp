@@ -12,6 +12,7 @@
 #include <poll.h>
 #include <vector>
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 #define RECV_SIZE 10000
 

@@ -1,6 +1,5 @@
 #include "Webserv.hpp"
-
-#include <wait.h>
+#include "utils.hpp"
 
 #define ERR_ARG "[Error] Wrong number of arguments!"
 
@@ -24,6 +23,9 @@ int main(int argc, char **argv)
 	}
 	signal(SIGINT, signalHandler);
 	(void) argv;
+
+	std::string fcon = getFileContent("./public_html/index.html");
+	std::cout << fcon << std::endl;
 
 	// WebservConfig config2;
 	// config2.serverName = "Server2";
