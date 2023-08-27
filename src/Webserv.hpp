@@ -34,17 +34,26 @@ public:
     ~Webserv();
 
     void launch();
+    void mainloop();
     void stop();
 
 private:
     void initSocket();
     void polling();
     void connectClient(int clientFd);
+    void connectNewClient();
+
+    void clientErrorHandling(ssize_t bytesRead, int clientIdx);
+    void processClientEvents(int clientIdx);
+
     void disconnectClient(pollIt &client);
+    void cleanupDisconnClients();
+
 
     const WebservConfig m_config;
-    int m_sockfd;
+    int m_listeningSock;
     int m_pid;
     struct sockaddr_in m_serverAddr;
     std::vector<struct pollfd> m_pollFds;
+    std::vector<int> m_disconnClientIdxs;
 };
