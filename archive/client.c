@@ -43,10 +43,10 @@ int main() {
     // while ((recvbytes = read(sockfd, recvline, 100000 - 1)) > 0)
     //     printf("%s", recvline);
 
-    char *string = "GET / HTTP/1.1\r\nABFC:DEF\r\nABFFC:DEF\r\nABC:DEF\r\n\r\n";
-    send(sockfd, string, strlen(string), 0);
-    sleep(3);
-    char *string2 = "GET / HTTP/1.1\r\nABFC:DEF\r\nABFFC:DEF\r\nABC:DEF\r\n\r\n";
+    // char *string = "GET / HTTP/1.1\r\nABFC:DEF\r\nABFFC:DEF\r\nABC:DEF\r\n\r\n";
+    // send(sockfd, string, strlen(string), 0);
+    // sleep(3);
+    char *string2 = "GET / HTTP/1.1\r\nHost:www.tutorialspoint.com\r\nAccept-Language:en-us\r\nConnection:Keep-Alive\r\n\r\n";
     send(sockfd, string2, strlen(string2), 0);
 
 

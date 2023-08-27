@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 #include <vector>
+#include <cstdio>
 
 Webserv::Webserv() : m_config() {}
 Webserv::~Webserv() {}
@@ -84,7 +85,7 @@ void Webserv::mainloop()
 					clientErrorHandling(bytesRead, i);
 				}
 				else {
-					processClientEvents(i);
+					processClientEvents(i, buffer);
 				}
 			}
 		}
@@ -117,9 +118,20 @@ void Webserv::clientErrorHandling(ssize_t bytesRead, int clientIdx)
 }
 
 //-----------------------------------------------------------------------------------------
-void Webserv::processClientEvents(int clientIdx)
+void Webserv::processClientEvents(int clientIdx, char* buffer)
 {
-	(void)clientIdx;
+	printf("%s: ClientSock[%d] received request\n=>\n", m_config.serverName.c_str(), clientIdx);
+	std::string request(buffer);
+	try {
+		HttpRequest req = parseHttpRequest(request);
+		std::cout << "\t" << req.method << " " << req.url << " " << req.version << std::endl;
+		for (std::map<std::string, std::string>::iterator it = req.header.begin(); it != req.header.end(); it++) {
+			std::cout << "\t" << it->first << ": " << it->second << std::endl;
+		}
+		std::cout << "<=" << std::endl;
+	} catch (std::exception &e) {
+		std::cerr << "[Error] Invalid HTTPRequest!" << std::endl;
+	}
 }
 
 //-----------------------------------------------------------------------------------------

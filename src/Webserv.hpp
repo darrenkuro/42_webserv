@@ -44,7 +44,7 @@ private:
     void connectNewClient();
 
     void clientErrorHandling(ssize_t bytesRead, int clientIdx);
-    void processClientEvents(int clientIdx);
+    void processClientEvents(int clientIdx, char* buffer);
 
     void disconnectClient(pollIt &client);
     void cleanupDisconnClients();
