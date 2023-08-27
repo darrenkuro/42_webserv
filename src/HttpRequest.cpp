@@ -1,15 +1,15 @@
-#include "HttpParser.hpp"
+#include "HttpRequest.hpp"
 
 std::string validMethods[] = {"GET", "POST", "DELETE"};
 
 void checkMethod(std::string method)
 {
-    for (int i = 0; i < 3; i++) {
-        if (method == validMethods[i]) {
-            return;
-        }
-    }
-    throw std::exception();
+	for (int i = 0; i < 3; i++) {
+		if (method == validMethods[i]) {
+			return;
+		}
+	}
+	throw std::exception();
 }
 
 void parsePart(std::string sep, std::string &field, std::string &content)
@@ -27,12 +27,18 @@ void parseHeader(std::map<std::string, std::string> &header, std::string &conten
 	if (content.find(':') == std::string::npos)
 		throw std::exception();
 	std::string key = content.substr(0, content.find(':'));
-    content.erase(content.begin(), content.begin() + content.find(':') + 1);
-	// Check what is valid and handle white spaces
+	content.erase(content.begin(), content.begin() + content.find(':') + 1);
+
+	// Handle leading white spaces before value
+	size_t valuePos = content.find_first_not_of(" \t");
+	if (valuePos == std::string::npos)
+		throw std::exception();
+	content.erase(content.begin(), content.begin() + valuePos);
+	
 	if (content.find("\r\n") == std::string::npos)
 		throw std::exception();
 	std::string value = content.substr(0, content.find("\r\n"));
-    content.erase(content.begin(), content.begin() + content.find("\r\n") + 2);
+	content.erase(content.begin(), content.begin() + content.find("\r\n") + 2);
 	header[key] = value;
 }
 
@@ -52,5 +58,5 @@ HttpRequest parseHttpRequest(std::string content)
 	}
 	request.body = content;
 	// maybe check the \r\n at the end, check RFC
-    return request;
+	return request;
 }

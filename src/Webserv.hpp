@@ -11,9 +11,9 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <vector>
-#include "HttpParser.hpp"
+#include "HttpRequest.hpp"
 
-#define RECV_SIZE 1000
+#define RECV_SIZE 10000
 
 struct WebservConfig
 {
@@ -21,7 +21,7 @@ struct WebservConfig
     int port;
 };
 
-typedef std::vector<struct pollfd>::iterator pollIt;
+typedef std::vector<pollfd>::iterator pollIt;
 
 class Webserv
 {
@@ -39,21 +39,18 @@ public:
 
 private:
     void initSocket();
-    void polling();
-    void connectClient(int clientFd);
     void connectNewClient();
 
     void clientErrorHandling(ssize_t bytesRead, int clientIdx);
     void processClientEvents(int clientIdx, char* buffer);
 
-    void disconnectClient(pollIt &client);
     void cleanupDisconnClients();
 
 
     const WebservConfig m_config;
     int m_listeningSock;
     int m_pid;
-    struct sockaddr_in m_serverAddr;
-    std::vector<struct pollfd> m_pollFds;
+    sockaddr_in m_serverAddr;
+    std::vector<pollfd> m_pollFds;
     std::vector<int> m_disconnClientIdxs;
 };

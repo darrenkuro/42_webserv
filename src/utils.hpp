@@ -6,4 +6,4 @@
 #include <cstring>
 
 int createIPv4Socket();
-struct sockaddr_in createAddress(int port);
+sockaddr_in createAddress(int port);

@@ -14,10 +14,6 @@ struct HttpRequest
 	std::string body;
 };
 
-struct HttpResponse
-{
-};
-
 void parsePart(std::string sep, std::string &field, std::string &content);
 void checkMethod(std::string method);
 HttpRequest parseHttpRequest(std::string content);

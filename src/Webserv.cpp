@@ -26,7 +26,7 @@ void Webserv::initSocket()
 	m_listeningSock = createIPv4Socket();
 	m_serverAddr = createAddress(m_config.port);
 
-	if (bind(m_listeningSock, (struct sockaddr *)&m_serverAddr, sizeof(m_serverAddr)) < 0) {
+	if (bind(m_listeningSock, (sockaddr *)&m_serverAddr, sizeof(m_serverAddr)) < 0) {
 		throw std::runtime_error("[Error] Bind failed!");
 	}
 
@@ -34,7 +34,7 @@ void Webserv::initSocket()
 		throw std::runtime_error("[Error] Listen failed!");
 	}
 
-	struct pollfd listeningFd;
+	pollfd listeningFd;
 	listeningFd.fd = m_listeningSock;
 	listeningFd.events = POLLIN;
 	m_pollFds.push_back(listeningFd);
@@ -80,7 +80,7 @@ void Webserv::mainloop()
 		for (size_t i = 1; i < m_pollFds.size(); i++) {
 			if (m_pollFds[i].revents & POLLIN) {
 				char buffer[RECV_SIZE];
-				ssize_t bytesRead = recv(m_pollFds[i].fd, buffer, RECV_SIZE, 0);
+				ssize_t bytesRead = recv(m_pollFds[i].fd, buffer, RECV_SIZE - 1, 0);
 				if (bytesRead <= 0) {
 					clientErrorHandling(bytesRead, i);
 				}
@@ -98,7 +98,7 @@ void Webserv::connectNewClient()
 {
 	// Could save client address but not necessary for now
 	int newClientFd = accept(m_listeningSock, NULL, NULL);
-	struct pollfd newClient;
+	pollfd newClient;
 	newClient.fd = newClientFd;
 	newClient.events = POLLIN;
 	newClient.revents = 0;
@@ -120,11 +120,11 @@ void Webserv::clientErrorHandling(ssize_t bytesRead, int clientIdx)
 //-----------------------------------------------------------------------------------------
 void Webserv::processClientEvents(int clientIdx, char* buffer)
 {
-	printf("%s: ClientSock[%d] received request\n=>\n", m_config.serverName.c_str(), clientIdx);
+	printf("%s: ClientSock[%d] received request\n", m_config.serverName.c_str(), clientIdx);
 	std::string request(buffer);
 	try {
 		HttpRequest req = parseHttpRequest(request);
-		std::cout << "\t" << req.method << " " << req.url << " " << req.version << std::endl;
+		std::cout << "=>\n\t" << req.method << " " << req.url << " " << req.version << std::endl;
 		for (std::map<std::string, std::string>::iterator it = req.header.begin(); it != req.header.end(); it++) {
 			std::cout << "\t" << it->first << ": " << it->second << std::endl;
 		}
@@ -132,6 +132,9 @@ void Webserv::processClientEvents(int clientIdx, char* buffer)
 	} catch (std::exception &e) {
 		std::cerr << "[Error] Invalid HTTPRequest!" << std::endl;
 	}
+
+	std::string response = "HTTP/1.1\n200 OK\nContent-Type: text/html\nContent-Length: 53\n<!DOCTYPE html>\n<html>\n<head>\n    <title>Minimal Webpage</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>";
+	send(m_pollFds[clientIdx].fd, response.c_str(), strlen(response.c_str()), 0);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -150,13 +153,15 @@ void Webserv::cleanupDisconnClients()
 void Webserv::stop()
 {
 	if (kill(m_pid, SIGTERM) == -1) {
-		LOG(m_config.serverName + " stop failed!");
+		LOG("[Error]: " + m_config.serverName + " stop failed!");
 		return;
 	}
-	close(m_listeningSock);
-	LOG(m_config.serverName + " stopped");
-
-	// Also should do cleanup in here. Closing pollFds
+	if (close(m_listeningSock) == -1)
+		LOGERR("[Error] Closing listening socket failed");
+	for (size_t i = 0; i < m_pollFds.size(); i++) {
+		close(m_pollFds[i].fd);
+	}
+	LOG(m_config.serverName + ": Stopped");
 }
 
 
