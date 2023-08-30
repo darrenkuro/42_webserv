@@ -2,13 +2,17 @@
 
 #include <sys/socket.h>
 #include <stdexcept>
+#include <iostream>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <cstring>
 #include <string>
 #include <fstream>
+#include <ctime>
 #include <sstream>
 
 int createIPv4Socket();
 sockaddr_in createAddress(int port);
 std::string getFileContent(std::string path);
 std::string intToString(int value);
+std::string toString(int value);

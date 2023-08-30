@@ -22,7 +22,7 @@ int main() {
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(4246);
+    server_addr.sin_port = htons(4242);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) <
@@ -47,7 +47,12 @@ int main() {
     // send(sockfd, string, strlen(string), 0);
     // sleep(3);
     char *string2 = "GET / HTTP/1.1\r\nHost:www.tutorialspoint.com\r\nAccept-Language:   en-us\r\nConnection:    Keep-Alive\r\n\r\n";
+    
     send(sockfd, string2, strlen(string2), 0);
+
+    while (1) {
+        // /send(sockfd, string2, strlen(string2), 0);
+    }
 
 
     // while (recv(sockfd, recvline, 100000 - 1, 0) > 0) {

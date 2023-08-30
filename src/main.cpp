@@ -1,18 +1,20 @@
-#include "Webserv.hpp"
+#include "Webserver.hpp"
 #include "utils.hpp"
+
+#include <signal.h>
 
 #define ERR_ARG "[Error] Wrong number of arguments!"
 
+bool g_running;
+
 //-----------------------------------------------------------------------------------------
 
-WebservConfig config1 = {"Server1", 4242};
-Webserv webserv1(config1);
 
 void signalHandler(int signum) {
 	if (signum == SIGINT) {
-		webserv1.stop();
+		g_running = false;;
+		std::cout << std::endl;
 	}
-	exit(1);
 }
 
 int main(int argc, char **argv)
@@ -23,18 +25,38 @@ int main(int argc, char **argv)
 	}
 	signal(SIGINT, signalHandler);
 	(void) argv;
+	g_running = true;
+	ServerConfig config1;
+	config1.port = 4242;
+	config1.serverName = "lego.com";
 
-	std::string fcon = getFileContent("./public_html/index.html");
-	std::cout << fcon << std::endl;
+	ServerConfig config2;
+	config2.port = 8088;
+	config2.serverName = "www.mouse.com";
+
+	vector<ServerConfig> servers;
+	servers.push_back(config1);
+	servers.push_back(config2);
+
+	Webserver webserver(servers);
+	webserver.start();
+
+
+	// log(ERROR, "Some random Error message");
+	// log(DEBUG, "Some random Debug message");
+	// log(INFO, "Some random Info message");
+
+
+	// std::string fcon = getFileContent("./public_html/index.html");
+	// std::cout << fcon << std::endl;
 
 	// WebservConfig config2;
 	// config2.serverName = "Server2";
 	// config2.port = 4244;
 	// Webserv webserv1(config1);
 
-	webserv1.launch();
-	//webserv2.launch();
+	// webserv1.launch();
+	// webserv2.launch();
 
-	while (true) {}
 	return 0;
 }
