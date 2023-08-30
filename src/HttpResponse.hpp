@@ -3,40 +3,41 @@
 #include <string>
 #include <map>
 #include "utils.hpp"
-#include "HttpRequest.hpp"
 
-class HttpResponse {
-public:
-	HttpResponse();
-	~HttpResponse();
-	HttpResponse(const HttpRequest request);
-	HttpResponse(const HttpResponse &rhs);
-	HttpResponse &operator=(const HttpResponse &rhs);
-	HttpResponse(const int status, const std::string page);
-
-	std::string toString();
-	size_t length();
-
-private:
-	const HttpRequest m_request;
-	std::string m_version;
-	int m_statusCode;
-	std::map<std::string, std::string> m_header;
-	std::string m_body;
-
-	void handleGetRequest(const HttpRequest &request);
-
-	std::map<int, std::string> m_statusMap;
-	void initStatusMap();
+struct HttpResponse
+{
+	std::string version;
+	int statusCode;
+	std::string statusText;
+	std::map<std::string, std::string> header;
+	std::string body;
 };
 
-// struct HttpResponse
-// {
-// 	std::string version;
-// 	int statusCode;
-// 	std::string statusText;
-// 	std::map<std::string, std::string> header;
-// 	std::string body;
+#include "HttpRequest.hpp"
+
+// class HttpResponse {
+// public:
+// 	HttpResponse();
+// 	~HttpResponse();
+// 	HttpResponse(const HttpRequest request);
+// 	HttpResponse(const HttpResponse &rhs);
+// 	HttpResponse &operator=(const HttpResponse &rhs);
+// 	HttpResponse(const int status, const std::string page);
+
+// 	std::string toString();
+// 	size_t length();
+
+// private:
+// 	const HttpRequest m_request;
+// 	std::string m_version;
+// 	int m_statusCode;
+// 	std::map<std::string, std::string> m_header;
+// 	std::string m_body;
+
+// 	void handleGetRequest(const HttpRequest &request);
+
+// 	std::map<int, std::string> m_statusMap;
+// 	void initStatusMap();
 // };
 
 

@@ -10,11 +10,9 @@ struct HttpRequest
 	std::string method;
 	std::string url;
 	std::string version;
-	std::map<std::string, std::string> header;
+	std::map<std::string, std::string> headers;
 	std::string body;
 };
 
-void parsePart(std::string sep, std::string &field, std::string &content);
-void checkMethod(std::string method);
+// Main Parse Function
 HttpRequest parseHttpRequest(std::string content);
-

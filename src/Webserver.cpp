@@ -143,6 +143,9 @@ HttpResponse Webserver::processRequest(HttpRequest request)
 {
 	(void)request;
 	HttpResponse dummyResponse;
+	dummyResponse.version = "HTTP/1.1";
+	dummyResponse.statusCode = 200;
+	dummyResponse.statusText = "OK";
 	return dummyResponse;
 }
 

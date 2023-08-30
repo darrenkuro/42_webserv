@@ -54,7 +54,7 @@ HttpRequest parseHttpRequest(std::string content)
 	// checkVersion();
 
 	while (content.find("\r\n") != 0) {
-		parseHeader(request.header, content);
+		parseHeader(request.headers, content);
 	}
 	request.body = content;
 	// maybe check the \r\n at the end, check RFC

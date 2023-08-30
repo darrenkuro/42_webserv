@@ -29,7 +29,6 @@ struct ServerConfig
     // size_t clientMaxBodySize;
     // std::vector<ConfigLocation> locations;
 };
-struct HttpRequest1{};
 extern bool g_running;
 using std::vector;
 using std::cout;
