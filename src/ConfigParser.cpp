@@ -145,10 +145,10 @@ size_t ConfigParser::parseClientMaxBodySize(void)
 	const std::string unitChar = "kKmM";
 	std::string token = accept();
 	int unit = 1;
-	if (unitChar.find(token.back()) != std::string::npos) {
-		if (token.back() == 'k' || token.back() == 'K')
+	if (unitChar.find(token) != std::string::npos) {
+		if (token == "k" || token == "K")
 			unit = 1000;
-		else if (token.back() == 'm' || token.back() == 'M')
+		else if (token == "m" || token == "M")
 			unit = 1000000;
 		token.erase(token.length() - 1);
 	}
