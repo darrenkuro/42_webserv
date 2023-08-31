@@ -10,13 +10,13 @@ int createIPv4Socket()
 	return sockfd;
 }
 
-sockaddr_in createAddress(int port)
+sockaddr_in createAddress(SocketAddress address)
 {
 	sockaddr_in server_addr;
 	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port);
-	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(address.port);
+	server_addr.sin_addr.s_addr = address.host;
 	//inet_pton(AF_INET, "192.200.199.140", &server_addr.sin_addr);
 	return server_addr;
 }

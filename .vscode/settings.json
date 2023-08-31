@@ -79,6 +79,7 @@
         "__nullptr": "cpp",
         "__string": "cpp",
         "chrono": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "queue": "cpp"
     }
 }

@@ -42,7 +42,7 @@ inline void displayLogLevel(int level)
     case WARNING:
 		std::cout << RED << "[WARNING]" << RESET << " ";
 		break;
-	
+
 	case ERROR:
 		std::cout << RED << "[ERROR]" << RESET << "   ";
 		break;
@@ -90,5 +90,24 @@ inline void logHttp(HttpResponse response, int clientID)
 	std::cout << "Version[" << response.version << "] ";
 	std::cout << "StatusCode[" << response.statusCode << "] ";
 	std::cout << "StatusText[" << response.statusText << "]";
+	std::cout << RESET << std::endl;
+}
+
+inline void logServerConfig(ServerConfig config)
+{
+	displayTimestamp();
+	std::cout << " ";
+	displayLogLevel(INFO);
+
+	std::cout << ORANGE;
+	std::cout << "======> WebservConfig" << std::endl;
+    std::cout << "listen: " << std::endl;
+	std::cout << "\thost: " << config.address.host << std::endl;
+	std::cout << "\tport: " << config.address.port << std::endl;
+	std::cout << "server_name: " << config.serverName << std::endl;
+	std::cout << "location:" << std::endl;
+	for(std::vector<LocationConfig>::const_iterator it = config.locations.begin(); it != config.locations.end(); it++) {
+		std::cout << "\tautoindex: " << std::boolalpha << it->autoindex << std::endl;
+	}
 	std::cout << RESET << std::endl;
 }

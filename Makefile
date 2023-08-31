@@ -1,8 +1,10 @@
 NAME = webserv
 
 # Source files
-_SRC 	:=	HttpRequest.cpp HttpResponse.cpp utils.cpp main.cpp Webserver.cpp Server.cpp Client.cpp
-_INC	:=	HttpRequest.hpp HttpResponse.hpp utils.hpp Webserver.hpp Server.hpp Client.hpp
+_SRC 	:=	HttpRequest.cpp HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
+			ConfigParser.cpp utils.cpp main.cpp
+_INC	:=	HttpRequest.hpp HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
+			ConfigParser.hpp utils.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src

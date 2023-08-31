@@ -26,20 +26,29 @@ int main(int argc, char **argv)
 	signal(SIGINT, signalHandler);
 	(void) argv;
 	g_running = true;
-	ServerConfig config1;
-	config1.port = 4242;
-	config1.serverName = "lego.com";
 
-	ServerConfig config2;
-	config2.port = 8088;
-	config2.serverName = "www.mouse.com";
+	try {
+		ConfigParser parser;
+		std::vector<ServerConfig> servers = parser.parse(argv[1]);
+		Webserver webserver(servers);
+		webserver.start();
+	} catch (std::exception &e) {
+		log(ERROR, e.what());
+	}
+	// ServerConfig config1;
+	// config1.port = 4242;
+	// config1.serverName = "lego.com";
 
-	vector<ServerConfig> servers;
-	servers.push_back(config1);
-	servers.push_back(config2);
+	// ServerConfig config2;
+	// config2.port = 8088;
+	// config2.serverName = "www.mouse.com";
 
-	Webserver webserver(servers);
-	webserver.start();
+	// vector<ServerConfig> servers;
+	// servers.push_back(config1);
+	// servers.push_back(config2);
+
+	// Webserver webserver(servers);
+	// webserver.start();
 
 
 	// log(ERROR, "Some random Error message");

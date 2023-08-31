@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <iostream>
 #include <vector>
 #include <set>
@@ -9,26 +8,16 @@
 #include <unistd.h>
 #include "log.hpp"
 #include "utils.hpp"
-
 #include "HttpRequest.hpp"
-
 #include "Server.hpp"
 #include "Client.hpp"
+#include "ConfigParser.hpp"
 
 #define RECV_SIZE 4096
 
 #define CLIENT_TIMEOUT 60
 
 class Server;
-struct WebserverConfig{};
-struct ServerConfig
-{
-    int port;
-    std::string serverName;
-    // std::map<int, std::string> errorPages;
-    // size_t clientMaxBodySize;
-    // std::vector<ConfigLocation> locations;
-};
 extern bool g_running;
 using std::vector;
 using std::cout;
@@ -50,7 +39,7 @@ private:
     // Initialization
     void setupServers(const vector<ServerConfig> configs);
     void initListenSockets();
-    int initSocket(int port);
+    int initSocket(SocketAddress address);
 
     // Logic
     void mainloop();
@@ -72,5 +61,5 @@ private:
     vector<pollfd> m_pollFds;
     vector<ServerConfig> m_serverConfigs;
     vector<Server> m_servers;
-    map<int, Client> m_clients; // Key: Fd; Value: Client 
+    map<int, Client> m_clients; // Key: Fd; Value: Client
 };

@@ -12,8 +12,9 @@ class Server
 public:
     Server(const ServerConfig config);
 
-    int getPort();
+    SocketAddress getAddress();
+
 private:
-    int m_port;
+    SocketAddress m_address;
     std::string m_serverName;
 };

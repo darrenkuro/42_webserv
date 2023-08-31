@@ -52,7 +52,7 @@ void Webserver::setupServers(const vector<ServerConfig> configs)
 void Webserver::initListenSockets()
 {
     for (size_t i = 0; i < m_servers.size(); i++) {
-		m_listenSockets.insert(initSocket(m_servers[i].getPort()));
+		m_listenSockets.insert(initSocket(m_servers[i].getAddress()));
 	}
 	std::set<int>::iterator it;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
@@ -63,10 +63,10 @@ void Webserver::initListenSockets()
 }
 
 //------------------------------------------------------------------------------
-int Webserver::initSocket(int port)
+int Webserver::initSocket(SocketAddress address)
 {
 	int listenFd = createIPv4Socket();
-	sockaddr_in serverAddr = createAddress(port);
+	sockaddr_in serverAddr = createAddress(address);
 
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		throw std::runtime_error("bind() failed");
