@@ -17,6 +17,7 @@ const std::vector<std::string> ConfigParser::validLocationKeys(
     locationKeyArray, locationKeyArray + sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
 );
 
+//------------------------------------------------------------------------------
 std::vector<ServerConfig> ConfigParser::parse(const std::string filename)
 {
 	std::string content = getFileContent(filename);
@@ -54,6 +55,7 @@ void ConfigParser::lex(std::string content, std::string whitespace, std::string 
 	}
 }
 
+//------------------------------------------------------------------------------
 ServerConfig ConfigParser::parseServer()
 {
 	ServerConfig config = defaultServer();
@@ -61,22 +63,32 @@ ServerConfig ConfigParser::parseServer()
 	consume("{");
 	std::string token;
 	while ((token = accept()) != "}") {
-		if (!isValidServerKey(token))
+		if (!isValidServerKey(token)) {
 			throw std::runtime_error("Parser: unknown server key " + token + "!");
-		if (token == "listen")
+		}
+		else if (token == "listen") {
 			config.address = parseListen();
-		else if (token == "server_name")
+		}
+		else if (token == "server_name") {
 			config.serverName = parseServerName();
-		else if (token == "error_page")
+		}
+		else if (token == "index") {
+			config.index = parseIndex();
+		}
+		else if (token == "error_page") {
 			config.errorPages.insert(parseErrorPage());
-		else if (token == "client_max_body_size")
+		}
+		else if (token == "client_max_body_size") {
 			config.clientMaxBodySize = parseClientMaxBodySize();
-		else if (token == "location")
+		}
+		else if (token == "location") {
 			config.locations.push_back(parseLocation());
+		}
 	}
 	return config;
 }
 
+//------------------------------------------------------------------------------
 LocationConfig ConfigParser::parseLocation(void)
 {
 	LocationConfig location = defaultLocation();
@@ -84,14 +96,30 @@ LocationConfig ConfigParser::parseLocation(void)
 	consume("{");
 	std::string token;
 	while ((token = accept()) != "}") {
-		if (!isValidLocationKey(token))
+		if (!isValidLocationKey(token)) {
 			throw std::runtime_error("Parser: unknown location key " + token + "!");
-		if (token == "autoindex")
+		}
+		else if (token == "limit_except") {
+			location.allowedMethods = parseAllowedMethods();
+		}
+		else if (token == "return") {
+			location.redirect = parseRedirect();
+		}
+		else if (token == "alias") {
+			location.alias = parseAlias();
+		}
+		else if (token == "autoindex") {
 			location.autoindex = parseAutoindex();
+		}
+		else if (token == "index") {
+			location.index = parseIndex();
+		}
 	}
 	return location;
 }
 
+
+//------------------------------------------------------------------------------
 std::string ConfigParser::parseServerName(void)
 {
 	std::string token = accept();
@@ -100,6 +128,7 @@ std::string ConfigParser::parseServerName(void)
 	return token;
 }
 
+//------------------------------------------------------------------------------
 SocketAddress ConfigParser::parseListen(void)
 {
 	SocketAddress address;
@@ -113,21 +142,27 @@ SocketAddress ConfigParser::parseListen(void)
 		address.host = 0;
 	}
 	consume(";");
-	if (!isAllDigit(token))
+	if (!isAllDigit(token)) {
 		throw std::runtime_error("Parser: invalid port value!");
+	}
+
 	int port = atoi(token.c_str());
-	if (port <= 0 || port > 65535)
+	if (port <= 0 || port > 65535) {
 		throw std::runtime_error("Parser: invalid port value!");
+	}
 	address.port = port;
 	return address;
 }
 
+
+//------------------------------------------------------------------------------
 std::pair<int, std::string> ConfigParser::parseErrorPage(void)
 {
 	std::pair<int, std::string> errorPage;
 	std::string errorCode = accept();
-	if (!isAllDigit(errorCode))
+	if (!isAllDigit(errorCode)) {
 		throw std::runtime_error("Parser: invalid error code " + errorCode + "!");
+	}
 	// what happens when it overflows?
 	errorPage.first = atoi(errorCode.c_str());
 	// check it's valid code: 400/401/403/404/500/502/503 But there might be more
@@ -140,16 +175,19 @@ std::pair<int, std::string> ConfigParser::parseErrorPage(void)
 	return errorPage;
 }
 
+//------------------------------------------------------------------------------
 size_t ConfigParser::parseClientMaxBodySize(void)
 {
 	const std::string unitChar = "kKmM";
 	std::string token = accept();
 	int unit = 1;
 	if (unitChar.find(token) != std::string::npos) {
-		if (token == "k" || token == "K")
+		if (token == "k" || token == "K") {
 			unit = 1000;
-		else if (token == "m" || token == "M")
+		}
+		else if (token == "m" || token == "M") {
 			unit = 1000000;
+		}
 		token.erase(token.length() - 1);
 	}
 	// check overflow!
@@ -158,6 +196,8 @@ size_t ConfigParser::parseClientMaxBodySize(void)
 	return value * unit;
 }
 
+
+//------------------------------------------------------------------------------
 std::string ConfigParser::parseUri(void)
 {
 	std::string token = accept();
@@ -165,6 +205,8 @@ std::string ConfigParser::parseUri(void)
 	return token;
 }
 
+
+//------------------------------------------------------------------------------
 std::vector<std::string> ConfigParser::parseAllowedMethods(void)
 {
 	std::vector<std::string> allowedMethods;
@@ -172,6 +214,8 @@ std::vector<std::string> ConfigParser::parseAllowedMethods(void)
 	return allowedMethods;
 }
 
+
+//------------------------------------------------------------------------------
 std::string ConfigParser::parseRedirect(void)
 {
 	std::string redirect = accept();
@@ -180,6 +224,7 @@ std::string ConfigParser::parseRedirect(void)
 	return redirect;
 }
 
+//------------------------------------------------------------------------------
 std::string ConfigParser::parseAlias(void)
 {
 	std::string alias = accept();
@@ -188,21 +233,26 @@ std::string ConfigParser::parseAlias(void)
 	return alias;
 }
 
-
+//------------------------------------------------------------------------------
 bool ConfigParser::parseAutoindex(void)
 {
 	std::string token = accept();
 	bool autoindex;
-	if (token == "on")
+	if (token == "on") {
 		autoindex = true;
-	else if (token == "off")
+	}
+	else if (token == "off") {
 		autoindex = false;
-	else
+	}
+	else {
 		throw std::runtime_error("Parser: invalid autoindex value!");
+	}
 	consume(";");
 	return autoindex;
 }
 
+
+//------------------------------------------------------------------------------
 std::vector<std::string> ConfigParser::parseIndex(void)
 {
 	std::vector<std::string> index;
@@ -213,10 +263,12 @@ std::vector<std::string> ConfigParser::parseIndex(void)
 	return index;
 }
 
+//------------------------------------------------------------------------------
 void ConfigParser::consume(const std::string token)
 {
-	if (m_tokens.front() != token)
+	if (m_tokens.front() != token) {
 		throw std::runtime_error("Parser syntax: can't find " + token);
+	}
 	m_tokens.pop_front();
 }
 
@@ -227,6 +279,8 @@ std::string ConfigParser::accept()
 	return token;
 }
 
+
+//------------------------------------------------------------------------------
 ServerConfig ConfigParser::defaultServer(void)
 {
 	ServerConfig config;
@@ -248,6 +302,7 @@ LocationConfig ConfigParser::defaultLocation(void)
 	return location;
 }
 
+//------------------------------------------------------------------------------
 bool ConfigParser::isValidServerKey(std::string key)
 {
 	return std::find(validServerKeys.begin(), validServerKeys.end(), key) != validServerKeys.end();
@@ -261,8 +316,9 @@ bool ConfigParser::isValidLocationKey(std::string key)
 bool ConfigParser::isAllDigit(std::string str)
 {
 	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i]))
+		if (!std::isdigit(str[i])) {
 			return false;
+		}
 	}
 	return true;
 }
