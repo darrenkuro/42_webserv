@@ -20,12 +20,6 @@ struct LocationConfig
 	std::vector<std::string> allowedMethods;
 };
 
-struct SocketAddress
-{
-	in_addr_t host;
-	int port;
-};
-
 struct ServerConfig
 {
 	std::string serverName;
@@ -82,3 +76,4 @@ private:
 std::ostream &operator<<(std::ostream &os, const ServerConfig config);
 std::ostream &operator<<(std::ostream &os, const LocationConfig location);
 std::ostream &operator<<(std::ostream &os, const SocketAddress address);
+

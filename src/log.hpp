@@ -3,6 +3,7 @@
 #include <iostream>
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "ConfigParser.hpp"
 #include <ctime>
 #include <cstdarg>
 #include <stdio.h>
@@ -12,6 +13,7 @@
 #define YELLOW	"\033[33m"
 #define RED		"\033[31m"
 #define ORANGE	"\033[38;5;214m"
+#define DORANGE "\033[37;5;166m"
 #define DEBUG	4
 #define INFO	3
 #define WARNING 2
@@ -85,11 +87,11 @@ inline void logHttp(HttpResponse response, int clientID)
 	std::cout << " ";
 	displayLogLevel(INFO);
 
-	std::cout << ORANGE;
+	std::cout << DORANGE;
 	std::cout << "HTTP << Client[ID " << clientID << "]  |  ";
 	std::cout << "Version[" << response.version << "] ";
-	std::cout << "StatusCode[" << response.statusCode << "] ";
-	std::cout << "StatusText[" << response.statusText << "]";
+	std::cout << "Status[" << response.statusCode << "] ";
+	std::cout << "Text[" << response.statusText << "]";
 	std::cout << RESET << std::endl;
 }
 

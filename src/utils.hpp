@@ -7,12 +7,16 @@
 #include <netinet/in.h>
 #include <cstring>
 #include <string>
+#include <climits>
 #include <fstream>
 #include <ctime>
 #include <sstream>
-#include "ConfigParser.hpp"
 
-struct SocketAddress;
+struct SocketAddress
+{
+	in_addr_t host;
+	int port;
+};
 
 int createIPv4Socket();
 sockaddr_in createAddress(SocketAddress address);

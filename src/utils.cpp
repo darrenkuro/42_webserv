@@ -10,17 +10,6 @@ int createIPv4Socket()
 	return sockfd;
 }
 
-sockaddr_in createAddress(SocketAddress address)
-{
-	sockaddr_in server_addr;
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(address.port);
-	server_addr.sin_addr.s_addr = address.host;
-	//inet_pton(AF_INET, "192.200.199.140", &server_addr.sin_addr);
-	return server_addr;
-}
-
 std::string getFileContent(std::string path)
 {
 	std::ifstream file(path.c_str());
@@ -54,4 +43,16 @@ int toInt(std::string str) {
 	if (result == INT_MIN && str != "-2147483648" && str != "-2147483648")
 		throw std::runtime_error("convert " + str + " toInt fails");
 	return result;
+}
+
+
+sockaddr_in createAddress(SocketAddress address)
+{
+	sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(address.port);
+	server_addr.sin_addr.s_addr = address.host;
+	//inet_pton(AF_INET, "192.200.199.140", &server_addr.sin_addr);
+	return server_addr;
 }

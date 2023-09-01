@@ -9,7 +9,7 @@ const std::string locationKeyArray[] = {
 	"allowed_method", "return", "alias", "autoindex", "index"
 };
 
-const int errorCode[] = {400, 401, 403, 404, 500, 502, 503};
+const int errorCode[] = {401, 403, 404, 500, 502, 503};
 
 const std::vector<int> ConfigParser::validErrorCodes(errorCode, errorCode + sizeof(errorCode) / sizeof(errorCode[0]));
 
@@ -425,3 +425,4 @@ std::ostream &operator<<(std::ostream &os, const SocketAddress address)
 // 	consume(";");
 // 	return path;
 // }
+

@@ -120,10 +120,15 @@ void Webserver::handleClientPOLLIN(Client& client)
 		clientStatusCheck(client, bytesRead);
 	}
 	else {
-		HttpRequest request = parseHttpRequest(std::string(buffer));
-		logHttp(request, client.getID());
-		HttpResponse response = processRequest(request);
-		client.setResponse(response);
+		try {
+			HttpRequest request = parseHttpRequest(std::string(buffer));
+			logHttp(request, client.getID());
+			HttpResponse response = processRequest(request);
+			client.setResponse(response);
+		}
+		catch (std::exception& e) {
+			client.setResponse(createBasicResponse(400));
+		}
 	}
 }
 
@@ -141,7 +146,11 @@ void Webserver::handleClientPOLLOUT(Client& client)
 //------------------------------------------------------------------------------
 HttpResponse Webserver::processRequest(HttpRequest request)
 {
-	(void)request;
+	if (!checkMethod(request)) return createBasicResponse(405);
+	if (!checkHeaders(request)) return createBasicResponse(400);
+	if (!checkVersion(request)) return createBasicResponse(505);
+	if (!checkURL(request)) return createBasicResponse(404);
+
 	HttpResponse dummyResponse;
 	dummyResponse.version = "HTTP/1.1";
 	dummyResponse.statusCode = 200;
@@ -224,6 +233,57 @@ void Webserver::removeFdFromPoll(int fd)
 			return;
 		}
 	}
+}
+
+//------------------------------------------------------------------------------
+bool Webserver::checkMethod(HttpRequest request)
+{
+	std::string method = request.method;
+	if (method == "GET" || method == "POST" || method == "DELETE") {
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------------
+bool Webserver::checkURL(HttpRequest request)
+{
+	(void)request;
+	return true;
+}
+
+//------------------------------------------------------------------------------
+bool Webserver::checkVersion(HttpRequest request)
+{
+	if (request.version == "HTTP/1.1") {
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------------
+bool Webserver::checkHeaders(HttpRequest request)
+{
+	std::map<std::string, std::string>::iterator it;
+
+	for (it = request.headers.begin(); it != request.headers.end(); it++)
+	{
+		if (!headerIsSupported(it->second)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------------
+bool Webserver::headerIsSupported(std::string header)
+{
+	for (int i = 0; i < 1; i++) {
+		if (header == "Host") {
+			return true;
+		}
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 #include "Webserver.hpp"
 #include "utils.hpp"
+#include "log.hpp"
 
 #include <signal.h>
 
