@@ -32,9 +32,9 @@ int main(int argc, char **argv)
 		}
 		else if (argc == 2) {
 			servers = parser.parse(argv[1]);
-			for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++) {
-				std::cout << *it;
-			}
+			// for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++) {
+			// 	std::cout << *it;
+			// }
 		}
 		else {
 			std::cerr << ERR_ARG << std::endl;

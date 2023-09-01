@@ -13,8 +13,10 @@ public:
     Server(const ServerConfig config);
 
     SocketAddress getAddress();
+    HttpResponse handleGetRequest(HttpRequest request);
+    HttpResponse handlePostRequest(HttpRequest request);
+    HttpResponse handleDeleteRequest(HttpRequest request);
 
 private:
-    SocketAddress m_address;
-    std::string m_serverName;
+    ServerConfig m_config;
 };

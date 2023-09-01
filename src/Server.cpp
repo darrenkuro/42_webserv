@@ -1,13 +1,12 @@
 #include "Server.hpp"
 
 Server::Server(const ServerConfig config) :
-    m_address(config.address),
-    m_serverName(config.serverName)
+    m_config(config)
 {
-    log(INFO, "Server created: name: [%s] port: [%d]", m_serverName.c_str(), m_address.port);
+    log(INFO, "Server created: name: [%s] port: [%d]", m_config.serverName.c_str(), m_config.address.port);
 }
 
 SocketAddress Server::getAddress()
 {
-    return m_address;
+    return m_config.address;
 }

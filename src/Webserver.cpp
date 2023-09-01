@@ -48,10 +48,11 @@ void Webserver::setupServers(const vector<ServerConfig> configs)
 	}
 }
 
+
 //------------------------------------------------------------------------------
 void Webserver::initListenSockets()
 {
-    for (size_t i = 0; i < m_servers.size(); i++) {
+	for (size_t i = 0; i < m_servers.size(); i++) {
 		m_listenSockets.insert(initSocket(m_servers[i].getAddress()));
 	}
 	std::set<int>::iterator it;
@@ -127,7 +128,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 			client.setResponse(response);
 		}
 		catch (std::exception& e) {
-			client.setResponse(createBasicResponse(400));
+			client.setResponse(createBasicResponse(400, DEFAULT_400_PATH, "text/html"));
 		}
 	}
 }
@@ -146,11 +147,11 @@ void Webserver::handleClientPOLLOUT(Client& client)
 //------------------------------------------------------------------------------
 HttpResponse Webserver::processRequest(HttpRequest request)
 {
-	if (!checkMethod(request)) return createBasicResponse(405);
-	if (!checkHeaders(request)) return createBasicResponse(400);
-	if (!checkVersion(request)) return createBasicResponse(505);
-	if (!checkURL(request)) return createBasicResponse(404);
-
+	// if (!checkMethod(request)) return createBasicResponse(405);
+	// if (!checkHeaders(request)) return createBasicResponse(400);
+	// if (!checkVersion(request)) return createBasicResponse(505);
+	// if (!checkURL(request)) return createBasicResponse(404);
+	(void)request;
 	HttpResponse dummyResponse;
 	dummyResponse.version = "HTTP/1.1";
 	dummyResponse.statusCode = 200;
@@ -210,6 +211,15 @@ void Webserver::clientStatusCheck(Client& client, int bytesRead)
 		// Error or connection closed
 	}
 }
+
+//------------------------------------------------------------------------------
+// const Server& routeRequest(HttpRequest request)
+// {
+// 	(void)request;
+// 	//for ()
+// 	return
+// }
+
 
 /**
  * Webserver Utility Functions

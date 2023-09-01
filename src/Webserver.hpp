@@ -50,6 +50,7 @@ private:
     void addClient(int socketFd);
 	void handleDisconnects();
     void clientStatusCheck(Client& client, int bytesRead);
+    const Server& routeRequest(HttpRequest request);
 
     // Utility
     Client& getClientFromIdx(int idx);
