@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include "utils.hpp"
+// #include "log.hpp"
 
 struct LocationConfig
 {
@@ -36,7 +37,8 @@ struct ServerConfig
 	std::vector<LocationConfig> locations;
 };
 
-#define ERR_SYNTAX	"Parser syntax error!"
+#define ERR_SYNTAX "Parser syntax error!"
+#define ROOT "./public"
 
 class ConfigParser
 {
@@ -48,9 +50,11 @@ private:
 
 	static const std::vector<std::string> validServerKeys;
 	static const std::vector<std::string> validLocationKeys;
+	static const std::vector<int> validErrorCodes;
 
 	bool isValidServerKey(std::string key);
 	bool isValidLocationKey(std::string key);
+	bool isValidErrorCode(int code);
 	bool isAllDigit(std::string str);
 
 	void lex(std::string content, std::string whitespace, std::string symbol);
@@ -62,7 +66,7 @@ private:
 
 	ServerConfig parseServer(void);
 	LocationConfig parseLocation(void);
-	SocketAddress parseListen(void);
+	SocketAddress parseAddress(void);
 	std::string parseServerName(void);
 	std::pair<int, std::string> parseErrorPage(void);
 	size_t parseClientMaxBodySize(void);
@@ -74,3 +78,7 @@ private:
 	std::vector<std::string> parseIndex(void);
 	// std::string parseRoot(void);
 };
+
+std::ostream &operator<<(std::ostream &os, const ServerConfig config);
+std::ostream &operator<<(std::ostream &os, const LocationConfig location);
+std::ostream &operator<<(std::ostream &os, const SocketAddress address);

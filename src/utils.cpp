@@ -32,31 +32,6 @@ std::string getFileContent(std::string path)
 }
 
 std::string toString(int value) {
-    if (value == 0) {
-        return "0";
-    }
-
-    bool isNegative = false;
-    if (value < 0) {
-        isNegative = true;
-        value = -value;
-    }
-
-    std::string result = "";
-    while (value > 0) {
-        int digit = value % 10;
-        result = static_cast<char>('0' + digit) + result;
-        value /= 10;
-    }
-
-    if (isNegative) {
-        result = "-" + result;
-    }
-
-    return result;
-}
-
-std::string intToString(int value) {
 	std::stringstream ss;
 	ss << value;
 
@@ -66,4 +41,17 @@ std::string intToString(int value) {
 	}
 
 	return ss.str();
+}
+
+int toInt(std::string str) {
+	std::istringstream iss(str);
+	int result;
+	iss >> result;
+	if (result == 0 && str != "0" && str != "+0" && str != "-0")
+		throw std::runtime_error("convert " + str + " toInt fails");
+	if (result == INT_MAX && str != "2147483647" && str != "+2147483647")
+		throw std::runtime_error("convert " + str + " toInt fails");
+	if (result == INT_MIN && str != "-2147483648" && str != "-2147483648")
+		throw std::runtime_error("convert " + str + " toInt fails");
+	return result;
 }

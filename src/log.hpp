@@ -7,10 +7,10 @@
 #include <cstdarg>
 #include <stdio.h>
 
-#define RESET   "\033[0m"
-#define CYAN    "\033[36m"
-#define YELLOW  "\033[33m"
-#define RED     "\033[31m"
+#define RESET	"\033[0m"
+#define CYAN	"\033[36m"
+#define YELLOW	"\033[33m"
+#define RED		"\033[31m"
 #define ORANGE	"\033[38;5;214m"
 #define DEBUG	4
 #define INFO	3
@@ -82,8 +82,8 @@ inline void logHttp(HttpResponse response, int clientID)
 {
 	(void)response;
 	displayTimestamp();
-    std::cout << " ";
-    displayLogLevel(INFO);
+	std::cout << " ";
+	displayLogLevel(INFO);
 
 	std::cout << ORANGE;
 	std::cout << "HTTP << Client[ID " << clientID << "]  |  ";
@@ -101,7 +101,7 @@ inline void logServerConfig(ServerConfig config)
 
 	std::cout << ORANGE;
 	std::cout << "======> WebservConfig" << std::endl;
-    std::cout << "listen: " << std::endl;
+	std::cout << "listen: " << std::endl;
 	std::cout << "\thost: " << config.address.host << std::endl;
 	std::cout << "\tport: " << config.address.port << std::endl;
 	std::cout << "server_name: " << config.serverName << std::endl;

@@ -6,8 +6,12 @@ const std::string serverKeyArray[] = {
 };
 
 const std::string locationKeyArray[] = {
-	"limit_except", "return", "alias", "autoindex", "index"
+	"allowed_method", "return", "alias", "autoindex", "index"
 };
+
+const int errorCode[] = {400, 401, 403, 404, 500, 502, 503};
+
+const std::vector<int> ConfigParser::validErrorCodes(errorCode, errorCode + sizeof(errorCode) / sizeof(errorCode[0]));
 
 const std::vector<std::string> ConfigParser::validServerKeys(
     serverKeyArray, serverKeyArray + sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
@@ -67,7 +71,7 @@ ServerConfig ConfigParser::parseServer()
 			throw std::runtime_error("Parser: unknown server key " + token + "!");
 		}
 		else if (token == "listen") {
-			config.address = parseListen();
+			config.address = parseAddress();
 		}
 		else if (token == "server_name") {
 			config.serverName = parseServerName();
@@ -99,7 +103,7 @@ LocationConfig ConfigParser::parseLocation(void)
 		if (!isValidLocationKey(token)) {
 			throw std::runtime_error("Parser: unknown location key " + token + "!");
 		}
-		else if (token == "limit_except") {
+		else if (token == "allowed_method") {
 			location.allowedMethods = parseAllowedMethods();
 		}
 		else if (token == "return") {
@@ -129,7 +133,7 @@ std::string ConfigParser::parseServerName(void)
 }
 
 //------------------------------------------------------------------------------
-SocketAddress ConfigParser::parseListen(void)
+SocketAddress ConfigParser::parseAddress(void)
 {
 	SocketAddress address;
 	std::string token = accept();
@@ -141,16 +145,18 @@ SocketAddress ConfigParser::parseListen(void)
 	} else {
 		address.host = 0;
 	}
-	consume(";");
-	if (!isAllDigit(token)) {
-		throw std::runtime_error("Parser: invalid port value!");
-	}
 
-	int port = atoi(token.c_str());
-	if (port <= 0 || port > 65535) {
+	try {
+		int port = toInt(token);
+		if (port <= 0 || port > 65535) {
+			throw std::exception();
+		}
+		address.port = port;
+	}
+	catch (std::exception &e) {
 		throw std::runtime_error("Parser: invalid port value!");
 	}
-	address.port = port;
+	consume(";");
 	return address;
 }
 
@@ -160,40 +166,59 @@ std::pair<int, std::string> ConfigParser::parseErrorPage(void)
 {
 	std::pair<int, std::string> errorPage;
 	std::string errorCode = accept();
-	if (!isAllDigit(errorCode)) {
+	// could accept multiple all at once
+	try {
+		if (!isAllDigit(errorCode)) {
+			throw std::exception();
+		}
+		errorPage.first = toInt(errorCode);
+		if (!isValidErrorCode(errorPage.first)) {
+			throw std::exception();
+		}
+	}
+	catch (std::exception &e) {
 		throw std::runtime_error("Parser: invalid error code " + errorCode + "!");
 	}
-	// what happens when it overflows?
-	errorPage.first = atoi(errorCode.c_str());
-	// check it's valid code: 400/401/403/404/500/502/503 But there might be more
 
-	// what if it doesn't exist?
-	// could root be changed also or should it do a check on file existence here?
 	errorPage.second = accept();
+	try {
+		// what if it doesn't exist?
+		// could root be changed also or should it do a check on file existence here?
+	}
+	catch (std::exception &e) {
+		throw std::runtime_error("Parser: invalid error page " + errorPage.second + "!");
+	}
 	consume(";");
-	// keep accepting until you see the token;
+		// keep accepting until you see the token;
 	return errorPage;
 }
 
 //------------------------------------------------------------------------------
 size_t ConfigParser::parseClientMaxBodySize(void)
 {
-	const std::string unitChar = "kKmM";
+	// const std::string unitChar = "kKmM";
+	// std::string token = accept();
+	// int unit = 1;
+	// if (unitChar.find(token) != std::string::npos) {
+	// 	if (token == "k" || token == "K") {
+	// 		unit = 1000;
+	// 	}
+	// 	else if (token == "m" || token == "M") {
+	// 		unit = 1000000;
+	// 	}
+	// 	token.erase(token.length() - 1);
+	// }
+
 	std::string token = accept();
-	int unit = 1;
-	if (unitChar.find(token) != std::string::npos) {
-		if (token == "k" || token == "K") {
-			unit = 1000;
-		}
-		else if (token == "m" || token == "M") {
-			unit = 1000000;
-		}
-		token.erase(token.length() - 1);
+	int value;
+	try {
+		value = toInt(token);
 	}
-	// check overflow!
-	size_t value = 0;
+	catch (std::exception &e) {
+		throw std::runtime_error("Parser: invalid client max body size!");
+	}
 	consume(";");
-	return value * unit;
+	return value;
 }
 
 
@@ -202,6 +227,7 @@ std::string ConfigParser::parseUri(void)
 {
 	std::string token = accept();
 	// validate, it has to start with '/'?
+	// any illegal characters in the uri?
 	return token;
 }
 
@@ -210,7 +236,15 @@ std::string ConfigParser::parseUri(void)
 std::vector<std::string> ConfigParser::parseAllowedMethods(void)
 {
 	std::vector<std::string> allowedMethods;
-
+	std::string token;
+	while ((token = accept()) != ";") {
+		// Define all allowed methods somewhere else in an array?
+		// Potentially more and need to be accessible in other places
+		if (token != "GET" && token != "POST" && token != "DELETE") {
+			throw std::runtime_error("Parser: unknown method " + token);
+		}
+		allowedMethods.push_back(token);
+	}
 	return allowedMethods;
 }
 
@@ -219,7 +253,7 @@ std::vector<std::string> ConfigParser::parseAllowedMethods(void)
 std::string ConfigParser::parseRedirect(void)
 {
 	std::string redirect = accept();
-
+	// return code url?
 	consume(";");
 	return redirect;
 }
@@ -227,10 +261,14 @@ std::string ConfigParser::parseRedirect(void)
 //------------------------------------------------------------------------------
 std::string ConfigParser::parseAlias(void)
 {
-	std::string alias = accept();
-	// check if directory exist, move to util helper function
+	std::string token = accept();
+	std::string path = ROOT + token;
+	struct stat pathInfo;
+	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
+		throw std::runtime_error("[Error] Parser: invalid alias " + token + "!");
 	consume(";");
-	return alias;
+	// should it return actually path or just the alias?
+	return token;
 }
 
 //------------------------------------------------------------------------------
@@ -288,7 +326,7 @@ ServerConfig ConfigParser::defaultServer(void)
 	config.address.host = 0;
 	config.address.port = 80;
 	// default error pages for all the errors required to have
-	config.root = "./public";
+	config.root = ROOT;
 	config.errorPages[400] = "/default_error/400.html";
 	config.clientMaxBodySize = 100000;
 	return config;
@@ -313,6 +351,11 @@ bool ConfigParser::isValidLocationKey(std::string key)
 	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) != validLocationKeys.end();
 }
 
+bool ConfigParser::isValidErrorCode(int code)
+{
+	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code) != validErrorCodes.end();
+}
+
 bool ConfigParser::isAllDigit(std::string str)
 {
 	for (size_t i = 0; i < str.length(); i++) {
@@ -322,6 +365,56 @@ bool ConfigParser::isAllDigit(std::string str)
 	}
 	return true;
 }
+
+//------------------------------------------------------------------------------
+std::ostream &operator<<(std::ostream &os, const ServerConfig config)
+{
+	// displayLogLevel(INFO);
+
+	//os << std::string(10, ' ');
+	os << "ServerConfig" << std::endl;
+	os << "	ServerName: " << config.serverName << std::endl;
+	os << "	Root: " << config.root << std::endl;
+	os << "	" << config.address;
+	os << "	ClientMaxBodySize: " << config.clientMaxBodySize << std::endl;
+	os << "	Index: " << std::endl;
+	for (std::vector<std::string>::const_iterator it = config.index.begin(); it != config.index.end(); it++) {
+		os << "		" << *it << std::endl;
+	}
+	os << "	ErrorPages: " << std::endl;
+	for (std::map<int, std::string>::const_iterator it = config.errorPages.begin(); it != config.errorPages.end(); it++) {
+		os << "		" << it->first << " " << it->second << std::endl;
+	}
+	os << "	Locations: " << std::endl;
+	for (std::vector<LocationConfig>::const_iterator it = config.locations.begin(); it != config.locations.end(); it++) {
+		os << *it << std::endl;
+	}
+	return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const LocationConfig location)
+{
+	os << "		URI: " << location.uri << std::endl;
+	os << "		Redirect: " << location.redirect << std::endl;
+	os << "		Alias: " << location.alias << std::endl;
+	os << "		Autoindex: " << location.autoindex << std::endl;
+	os << "		Index: " << std::endl;
+	for (std::vector<std::string>::const_iterator it = location.index.begin(); it != location.index.end(); it++) {
+		os << "			" << *it << std::endl;
+	}
+	os << "		AllowedMethods: ";
+	for (std::vector<std::string>::const_iterator it = location.allowedMethods.begin(); it != location.allowedMethods.end(); it++) {
+		os << *it << " ";
+	}
+	return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const SocketAddress address)
+{
+	os << "Address: [host] " << address.host << " [port] " << address.port << std::endl;
+	return os;
+}
+
 
 // std::string ConfigParser::parseRoot(void)
 // {

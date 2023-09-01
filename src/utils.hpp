@@ -17,5 +17,5 @@ struct SocketAddress;
 int createIPv4Socket();
 sockaddr_in createAddress(SocketAddress address);
 std::string getFileContent(std::string path);
-std::string intToString(int value);
 std::string toString(int value);
+int toInt(std::string str);
