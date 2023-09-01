@@ -1,3 +1,5 @@
 kill still kills even though child process already exited
 http parser doesnt handle whitespace correctly when parsing headers. I think.
 Should implement signal to gracefully exit server with closing open fds.
+
+Two request in the same buffer. How handle?

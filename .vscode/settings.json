@@ -80,6 +80,8 @@
         "__string": "cpp",
         "chrono": "cpp",
         "set": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }

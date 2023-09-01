@@ -18,7 +18,7 @@
 #define ERROR	1
 
 // LOG display level configuration
-#define LOG_DISPLAY_LEVEL INFO
+#define LOG_DISPLAY_LEVEL DEBUG
 
 inline void displayTimestamp()
 {

@@ -1,10 +1,8 @@
-NAME = webserv
+NAME = client_spawner
 
 # Source files
-_SRC 	:=	HttpRequest.cpp HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
-			ConfigParser.cpp utils.cpp main.cpp
-_INC	:=	HttpRequest.hpp HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
-			ConfigParser.hpp utils.hpp
+_SRC 	:=	main.cpp ClientC.cpp
+_INC	:=	ClientC.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src
@@ -34,10 +32,3 @@ fclean: clean
 re : fclean all
 
 .PHONY : all clean fclean re
-
-
-sim:
-	make
-	make -C client_spawner
-	client_spawner/client_spawner &
-	./webserv configs/test.conf
