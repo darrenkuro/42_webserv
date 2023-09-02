@@ -19,4 +19,6 @@ public:
 
 private:
     ServerConfig m_config;
+
+    LocationConfig routeRequest(HttpRequest request);
 };
