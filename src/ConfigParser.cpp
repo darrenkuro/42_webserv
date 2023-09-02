@@ -11,14 +11,17 @@ const std::string locationKeyArray[] = {
 
 const int errorCode[] = {401, 403, 404, 500, 502, 503};
 
-const std::vector<int> ConfigParser::validErrorCodes(errorCode, errorCode + sizeof(errorCode) / sizeof(errorCode[0]));
+const std::vector<int> ConfigParser::validErrorCodes(errorCode,
+	errorCode + sizeof(errorCode) / sizeof(errorCode[0]));
 
 const std::vector<std::string> ConfigParser::validServerKeys(
-    serverKeyArray, serverKeyArray + sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
+	serverKeyArray, serverKeyArray +
+	sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
 );
 
 const std::vector<std::string> ConfigParser::validLocationKeys(
-    locationKeyArray, locationKeyArray + sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
+	locationKeyArray, locationKeyArray +
+	sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
 );
 
 //------------------------------------------------------------------------------
@@ -138,9 +141,13 @@ SocketAddress ConfigParser::parseAddress(void)
 	SocketAddress address;
 	std::string token = accept();
 	if (token.find(":") != std::string::npos) {
-		// handle the host portion, can't use inet_pton? (not in allowed functions)
-		// write one from scratch, in utils?
-		// also need to convert to network endianness?
+		std::string hostToken = token.substr(0, token.find(':'));
+		try {
+			address.host = toIPv4(hostToken);
+		}
+		catch (std::exception &e) {
+			throw std::runtime_error("Parser: invalid host value!");
+		}
 		token.erase(token.begin(), token.begin() + token.find(":") + 1);
 	} else {
 		address.host = 0;
@@ -354,16 +361,6 @@ bool ConfigParser::isValidLocationKey(std::string key)
 bool ConfigParser::isValidErrorCode(int code)
 {
 	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code) != validErrorCodes.end();
-}
-
-bool ConfigParser::isAllDigit(std::string str)
-{
-	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i])) {
-			return false;
-		}
-	}
-	return true;
 }
 
 //------------------------------------------------------------------------------

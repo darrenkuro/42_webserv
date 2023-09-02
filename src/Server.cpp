@@ -10,3 +10,17 @@ SocketAddress Server::getAddress()
 {
     return m_config.address;
 }
+
+// HttpResponse Server::handleGetRequest(HttpRequest request)
+// {
+
+// }
+
+// HttpResponse Server::handlePostRequest(HttpRequest request)
+// {
+
+// }
+// HttpResponse Server::handleDeleteRequest(HttpRequest request)
+// {
+
+// }

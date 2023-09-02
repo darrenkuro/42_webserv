@@ -54,7 +54,7 @@ HttpResponse createBasicResponse(int code, std::string path, std::string type)
 	response.version = "HTTP/1.1";
 	response.statusCode = code;
 	response.statusText = getStatusText(code);
-	// date &
+	// date & server
 	response.header.insert(std::make_pair("Content-Length",
 		toString(content.length())));
 	response.header.insert(std::make_pair("Content-Type", type));
@@ -65,7 +65,6 @@ HttpResponse createBasicResponse(int code, std::string path, std::string type)
 
 std::string getStatusText(int code)
 {
-	// (void)code;
 	for (int i = 0; i < STATUS_MAP_SIZE; i++) {
 		if (statusTextMap[i].first == code) {
 			return statusTextMap[i].second;
@@ -77,9 +76,8 @@ std::string getStatusText(int code)
 std::string toString(HttpResponse response) {
 	std::string str(response.version + " " + toString(response.statusCode) + " " + response.statusText + "\r\n");
 	for (std::map<std::string, std::string>::iterator it = response.header.begin(); it != response.header.end(); it++) {
-		str = str + it->first + ": " + it->second + "\r\n";
+		str += it->first + ": " + it->second + "\r\n";
 	}
-	str += "\r\n";
-	str = str + response.body;
+	str += "\r\n" + response.body;
 	return str;
 }

@@ -256,7 +256,7 @@ bool Webserver::checkMethod(HttpRequest request)
 }
 
 //------------------------------------------------------------------------------
-bool Webserver::checkURL(HttpRequest request)
+bool Webserver::checkURI(HttpRequest request)
 {
 	(void)request;
 	return true;

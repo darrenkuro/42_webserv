@@ -75,7 +75,7 @@ inline void logHttp(HttpRequest request, int clientID)
 	std::cout << ORANGE;
 	std::cout << "HTTP >> Client[ID " << clientID << "]  |  ";
 	std::cout << "Method[" << request.method << "] ";
-	std::cout << "Url[" << request.url << "] ";
+	std::cout << "Uri[" << request.uri << "] ";
 	std::cout << "Version[" << request.version << "]";
 	std::cout << RESET << std::endl;
 }

@@ -1,16 +1,17 @@
 #include "HttpRequest.hpp"
 
-std::string validMethods[] = {"GET", "POST", "DELETE"};
+//std::string validMethods[] = {"GET", "POST", "DELETE"};
 
-void checkMethod(std::string method)
-{
-	for (int i = 0; i < 3; i++) {
-		if (method == validMethods[i]) {
-			return;
-		}
-	}
-	throw std::exception();
-}
+// Method not included => 501
+// void checkMethod(std::string method)
+// {
+// 	for (int i = 0; i < 3; i++) {
+// 		if (method == validMethods[i]) {
+// 			return;
+// 		}
+// 	}
+// 	throw std::exception();
+// }
 
 void parsePart(std::string sep, std::string &field, std::string &content)
 {
@@ -34,7 +35,7 @@ void parseHeader(std::map<std::string, std::string> &header, std::string &conten
 	if (valuePos == std::string::npos)
 		throw std::exception();
 	content.erase(content.begin(), content.begin() + valuePos);
-	
+
 	if (content.find("\r\n") == std::string::npos)
 		throw std::exception();
 	std::string value = content.substr(0, content.find("\r\n"));
@@ -47,16 +48,14 @@ HttpRequest parseHttpRequest(std::string content)
 	HttpRequest request;
 
 	parsePart(" ", request.method, content);
-	checkMethod(request.method);
-	parsePart(" ", request.url, content);
-	// checkUrl();
+	parsePart(" ", request.uri, content);
 	parsePart("\r\n", request.version, content);
-	// checkVersion();
-
 	while (content.find("\r\n") != 0) {
 		parseHeader(request.headers, content);
 	}
+
+	// Remove the blank line after the headers
+	content.erase(content.begin(), content.begin() + 2);
 	request.body = content;
-	// maybe check the \r\n at the end, check RFC
 	return request;
 }

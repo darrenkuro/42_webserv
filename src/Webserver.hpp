@@ -55,7 +55,7 @@ private:
     // Utility
     Client& getClientFromIdx(int idx);
     bool checkMethod(HttpRequest request);
-    bool checkURL(HttpRequest request);
+    bool checkURI(HttpRequest request);
     bool checkVersion(HttpRequest request);
 	bool checkHeaders(HttpRequest request);
     bool headerIsSupported(std::string header);

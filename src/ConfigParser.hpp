@@ -49,7 +49,6 @@ private:
 	bool isValidServerKey(std::string key);
 	bool isValidLocationKey(std::string key);
 	bool isValidErrorCode(int code);
-	bool isAllDigit(std::string str);
 
 	void lex(std::string content, std::string whitespace, std::string symbol);
 	void consume(const std::string token);

@@ -7,7 +7,7 @@
 #include <fstream>
 #include "utils.hpp"
 
-#define DEFAULT_400_PATH    "./public/default_error/400.html"
+#define DEFAULT_400_PATH "./public/default_error/400.html"
 #define STATUS_MAP_SIZE 60
 
 struct HttpResponse

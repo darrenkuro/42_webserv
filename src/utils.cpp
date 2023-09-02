@@ -56,3 +56,47 @@ sockaddr_in createAddress(SocketAddress address)
 	//inet_pton(AF_INET, "192.200.199.140", &server_addr.sin_addr);
 	return server_addr;
 }
+
+std::string toIPString(in_addr_t ip)
+{
+	std::ostringstream oss;
+	unsigned char* bytes = reinterpret_cast<unsigned char*>(&ip);
+
+	oss << static_cast<int>(bytes[0]) << '.'
+		<< static_cast<int>(bytes[1]) << '.'
+		<< static_cast<int>(bytes[2]) << '.'
+		<< static_cast<int>(bytes[3]);
+
+	return oss.str();
+}
+
+in_addr_t toIPv4(std::string str)
+{
+	in_addr_t result = 0;
+	for (int i = 0; i < 4; i++) {
+		if (i < 3 && str.find('.') == std::string::npos) {
+			throw std::runtime_error("failed to convert " + str);
+		}
+
+		std::string token = i < 3 ? str.substr(0, str.find('.')) : str;
+		int value = toInt(token);
+		if (!isAllDigit(token) || value < 0 || value > 255)
+			throw std::runtime_error("failed to convert " + str);
+		result = (result << 8) | value;
+
+		if (i < 3) {
+			str.erase(str.begin(), str.begin() + str.find('.') + 1);
+		}
+	}
+	return htonl(result);
+}
+
+bool isAllDigit(std::string str)
+{
+	for (size_t i = 0; i < str.length(); i++) {
+		if (!std::isdigit(str[i])) {
+			return false;
+		}
+	}
+	return true;
+}
