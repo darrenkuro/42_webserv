@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <algorithm>
 #include <cstdlib>
 #include "Webserver.hpp"
 #include "utils.hpp"
@@ -13,12 +14,14 @@ public:
     Server(const ServerConfig config);
 
     SocketAddress getAddress();
-    HttpResponse handleGetRequest(HttpRequest request);
-    HttpResponse handlePostRequest(HttpRequest request);
-    HttpResponse handleDeleteRequest(HttpRequest request);
+    HttpResponse handleRequest(HttpRequest request);
+
+    HttpResponse handleGetRequest(HttpRequest request, LocationConfig route);
+    HttpResponse handlePostRequest(HttpRequest request, LocationConfig route);
+    HttpResponse handleDeleteRequest(HttpRequest request, LocationConfig route);
 
 private:
     ServerConfig m_config;
 
-    LocationConfig routeRequest(HttpRequest request);
+    LocationConfig routeRequest(std::string uri);
 };

@@ -344,6 +344,7 @@ LocationConfig ConfigParser::defaultLocation(void)
 	LocationConfig location;
 	// Set the default values that are required
 	location.autoindex = false;
+	location.alias = "";
 	return location;
 }
 
