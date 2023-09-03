@@ -14,7 +14,7 @@
 #include "Client.hpp"
 #include "ConfigParser.hpp"
 
-#define RECV_SIZE 4096
+#define RECV_SIZE 4096000
 #define CLIENT_TIMEOUT 60
 
 class Server;

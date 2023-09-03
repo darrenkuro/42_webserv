@@ -27,9 +27,9 @@ HttpResponse Server::handleRequest(HttpRequest request)
         // if (request.method == "POST") {
         //     return handlePostRequest(request, route);
         // }
-        // if (request.method == "DELETE") {
-        //     return handleDeleteRequest(request, route);
-        // }
+        if (request.method == "DELETE") {
+            return handleDeleteRequest(request, route);
+        }
     }
     catch (...) {
         return createBasicResponse(500, m_config.errorPages[500], "text/html");
@@ -83,10 +83,17 @@ HttpResponse Server::handleGetRequest(HttpRequest request, LocationConfig route)
 
 // }
 
-// HttpResponse Server::handleDeleteRequest(HttpRequest request, LocationConfig route)
-// {
+HttpResponse Server::handleDeleteRequest(HttpRequest request, LocationConfig route)
+{
+    std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
+    std::string path = fullPath(root, request.uri.substr(route.uri.length()));
 
-// }
+    if (std::remove(path.c_str()) == 0) {
+        return createBasicResponse(204, "", "text/plain");
+    }
+
+    return createBasicResponse(403, m_config.root + m_config.errorPages[403], "text/html");
+}
 
 LocationConfig Server::routeRequest(std::string uri)
 {
@@ -140,4 +147,12 @@ HttpResponse buildAutoindex(std::string path)
     response.statusText = getStatusText(200);
     response.body = body;
     return response;
+}
+
+// move to utils
+std::string fullPath(std::string root, std::string path)
+{
+    root = root[root.size() - 1] == '/' ? root.substr(0, root.size() - 1) : root;
+    path = path[0] == '/' ? path.substr(1) : path;
+    return root + "/" + path;
 }

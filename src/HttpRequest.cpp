@@ -47,6 +47,7 @@ HttpRequest parseHttpRequest(std::string content)
 {
 	HttpRequest request;
 
+	std::cout << content << std::endl;
 	parsePart(" ", request.method, content);
 	parsePart(" ", request.uri, content);
 	parsePart("\r\n", request.version, content);

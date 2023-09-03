@@ -6,6 +6,7 @@
 #include "Webserver.hpp"
 #include "utils.hpp"
 #include <dirent.h>
+#include <cstdio>
 #include <sys/stat.h> // move to utils later?
 
 struct ServerConfig;
@@ -29,3 +30,4 @@ private:
 };
 
 HttpResponse buildAutoindex(std::string path);
+std::string fullPath(std::string root, std::string path);
