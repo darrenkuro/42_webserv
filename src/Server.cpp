@@ -23,12 +23,12 @@ HttpResponse Server::handleRequest(HttpRequest request)
     if (request.method == "GET") {
         return handleGetRequest(request, route);
     }
-    if (request.method == "POST") {
-        return handlePostRequest(request, route);
-    }
-    if (request.method == "DELETE") {
-        return handleDeleteRequest(request, route);
-    }
+    // if (request.method == "POST") {
+    //     return handlePostRequest(request, route);
+    // }
+    // if (request.method == "DELETE") {
+    //     return handleDeleteRequest(request, route);
+    // }
 
     return createBasicResponse(501, m_config.errorPages[501], "text/html");
 }
@@ -36,14 +36,41 @@ HttpResponse Server::handleRequest(HttpRequest request)
 HttpResponse Server::handleGetRequest(HttpRequest request, LocationConfig route)
 {
     std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
-    std::string path = request.uri.compare(0, route.uri.length(), route.uri) == 0
-                ? request.uri.substr(route.uri.length() + 1) // remove trailing /
-                : route.uri;
+    std::string path = root + request.uri.substr(route.uri.length());
 
-    // If request is for a directory
+    std::cout << "path: " << path << std::endl;
+    // First handle redirection?
 
-    // Check file types?
-
+    // UGH messy logic, clean up later
+    struct stat fileInfo;
+    if (stat(path.c_str(), &fileInfo) == 0) {
+        if (S_ISDIR(fileInfo.st_mode)) {
+            for (std::vector<std::string>::iterator it = route.index.begin(); it != route.index.end(); it++) {
+                std::string filePath = path + *it;
+                std::ifstream file(filePath.c_str());
+                if (file.good()) {
+                    return createBasicResponse(200, filePath, "text/html");
+                }
+            }
+            if (route.autoindex) {
+                // build html for the directory file info
+                return buildAutoindex(path);
+            }
+            else {
+                return createBasicResponse(403, m_config.root + m_config.errorPages[403], "text/html");
+            }
+        }
+        else if (S_ISREG(fileInfo.st_mode)) {
+            // check file types
+            return createBasicResponse(200, path, "text/html");
+        }
+        else {
+            return createBasicResponse(403, m_config.root + m_config.errorPages[403], "text/html");
+        }
+    }
+    else {
+        return createBasicResponse(404, m_config.root + m_config.errorPages[404], "text/html");
+    }
 }
 
 // HttpResponse Server::handlePostRequest(HttpRequest request, LocationConfig route)
@@ -68,8 +95,26 @@ LocationConfig Server::routeRequest(std::string uri)
     // Recursively match the less complete uri
     size_t endPos = uri.find_last_of('/');
 	uri = endPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));
-    routeRequest(uri);
+    return routeRequest(uri);
 
     // Didn't match anything, either function is wrong or the Server doesn't have '/' route
     throw std::runtime_error("Couldn't match uri " + uri);
+}
+
+// Move later
+HttpResponse buildAutoindex(std::string path)
+{
+    std::string body("<!DOCTYPE html>");
+
+    body += "<html><head><title>Directory Index</title></head>";
+    body += "<body><h1>Index of " + path + "</h1>";
+
+    body += "</body></html>";
+
+    HttpResponse response;
+    response.version = "HTTP/1.1";
+    response.statusCode = 200;
+    response.statusText = getStatusText(200);
+    response.body = body;
+    return response;
 }

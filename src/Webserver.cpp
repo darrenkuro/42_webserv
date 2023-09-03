@@ -142,6 +142,9 @@ void Webserver::handleClientPOLLOUT(Client& client)
 	HttpResponse response = client.getResponse();
 	logHttp(response, client.getID());
 	// Here turn reponse into string and send
+	std::string responseStr = toString(response);
+	// error handling
+	send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -151,12 +154,13 @@ HttpResponse Webserver::processRequest(HttpRequest request)
 	// if (!checkHeaders(request)) return createBasicResponse(400);
 	// if (!checkVersion(request)) return createBasicResponse(505);
 	// if (!checkURL(request)) return createBasicResponse(404);
-	(void)request;
-	HttpResponse dummyResponse;
-	dummyResponse.version = "HTTP/1.1";
-	dummyResponse.statusCode = 200;
-	dummyResponse.statusText = "OK";
-	return dummyResponse;
+	// (void)request;
+	// HttpResponse dummyResponse;
+	// dummyResponse.version = "HTTP/1.1";
+	// dummyResponse.statusCode = 200;
+	// dummyResponse.statusText = "OK";
+	HttpResponse response = m_servers[0].handleRequest(request);
+	return response;
 }
 
 //------------------------------------------------------------------------------

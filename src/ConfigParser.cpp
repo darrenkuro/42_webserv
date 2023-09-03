@@ -269,6 +269,7 @@ std::string ConfigParser::parseRedirect(void)
 std::string ConfigParser::parseAlias(void)
 {
 	std::string token = accept();
+	// make sure it starts and ends with '/'?
 	std::string path = ROOT + token;
 	struct stat pathInfo;
 	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
@@ -335,6 +336,11 @@ ServerConfig ConfigParser::defaultServer(void)
 	// default error pages for all the errors required to have
 	config.root = ROOT;
 	config.errorPages[400] = "/default_error/400.html";
+	config.errorPages[403] = "/default_error/403.html";
+	config.errorPages[404] = "/default_error/404.html";
+	config.errorPages[405] = "/default_error/405.html";
+	config.errorPages[501] = "/default_error/501.html";
+	config.errorPages[505] = "/default_error/505.html";
 	config.clientMaxBodySize = 100000;
 	return config;
 }

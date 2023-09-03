@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include "Webserver.hpp"
 #include "utils.hpp"
+#include <sys/stat.h> // move to utils later?
 
 struct ServerConfig;
 
@@ -25,3 +26,5 @@ private:
 
     LocationConfig routeRequest(std::string uri);
 };
+
+HttpResponse buildAutoindex(std::string path);
