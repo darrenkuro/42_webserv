@@ -20,15 +20,20 @@ HttpResponse Server::handleRequest(HttpRequest request)
         return createBasicResponse(405, m_config.errorPages[405], "text/html");
     }
 
-    if (request.method == "GET") {
-        return handleGetRequest(request, route);
+    try {
+        if (request.method == "GET") {
+            return handleGetRequest(request, route);
+        }
+        // if (request.method == "POST") {
+        //     return handlePostRequest(request, route);
+        // }
+        // if (request.method == "DELETE") {
+        //     return handleDeleteRequest(request, route);
+        // }
     }
-    // if (request.method == "POST") {
-    //     return handlePostRequest(request, route);
-    // }
-    // if (request.method == "DELETE") {
-    //     return handleDeleteRequest(request, route);
-    // }
+    catch (...) {
+        return createBasicResponse(500, m_config.errorPages[500], "text/html");
+    }
 
     return createBasicResponse(501, m_config.errorPages[501], "text/html");
 }
@@ -106,10 +111,28 @@ HttpResponse buildAutoindex(std::string path)
 {
     std::string body("<!DOCTYPE html>");
 
-    body += "<html><head><title>Directory Index</title></head>";
-    body += "<body><h1>Index of " + path + "</h1>";
+    body += "<html><head><title>Directory Index</title><style>" + getFileContent("./public/style/autoindex.css") + "</style></head>";
+    body += "<body><div class=\"container\"><h1 class=\"heading\">Directory Autoindex</h1><ul class=\"list\">";
 
-    body += "</body></html>";
+    DIR* dir;
+    dirent* entry;
+    if ((dir = opendir(path.c_str())) == NULL) {
+        throw std::runtime_error("opendir failed");
+    }
+    while ((entry = readdir(dir)) != NULL) {
+        std::string name(entry->d_name);
+        if (name == "." || name == "..") {
+            continue;
+        }
+
+        struct stat fileInfo;
+        std::string fullPath = path + "/" + name;
+        stat(fullPath.c_str(), &fileInfo);
+        name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
+        // add <a href=\"" + name + "\">?
+        body += "<li class=\"list-item\"><div class=\"name\">" + name + "</div></li>";
+    }
+    body += "</ul></div></body></html>";
 
     HttpResponse response;
     response.version = "HTTP/1.1";

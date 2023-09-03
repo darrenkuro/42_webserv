@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include "Webserver.hpp"
 #include "utils.hpp"
+#include <dirent.h>
 #include <sys/stat.h> // move to utils later?
 
 struct ServerConfig;
