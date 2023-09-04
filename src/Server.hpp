@@ -2,6 +2,9 @@
 
 #include <string>
 #include <cstdlib>
+#include <cstdio>       // std::remove
+#include <dirent.h>
+#include <sys/stat.h>
 #include "Webserver.hpp"
 #include "utils.hpp"
 
@@ -14,10 +17,15 @@ public:
 
     SocketAddress getAddress();
     std::string getName();
-    HttpResponse handleGetRequest(HttpRequest request);
-    HttpResponse handlePostRequest(HttpRequest request);
-    HttpResponse handleDeleteRequest(HttpRequest request);
+
+    HttpResponse handleRequest(HttpRequest req);
+    HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
+    HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
+    HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);
 
 private:
     ServerConfig m_config;
+
+    LocationConfig routeRequest(std::string uri);
+    HttpResponse buildAutoindex(std::string path);
 };

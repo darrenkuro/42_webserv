@@ -332,10 +332,16 @@ ServerConfig ConfigParser::defaultServer(void)
 	config.serverName = "default.com";
 	config.address.host = 0;
 	config.address.port = 80;
-	// default error pages for all the errors required to have
 	config.root = ROOT;
 	config.errorPages[400] = "/default_error/400.html";
+	config.errorPages[403] = "/default_error/403.html";
+	config.errorPages[404] = "/default_error/404.html";
+	config.errorPages[405] = "/default_error/405.html";
+	config.errorPages[500] = "/default_error/500.html";
+	config.errorPages[501] = "/default_error/501.html";
+	config.errorPages[505] = "/default_error/505.html";
 	config.clientMaxBodySize = 100000;
+	// default index?
 	return config;
 }
 
@@ -344,6 +350,7 @@ LocationConfig ConfigParser::defaultLocation(void)
 	LocationConfig location;
 	// Set the default values that are required
 	location.autoindex = false;
+	location.alias = "";
 	return location;
 }
 

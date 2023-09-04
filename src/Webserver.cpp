@@ -144,6 +144,8 @@ void Webserver::handleClientPOLLOUT(Client& client)
 	HttpResponse response = client.getResponse();
 	logHttp(response, client.getID());
 	// Here turn reponse into string and send
+	std::string responseStr = toString(response);
+	send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -152,8 +154,8 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 	try {
 		Server& server = routeRequest(request, client);
 		log(DEBUG, "Http redirect to %s", server.getName().c_str());
-		// return server.handleRequest();
-		return HttpResponse();
+		return server.handleRequest(request);
+		//return HttpResponse();
 	}
 	catch (std::exception& e) {
 		log(DEBUG, e.what());

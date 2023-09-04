@@ -31,3 +31,5 @@ int toInt(std::string str);
 bool validatePort(const std::string& port);
 bool validateIpAddress(const std::string& ipAddress);
 bool isAllDigit(std::string str);
+
+std::string fullPath(std::string root, std::string path);
