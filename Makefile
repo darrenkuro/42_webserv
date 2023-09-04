@@ -40,4 +40,4 @@ sim:
 	make
 	make -C client_spawner
 	client_spawner/client_spawner &
-	./webserv configs/test.conf
+	./webserv

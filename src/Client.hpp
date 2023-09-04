@@ -12,11 +12,13 @@ class Client
 {
 public:
     Client();
-    Client(int socketFd);
+    Client(int socketFd, in_addr host, int port);
 
     // Getters
     int getID();
     int getFd();
+    int getPort();
+    in_addr getHost();
     bool didTimeout();
     bool hasDisconnected();
     bool getResponseIsReady();
@@ -32,5 +34,7 @@ private:
     bool m_hasDisconnected;
     bool m_responseIsReady;
     timeval m_lastEventTime;
+    int m_port;
+    in_addr m_host;
     HttpResponse m_response;
 };

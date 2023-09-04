@@ -46,24 +46,21 @@ private:
 	void handleClientPOLLIN(Client& client);
 	void handleClientPOLLOUT(Client& client);
 
-    HttpResponse processRequest(HttpRequest request);
+    HttpResponse processRequest(HttpRequest request, Client& client);
     void addClient(int socketFd);
 	void handleDisconnects();
     void clientStatusCheck(Client& client, int bytesRead);
-    const Server& routeRequest(HttpRequest request);
+    Server& routeRequest(HttpRequest request, Client& client);
 
     // Utility
+    void filterUniqueSockets();
     Client& getClientFromIdx(int idx);
-    bool checkMethod(HttpRequest request);
-    bool checkURI(HttpRequest request);
-    bool checkVersion(HttpRequest request);
-	bool checkHeaders(HttpRequest request);
     bool headerIsSupported(std::string header);
     void removeFdFromPoll(int fd);
     void printStatus();
 
     // Member Data
-    set<int> m_listenSockets;
+    set<SocketAddress> m_listenSockets;
     vector<pollfd> m_pollFds;
     vector<Server> m_servers;
     map<int, Client> m_clients; // Key: Fd; Value: Client

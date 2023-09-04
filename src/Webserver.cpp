@@ -29,7 +29,7 @@ void Webserver::start()
 {
     try {
         initListenSockets();
-		log(INFO, "Webserver started sucessfully");
+		log(INFO, "Webserver started sucessfully. Now Listening...");
         mainloop();
     }
     catch(const std::exception& e) {
@@ -48,17 +48,18 @@ void Webserver::setupServers(const vector<ServerConfig> configs)
 	}
 }
 
-
 //------------------------------------------------------------------------------
 void Webserver::initListenSockets()
 {
-	for (size_t i = 0; i < m_servers.size(); i++) {
-		m_listenSockets.insert(initSocket(m_servers[i].getAddress()));
-	}
-	std::set<int>::iterator it;
+	filterUniqueSockets();
+
+	std::set<SocketAddress>::iterator it;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
-		log(DEBUG, "Listen fd %d added to poll", *it);
-		struct pollfd poll = {*it, POLLIN, 0};
+		struct in_addr addr;
+    	addr.s_addr = it->host;
+		log(DEBUG, "Created listening socket on %s:%d", inet_ntoa(addr), it->port);
+		int sockFd = initSocket(*it);
+		struct pollfd poll = {sockFd, POLLIN, 0};
 		m_pollFds.push_back(poll);
 	}
 }
@@ -70,6 +71,7 @@ int Webserver::initSocket(SocketAddress address)
 	sockaddr_in serverAddr = createAddress(address);
 
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
+		close(listenFd);
 		throw std::runtime_error("bind() failed");
 	}
 
@@ -124,7 +126,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 		try {
 			HttpRequest request = parseHttpRequest(std::string(buffer));
 			logHttp(request, client.getID());
-			HttpResponse response = processRequest(request);
+			HttpResponse response = processRequest(request, client);
 			client.setResponse(response);
 		}
 		catch (std::exception& e) {
@@ -145,32 +147,38 @@ void Webserver::handleClientPOLLOUT(Client& client)
 }
 
 //------------------------------------------------------------------------------
-HttpResponse Webserver::processRequest(HttpRequest request)
+HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 {
-	// if (!checkMethod(request)) return createBasicResponse(405);
-	// if (!checkHeaders(request)) return createBasicResponse(400);
-	// if (!checkVersion(request)) return createBasicResponse(505);
-	// if (!checkURL(request)) return createBasicResponse(404);
-	(void)request;
-	HttpResponse dummyResponse;
-	dummyResponse.version = "HTTP/1.1";
-	dummyResponse.statusCode = 200;
-	dummyResponse.statusText = "OK";
-	return dummyResponse;
+	try {
+		Server& server = routeRequest(request, client);
+		log(DEBUG, "Http redirect to %s", server.getName().c_str());
+		// return server.handleRequest();
+		return HttpResponse();
+	}
+	catch (std::exception& e) {
+		log(DEBUG, e.what());
+		return createBasicResponse(400, DEFAULT_400_PATH, "text/plain");
+	}
 }
 
 //------------------------------------------------------------------------------
 void Webserver::addClient(int socketFd)
 {
+	struct sockaddr_in serverAddress;
+    socklen_t addrLen = sizeof(serverAddress);
+	getsockname(socketFd, (struct sockaddr*)&serverAddress, &addrLen);
+
 	int clientFd = accept(socketFd, NULL, NULL);
 	pollfd clientPollData;
 	clientPollData.fd = clientFd;
 	clientPollData.events = POLLIN | POLLOUT;
 	clientPollData.revents = 0;
 	m_pollFds.push_back(clientPollData);
-	Client client(clientFd);
+	Client client(clientFd, serverAddress.sin_addr, ntohs(serverAddress.sin_port));
 	m_clients.insert(std::make_pair(clientFd, client));
-	log(INFO, "Client[ID: %d] connected", client.getID());
+
+	log(INFO, "Client[ID: %d] connected on %s:%d", client.getID(),
+		inet_ntoa(client.getHost()), client.getPort());
 	log(DEBUG, "Client fd %d added to poll", client.getFd());
 }
 
@@ -213,17 +221,87 @@ void Webserver::clientStatusCheck(Client& client, int bytesRead)
 }
 
 //------------------------------------------------------------------------------
-// const Server& routeRequest(HttpRequest request)
-// {
-// 	(void)request;
-// 	//for ()
-// 	return
-// }
+Server& Webserver::routeRequest(HttpRequest request, Client& client)
+{
+	if (request.headers.find("Host") == request.headers.end()) {
+		throw std::runtime_error("No host header");
+	}
+	std::string host = request.headers.find("Host")->second;
+
+	// Host header domain resolution
+	for (size_t i = 0; i < m_servers.size(); i++) {
+		if (m_servers[i].getName() == host) {
+			log(DEBUG, "domain resolution sucessfull for %s", m_servers[i].getName().c_str());
+			return m_servers[i];
+		}
+	}
+
+	// Host header ip resolution
+	size_t colonPos = host.find(':');
+	std::string ip;
+	std::string port;
+	if (colonPos != std::string::npos) {
+		ip = host.substr(0, colonPos);
+		port = host.substr(colonPos + 1);
+	}
+	else {
+		ip = host;
+		port = "80";
+	}
+	if (validateIpAddress(ip) && validatePort(port)) {
+		for (size_t i = 0; i < m_servers.size(); i++) {
+			SocketAddress addr = m_servers[i].getAddress();
+			if (addr.host == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
+				log(DEBUG, "ip resolution sucessfull");
+				return m_servers[i];
+			}
+		}
+	}
+
+	// Default server resolution
+	for (size_t i = 0; i < m_servers.size(); i++) {
+		SocketAddress addr = m_servers[i].getAddress();
+		if (client.getPort() == addr.port) {
+			log(DEBUG, "ports equal");
+			if (addr.host == 0 || client.getHost().s_addr == addr.host) {
+				log(DEBUG, "default server resolution sucessfull");
+				return m_servers[i];
+			}
+		}
+	}
+
+	throw std::runtime_error("Something went really wrong. should never reach this point");
+}
 
 
 /**
  * Webserver Utility Functions
 */
+//------------------------------------------------------------------------------
+void Webserver::filterUniqueSockets()
+{
+	for (size_t i = 0; i < m_servers.size(); i++) {
+		m_listenSockets.insert(m_servers[i].getAddress());
+	}
+
+	vector<std::set<SocketAddress>::iterator> removeIterators;
+	std::set<SocketAddress>::iterator it;
+	std::set<SocketAddress>::iterator it2;
+	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
+		if (it->host == 0) {
+			for (it2 = m_listenSockets.begin(); it2 != m_listenSockets.end(); it2++) {
+				if (it2->port == it->port && it2 != it) {
+					removeIterators.push_back(it2);
+				}
+			}
+		}
+	}
+
+	for (size_t i = 0; i < removeIterators.size(); i++) {
+		m_listenSockets.erase(removeIterators[i]);
+	}
+}
+
 //------------------------------------------------------------------------------
 Client& Webserver::getClientFromIdx(int idx)
 {
@@ -243,46 +321,6 @@ void Webserver::removeFdFromPoll(int fd)
 			return;
 		}
 	}
-}
-
-//------------------------------------------------------------------------------
-bool Webserver::checkMethod(HttpRequest request)
-{
-	std::string method = request.method;
-	if (method == "GET" || method == "POST" || method == "DELETE") {
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------------
-bool Webserver::checkURI(HttpRequest request)
-{
-	(void)request;
-	return true;
-}
-
-//------------------------------------------------------------------------------
-bool Webserver::checkVersion(HttpRequest request)
-{
-	if (request.version == "HTTP/1.1") {
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------------
-bool Webserver::checkHeaders(HttpRequest request)
-{
-	std::map<std::string, std::string>::iterator it;
-
-	for (it = request.headers.begin(); it != request.headers.end(); it++)
-	{
-		if (!headerIsSupported(it->second)) {
-			return false;
-		}
-	}
-	return true;
 }
 
 //------------------------------------------------------------------------------

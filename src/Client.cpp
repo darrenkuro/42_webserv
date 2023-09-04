@@ -1,10 +1,12 @@
 #include "Client.hpp"
 
-Client::Client(int socketFd)
+Client::Client(int socketFd, in_addr host, int port)
 {
     static int clientID = 1;
     m_socketFd = socketFd;
     m_responseIsReady = false;
+    m_port = port;
+    m_host = host;
     m_hasDisconnected = false;
     m_id = clientID;
     gettimeofday(&m_lastEventTime, NULL);
@@ -27,6 +29,10 @@ HttpResponse Client::getResponse()
 int Client::getID() { return m_id; }
 
 int Client::getFd() { return m_socketFd; }
+
+int Client::getPort() { return m_port; }
+
+in_addr Client::getHost() { return m_host; }
 
 bool Client::hasDisconnected() { return m_hasDisconnected; }
 

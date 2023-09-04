@@ -13,6 +13,7 @@ public:
     Server(const ServerConfig config);
 
     SocketAddress getAddress();
+    std::string getName();
     HttpResponse handleGetRequest(HttpRequest request);
     HttpResponse handlePostRequest(HttpRequest request);
     HttpResponse handleDeleteRequest(HttpRequest request);
