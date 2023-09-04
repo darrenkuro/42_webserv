@@ -16,7 +16,7 @@ CXX		:=	c++
 RM		:=	/bin/rm -rf
 
 CXXFLAGS	:=	-Wall -Werror -Wextra -std=c++98
-INCFLAGS		:=	-I $(SRCDIR) -I $(SRCDIR)/http -I $(SRCDIR)/utils
+INCFLAGS	:=	-I $(SRCDIR) -I $(SRCDIR)/http -I $(SRCDIR)/utils
 
 all: $(NAME)
 
