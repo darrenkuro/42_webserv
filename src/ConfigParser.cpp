@@ -92,6 +92,9 @@ ServerConfig ConfigParser::parseServer()
 			config.locations.push_back(parseLocation());
 		}
 	}
+	if (config.locations.empty()) {
+		config.locations.push_back(defaultLocation());
+	}
 	return config;
 }
 
@@ -345,10 +348,14 @@ ServerConfig ConfigParser::defaultServer(void)
 	return config;
 }
 
+// make two different methods, one init?
 LocationConfig ConfigParser::defaultLocation(void)
 {
 	LocationConfig location;
 	// Set the default values that are required
+	location.uri = "/";
+	location.allowedMethods.push_back("GET");
+	location.index.push_back("index.html");
 	location.autoindex = false;
 	location.alias = "";
 	return location;
