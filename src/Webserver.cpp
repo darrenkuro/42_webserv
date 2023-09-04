@@ -76,7 +76,7 @@ int Webserver::initSocket(SocketAddress address)
 
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		close(listenFd);
-		throw std::runtime_error("bind() failed");
+		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
 	}
 
 	if (listen(listenFd, 10)) {
@@ -157,7 +157,8 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 {
 	try {
 		Server& server = routeRequest(request, client);
-		log(DEBUG, "Http redirect to %s", server.getName().c_str());
+		log(INFO, "%sHTTP Route Client[ID %d]  |  To: %s%s", ORANGE, client.getID(),
+			server.getName().c_str(), RESET);
 		return server.handleRequest(request);
 	}
 	catch (std::exception& e) {
@@ -236,7 +237,6 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	// Host header domain resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		if (m_servers[i].getName() == host) {
-			log(DEBUG, "domain resolution sucessfull for %s", m_servers[i].getName().c_str());
 			return m_servers[i];
 		}
 	}
@@ -257,7 +257,6 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		for (size_t i = 0; i < m_servers.size(); i++) {
 			SocketAddress addr = m_servers[i].getAddress();
 			if (addr.host == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
-				log(DEBUG, "ip resolution sucessfull");
 				return m_servers[i];
 			}
 		}
@@ -267,9 +266,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		SocketAddress addr = m_servers[i].getAddress();
 		if (client.getPort() == addr.port) {
-			log(DEBUG, "ports equal");
 			if (addr.host == 0 || client.getHost().s_addr == addr.host) {
-				log(DEBUG, "default server resolution sucessfull");
 				return m_servers[i];
 			}
 		}

@@ -1,10 +1,10 @@
 NAME = webserv
 
 # Source files
-_SRC 	:=	HttpRequest.cpp HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
-			ConfigParser.cpp utils.cpp main.cpp
-_INC	:=	HttpRequest.hpp HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
-			ConfigParser.hpp utils.hpp
+_SRC 	:=	http/HttpRequest.cpp http/HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
+			ConfigParser.cpp utils/utils.cpp main.cpp
+_INC	:=	http/HttpRequest.hpp http/HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
+			ConfigParser.hpp utils/utils.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src
@@ -23,7 +23,7 @@ $(NAME): $(OBJ) $(INC)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INC)
 	@mkdir -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS) -c -o $@ $< -I $(SRCDIR)
+	$(CXX) $(CXXFLAGS) -c -o $@ $< -I $(SRCDIR) -I $(SRCDIR)/http -I $(SRCDIR)/utils
 
 clean:
 	$(RM) $(OBJ)

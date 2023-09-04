@@ -73,10 +73,11 @@ inline void logHttp(HttpRequest request, int clientID)
     displayLogLevel(INFO);
 
 	std::cout << ORANGE;
-	std::cout << "HTTP >> Client[ID " << clientID << "]  |  ";
+	std::cout << "HTTP Req>> Client[ID " << clientID << "]  |  ";
 	std::cout << "Method[" << request.method << "] ";
 	std::cout << "Uri[" << request.uri << "] ";
-	std::cout << "Version[" << request.version << "]";
+	std::cout << "Version[" << request.version << "] ";
+	std::cout << "Host[" << request.headers.find("Host")->second << "]";
 	std::cout << RESET << std::endl;
 }
 
@@ -87,8 +88,8 @@ inline void logHttp(HttpResponse response, int clientID)
 	std::cout << " ";
 	displayLogLevel(INFO);
 
-	std::cout << DORANGE;
-	std::cout << "HTTP << Client[ID " << clientID << "]  |  ";
+	std::cout << ORANGE;
+	std::cout << "HTTP <<Res Client[ID " << clientID << "]  |  ";
 	// std::cout << "Version[" << response.version << "] ";
 	std::cout << "Status[" << response.statusCode << "] ";
 	// std::cout << "Text[" << response.statusText << "]";

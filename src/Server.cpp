@@ -46,7 +46,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
     //std::string path = root + req.uri.substr(route.uri.length());
     std::string path = fullPath(root, req.uri.substr(route.uri.length()));
 
-    std::cout << "path: " << path << std::endl;
+    log(DEBUG, "path: %s", path.c_str());
     // First handle redirection?
 
     // UGH messy logic, clean up later

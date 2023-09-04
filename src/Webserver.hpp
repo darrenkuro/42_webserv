@@ -5,6 +5,8 @@
 #include <set>
 #include <map>
 #include <poll.h>
+#include <cstring>
+#include <errno.h>
 #include <unistd.h>
 #include "log.hpp"
 #include "utils.hpp"
