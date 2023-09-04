@@ -54,11 +54,10 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
     if (stat(path.c_str(), &fileInfo) == 0) {
         if (S_ISDIR(fileInfo.st_mode)) {
             for (std::vector<std::string>::iterator it = route.index.begin(); it != route.index.end(); it++) {
-                std::string filePath = path + *it;
+                std::string filePath = fullPath(path, *it);
                 std::ifstream file(filePath.c_str());
-                if (file.good()) {
+                if (file.good())
                     return createBasicResponse(200, filePath);
-                }
             }
             if (route.autoindex) {
                 // build html for the directory file info
@@ -138,8 +137,8 @@ HttpResponse Server::buildAutoindex(std::string path)
         }
 
         struct stat fileInfo;
-        std::string fullPath = path + "/" + name;
-        stat(fullPath.c_str(), &fileInfo);
+        std::string filePath = fullPath(path, name);
+        stat(filePath.c_str(), &fileInfo);
         name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
         // add <a href=\"" + name + "\">?
         body += "<li class=\"list-item\"><div class=\"name\">" + name + "</div></li>";
