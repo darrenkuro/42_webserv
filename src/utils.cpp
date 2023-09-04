@@ -145,3 +145,12 @@ std::string fullPath(std::string root, std::string path)
 	path = path[0] == '/' ? path.substr(1) : path;
 	return root + "/" + path;
 }
+
+std::string getExtension(std::string path)
+{
+	size_t pos = path.find_last_of('.');
+	if (pos != std::string::npos && pos != 0) {
+		return path.substr(pos);
+	}
+	return "";
+}

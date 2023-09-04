@@ -133,8 +133,8 @@ void Webserver::handleClientPOLLIN(Client& client)
 			HttpResponse response = processRequest(request, client);
 			client.setResponse(response);
 		}
-		catch (std::exception& e) {
-			client.setResponse(createBasicResponse(400, DEFAULT_400_PATH, "text/html"));
+		catch (...) {
+			client.setResponse(createBasicResponse(400, DEFAULT_400_PATH));
 		}
 	}
 }
@@ -159,11 +159,10 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 		Server& server = routeRequest(request, client);
 		log(DEBUG, "Http redirect to %s", server.getName().c_str());
 		return server.handleRequest(request);
-		//return HttpResponse();
 	}
 	catch (std::exception& e) {
 		log(DEBUG, e.what());
-		return createBasicResponse(400, DEFAULT_400_PATH, "text/plain");
+		return createBasicResponse(400, DEFAULT_400_PATH);
 	}
 }
 

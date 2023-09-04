@@ -89,9 +89,9 @@ inline void logHttp(HttpResponse response, int clientID)
 
 	std::cout << DORANGE;
 	std::cout << "HTTP << Client[ID " << clientID << "]  |  ";
-	std::cout << "Version[" << response.version << "] ";
+	// std::cout << "Version[" << response.version << "] ";
 	std::cout << "Status[" << response.statusCode << "] ";
-	std::cout << "Text[" << response.statusText << "]";
+	// std::cout << "Text[" << response.statusText << "]";
 	std::cout << RESET << std::endl;
 }
 

@@ -8,20 +8,19 @@
 #include "utils.hpp"
 
 #define DEFAULT_400_PATH "./public/default_error/400.html"
-#define STATUS_MAP_SIZE 60
+#define DEFAULT_404_PATH "./public/default_error/404.html"
 
 struct HttpResponse
 {
-	std::string version;
 	int statusCode;
-	std::string statusText;
 	std::map<std::string, std::string> header;
 	std::string body;
 };
 
 std::string getStatusText(int code);
-HttpResponse createBasicResponse(int code, std::string path, std::string type);
-std::string toString(HttpResponse response);
+std::string getMimeType(std::string path);
+std::string toString(HttpResponse res);
+HttpResponse createBasicResponse(int code, std::string path);
 
 // class HttpResponse {
 // public:

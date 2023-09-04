@@ -19,7 +19,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
     // Check if method is allowed
     std::vector<std::string> methods = route.allowedMethods;
     if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
-        return createBasicResponse(405, m_config.errorPages[405], "text/html");
+        return createBasicResponse(405, m_config.errorPages[405]);
     }
 
     try {
@@ -34,16 +34,17 @@ HttpResponse Server::handleRequest(HttpRequest req)
         }
     }
     catch (...) {
-        return createBasicResponse(500, m_config.errorPages[500], "text/html");
+        return createBasicResponse(500, m_config.errorPages[500]);
     }
 
-    return createBasicResponse(501, m_config.errorPages[501], "text/html");
+    return createBasicResponse(501, m_config.errorPages[501]);
 }
 
 HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
     std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
-    std::string path = root + req.uri.substr(route.uri.length());
+    //std::string path = root + req.uri.substr(route.uri.length());
+    std::string path = fullPath(root, req.uri.substr(route.uri.length()));
 
     std::cout << "path: " << path << std::endl;
     // First handle redirection?
@@ -56,7 +57,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
                 std::string filePath = path + *it;
                 std::ifstream file(filePath.c_str());
                 if (file.good()) {
-                    return createBasicResponse(200, filePath, "text/html");
+                    return createBasicResponse(200, filePath);
                 }
             }
             if (route.autoindex) {
@@ -64,19 +65,19 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
                 return buildAutoindex(path);
             }
             else {
-                return createBasicResponse(403, m_config.root + m_config.errorPages[403], "text/html");
+                return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
             }
         }
         else if (S_ISREG(fileInfo.st_mode)) {
             // check file types
-            return createBasicResponse(200, path, "text/html");
+            return createBasicResponse(200, path);
         }
         else {
-            return createBasicResponse(403, m_config.root + m_config.errorPages[403], "text/html");
+            return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
         }
     }
     else {
-        return createBasicResponse(404, m_config.root + m_config.errorPages[404], "text/html");
+        return createBasicResponse(404, m_config.root + m_config.errorPages[404]);
     }
 }
 
@@ -91,16 +92,18 @@ HttpResponse Server::handleDeleteRequest(HttpRequest request, LocationConfig rou
     std::string path = fullPath(root, request.uri.substr(route.uri.length()));
 
     if (std::remove(path.c_str()) == 0) {
-        return createBasicResponse(204, "", "text/plain");
+        return createBasicResponse(204, "");
     }
 
-    return createBasicResponse(403, m_config.root + m_config.errorPages[403], "text/html");
+    return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
 }
 
 LocationConfig Server::routeRequest(std::string uri)
 {
+    std::vector<LocationConfig>::iterator it;
+
     // All Server config should have default '/' location
-    for (std::vector<LocationConfig>::iterator it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
+    for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
         if (it->uri == uri) {
             return *it;
         }
@@ -144,9 +147,7 @@ HttpResponse Server::buildAutoindex(std::string path)
     body += "</ul></div></body></html>";
 
     HttpResponse response;
-    response.version = "HTTP/1.1";
     response.statusCode = 200;
-    response.statusText = getStatusText(200);
     response.body = body;
     return response;
 }

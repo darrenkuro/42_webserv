@@ -33,3 +33,4 @@ bool validateIpAddress(const std::string& ipAddress);
 bool isAllDigit(std::string str);
 
 std::string fullPath(std::string root, std::string path);
+std::string getExtension(std::string path);
