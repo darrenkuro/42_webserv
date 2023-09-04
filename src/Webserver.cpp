@@ -70,6 +70,10 @@ int Webserver::initSocket(SocketAddress address)
 	int listenFd = createIPv4Socket();
 	sockaddr_in serverAddr = createAddress(address);
 
+	int sockopt = 1;
+  	setsockopt (listenFd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt,
+              sizeof (int));
+
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		close(listenFd);
 		throw std::runtime_error("bind() failed");
