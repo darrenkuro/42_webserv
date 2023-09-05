@@ -139,21 +139,21 @@ std::string ConfigParser::parseServerName(void)
 }
 
 //------------------------------------------------------------------------------
-SocketAddress ConfigParser::parseAddress(void)
+Address ConfigParser::parseAddress(void)
 {
-	SocketAddress address;
+	Address address;
 	std::string token = accept();
 	if (token.find(":") != std::string::npos) {
 		std::string hostToken = token.substr(0, token.find(':'));
 		try {
-			address.host = toIPv4(hostToken);
+			address.ip = inet_addr(hostToken.c_str());
 		}
 		catch (std::exception &e) {
 			throw std::runtime_error("Parser: invalid host value!");
 		}
 		token.erase(token.begin(), token.begin() + token.find(":") + 1);
 	} else {
-		address.host = 0;
+		address.ip = 0;
 	}
 
 	try {
@@ -333,7 +333,7 @@ ServerConfig ConfigParser::defaultServer(void)
 {
 	ServerConfig config;
 	config.serverName = "default.com";
-	config.address.host = 0;
+	config.address.ip = 0;
 	config.address.port = 80;
 	config.root = ROOT;
 	config.errorPages[400] = "/default_error/400.html";
@@ -420,9 +420,9 @@ std::ostream &operator<<(std::ostream &os, const LocationConfig location)
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const SocketAddress address)
+std::ostream &operator<<(std::ostream &os, const Address address)
 {
-	os << "Address: [host] " << address.host << " [port] " << address.port << std::endl;
+	os << "Address: [host] " << address.ip << " [port] " << address.port << std::endl;
 	return os;
 }
 

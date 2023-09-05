@@ -15,7 +15,7 @@ class Server
 public:
     Server(const ServerConfig config);
 
-    SocketAddress getAddress();
+    Address getAddress();
     std::string getName();
 
     HttpResponse handleRequest(HttpRequest req);

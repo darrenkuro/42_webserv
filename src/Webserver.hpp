@@ -32,37 +32,32 @@ using std::map;
 class Webserver
 {
 public:
-    Webserver(const vector<ServerConfig> serverConfigs);
+    Webserver(std::string configPath);
     ~Webserver();
 
     void start();
 
 private:
     // Initialization
-    void setupServers(const vector<ServerConfig> configs);
     void initListenSockets();
-    int initSocket(SocketAddress address);
 
     // Logic
     void mainloop();
-	void handleClientPOLLIN(Client& client);
-	void handleClientPOLLOUT(Client& client);
+	void handlePOLLIN(Client& client);
+	void handlePOLLOUT(Client& client);
 
     HttpResponse processRequest(HttpRequest request, Client& client);
     void addClient(int socketFd);
 	void handleDisconnects();
-    void clientStatusCheck(Client& client, int bytesRead);
     Server& routeRequest(HttpRequest request, Client& client);
 
     // Utility
-    void filterUniqueSockets();
     Client& getClientFromIdx(int idx);
-    bool headerIsSupported(std::string header);
     void removeFdFromPoll(int fd);
     void printStatus();
 
     // Member Data
-    set<SocketAddress> m_listenSockets;
+    int m_nbListenSockets;
     vector<pollfd> m_pollFds;
     vector<Server> m_servers;
     map<int, Client> m_clients; // Key: Fd; Value: Client

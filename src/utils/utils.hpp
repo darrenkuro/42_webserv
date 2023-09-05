@@ -8,17 +8,30 @@
 #include <cstring>
 #include <string>
 #include <climits>
+#include <vector>
+#include "Server.hpp"
+#include <unistd.h>
+#include "ConfigParser.hpp"
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
 #include <sstream>
+#include <set>
 
 struct SocketAddress
 {
-	in_addr_t host;
+	in_addr_t ip;
+	int port;
+};
+
+struct Address
+{
+	in_addr_t ip;
 	int port;
 
-	bool operator<(const SocketAddress& other) const;
+	bool operator<(const Address& rhs);
+	std::string ipToStr();
+	std::string portToStr();
 };
 
 int createIPv4Socket();
@@ -31,6 +44,10 @@ int toInt(std::string str);
 bool validatePort(const std::string& port);
 bool validateIpAddress(const std::string& ipAddress);
 bool isAllDigit(std::string str);
+std::set<Address> getUniqueAddresses(std::vector<Server> servers);
 
 std::string fullPath(std::string root, std::string path);
 std::string getExtension(std::string path);
+int createTcpListenSocket(Address addr);
+Address getAddressFromFd(int fd);
+pollfd buildPollFd(int fd, short events);

@@ -13,6 +13,7 @@ class Client
 public:
     Client();
     Client(int socketFd, in_addr host, int port);
+    Client(int fd, Address addr);
 
     // Getters
     int getID();

@@ -4,14 +4,9 @@
 
 #include <signal.h>
 
-#define ERR_ARG "[Error] Wrong number of arguments!"
-
 #define DEFAULT_CONF "configs/default.conf"
 
 bool g_running = true;
-
-//-----------------------------------------------------------------------------------------
-
 
 void signalHandler(int signum) {
 	if (signum == SIGINT) {
@@ -22,31 +17,22 @@ void signalHandler(int signum) {
 
 int main(int argc, char **argv)
 {
-	try {
-		std::vector<ServerConfig> servers;
-		ConfigParser parser;
-		signal(SIGINT, signalHandler);
+	signal(SIGINT, signalHandler);
 
-		if (argc == 1) {
-			servers = parser.parse(DEFAULT_CONF);
-		}
-		else if (argc == 2) {
-			servers = parser.parse(argv[1]);
-			// for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++) {
-			// 	std::cout << *it;
-			// }
-		}
-		else {
-			std::cerr << ERR_ARG << std::endl;
-			return 0;
-		}
+	std::string configPath;
 
-		Webserver webserver(servers);
-		webserver.start();
-
-	} catch (std::exception &e) {
-		log(ERROR, e.what());
+	if (argc == 1) {
+		configPath = DEFAULT_CONF;
 	}
+	else if (argc == 2) {
+		configPath = argv[1];
+	}
+	else {
+		std::cerr << "[Error] Invalid argument count!" << std::endl;
+		return 0;
+	}
+	Webserver webserver(configPath);
+	webserver.start();
 
 	return 0;
 }

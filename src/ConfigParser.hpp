@@ -24,7 +24,7 @@ struct ServerConfig
 {
 	std::string serverName;
 	std::string root;
-	SocketAddress address;
+	Address address;
 	size_t clientMaxBodySize;
 	std::vector<std::string> index;
 	std::map<int, std::string> errorPages;
@@ -59,7 +59,7 @@ private:
 
 	ServerConfig parseServer(void);
 	LocationConfig parseLocation(void);
-	SocketAddress parseAddress(void);
+	Address parseAddress(void);
 	std::string parseServerName(void);
 	std::pair<int, std::string> parseErrorPage(void);
 	size_t parseClientMaxBodySize(void);

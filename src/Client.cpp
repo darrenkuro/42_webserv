@@ -13,6 +13,12 @@ Client::Client(int socketFd, in_addr host, int port)
     clientID++;
 }
 
+Client::Client(int fd, Address addr)
+{
+    
+}
+
+
 void Client::setResponse(HttpResponse response)
 {
     m_response = response;
