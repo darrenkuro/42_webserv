@@ -17,6 +17,7 @@ public:
 
     SocketAddress getAddress();
     std::string getName();
+    std::string getErrorPage(int code);
 
     HttpResponse handleRequest(HttpRequest req);
     HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);

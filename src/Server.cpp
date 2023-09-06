@@ -11,6 +11,7 @@ Server::Server(const ServerConfig config) :
 
 SocketAddress Server::getAddress() { return m_config.address; }
 std::string Server::getName() { return m_config.serverName; }
+std::string Server::getErrorPage(int code) { return fullPath(m_config.root, m_config.errorPages[code]); }
 
 HttpResponse Server::handleRequest(HttpRequest req)
 {
@@ -19,7 +20,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
     // Check if method is allowed
     std::vector<std::string> methods = route.allowedMethods;
     if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
-        return createBasicResponse(405, m_config.errorPages[405]);
+        return createBasicResponse(405, getErrorPage(405));
     }
 
     try {
@@ -34,50 +35,44 @@ HttpResponse Server::handleRequest(HttpRequest req)
         }
     }
     catch (...) {
-        return createBasicResponse(500, m_config.errorPages[500]);
+        return createBasicResponse(500, getErrorPage(500));
     }
 
-    return createBasicResponse(501, m_config.errorPages[501]);
+    return createBasicResponse(501, getErrorPage(501));
 }
 
 HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
-    std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
-    //std::string path = root + req.uri.substr(route.uri.length());
+    std::string root = route.alias == ""
+                        ? fullPath(m_config.root, route.uri)
+                        : fullPath(m_config.root, route.alias);
     std::string path = fullPath(root, req.uri.substr(route.uri.length()));
 
     log(DEBUG, "path: %s", path.c_str());
     // First handle redirection?
 
-    // UGH messy logic, clean up later
     struct stat fileInfo;
-    if (stat(path.c_str(), &fileInfo) == 0) {
-        if (S_ISDIR(fileInfo.st_mode)) {
-            for (std::vector<std::string>::iterator it = route.index.begin(); it != route.index.end(); it++) {
-                std::string filePath = fullPath(path, *it);
-                std::ifstream file(filePath.c_str());
-                if (file.good())
-                    return createBasicResponse(200, filePath);
-            }
-            if (route.autoindex) {
-                // build html for the directory file info
-                return buildAutoindex(path);
-            }
-            else {
-                return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
-            }
+    if (stat(path.c_str(), &fileInfo) != 0)
+        return createBasicResponse(404, getErrorPage(404));
+    if (S_ISREG(fileInfo.st_mode))
+        return createBasicResponse(200, path);
+    if (S_ISDIR(fileInfo.st_mode)) {
+        std::vector<std::string>::iterator it;
+        for (it = route.index.begin(); it != route.index.end(); it++) {
+            std::string filePath = fullPath(path, *it);
+            std::ifstream file(filePath.c_str());
+            if (file.good())
+                return createBasicResponse(200, filePath);
         }
-        else if (S_ISREG(fileInfo.st_mode)) {
-            // check file types
-            return createBasicResponse(200, path);
+        if (route.autoindex) {
+            return buildAutoindex(path);
         }
         else {
-            return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
+            return createBasicResponse(403, getErrorPage(403));
         }
     }
-    else {
-        return createBasicResponse(404, m_config.root + m_config.errorPages[404]);
-    }
+
+    return createBasicResponse(500, getErrorPage(500));
 }
 
 // HttpResponse Server::handlePostRequest(HttpRequest request, LocationConfig route)
@@ -87,14 +82,16 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 
 HttpResponse Server::handleDeleteRequest(HttpRequest request, LocationConfig route)
 {
-    std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
+    std::string root = route.alias == ""
+                        ? fullPath(m_config.root, route.uri)
+                        : fullPath(m_config.root, route.alias);
     std::string path = fullPath(root, request.uri.substr(route.uri.length()));
 
     if (std::remove(path.c_str()) == 0) {
         return createBasicResponse(204, "");
     }
 
-    return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
+    return createBasicResponse(403, getErrorPage(403));
 }
 
 LocationConfig Server::routeRequest(std::string uri)
