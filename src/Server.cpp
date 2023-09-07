@@ -22,17 +22,13 @@ HttpResponse Server::handleRequest(HttpRequest req)
     if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
         return createBasicResponse(405, getErrorPage(405));
     }
-
     try {
-        if (req.method == "GET") {
+        if (req.method == "GET")
             return handleGetRequest(req, route);
-        }
-        // if (request.method == "POST") {
-        //     return handlePostRequest(request, route);
-        // }
-        if (req.method == "DELETE") {
+        if (req.method == "POST")
+            return handlePostRequest(req, route);
+        if (req.method == "DELETE")
             return handleDeleteRequest(req, route);
-        }
     }
     catch (...) {
         return createBasicResponse(500, getErrorPage(500));
@@ -75,17 +71,19 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
     return createBasicResponse(500, getErrorPage(500));
 }
 
-// HttpResponse Server::handlePostRequest(HttpRequest request, LocationConfig route)
-// {
+HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
+{
+    (void) route;
+    logHttp(req, 0);
+    return createBasicResponse(200, "");
+}
 
-// }
-
-HttpResponse Server::handleDeleteRequest(HttpRequest request, LocationConfig route)
+HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 {
     std::string root = route.alias == ""
                         ? fullPath(m_config.root, route.uri)
                         : fullPath(m_config.root, route.alias);
-    std::string path = fullPath(root, request.uri.substr(route.uri.length()));
+    std::string path = fullPath(root, req.uri.substr(route.uri.length()));
 
     if (std::remove(path.c_str()) == 0) {
         return createBasicResponse(204, "");

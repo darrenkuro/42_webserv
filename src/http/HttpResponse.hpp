@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <ctime>
 #include "utils.hpp"
 
 #define DEFAULT_400_PATH "./public/default_error/400.html"
@@ -17,6 +18,7 @@ struct HttpResponse
 	std::string body;
 };
 
+std::string getDate(void);
 std::string getStatusText(int code);
 std::string getMimeType(std::string path);
 std::string toString(HttpResponse res);

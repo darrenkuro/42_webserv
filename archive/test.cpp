@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 
 std::string getExtension(std::string path)
 {
@@ -10,8 +11,13 @@ std::string getExtension(std::string path)
 }
 
 int main(int ac, char **av) {
-	if (ac != 2)
-		return 1;
-	std::cout << getExtension(av[1]) << std::endl;
-	return 0;
+    std::time_t t = std::time(NULL);
+    std::tm* timePtr = std::gmtime(&t);
+
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
+
+    std::cout << "Current date and time: " << buffer << std::endl;
+
+    return 0;
 }

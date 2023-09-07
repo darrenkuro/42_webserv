@@ -146,12 +146,23 @@ std::string toString(HttpResponse res) {
 	return str;
 }
 
+std::string getDate(void)
+{
+    std::time_t t = std::time(NULL);
+    std::tm* timePtr = std::gmtime(&t);
+
+    char buffer[50];
+    std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
+	return std::string(buffer);
+}
+
 HttpResponse createBasicResponse(int code, std::string path)
 {
 	HttpResponse res;
 
 	res.statusCode = code;
-	// Add more conventional headers such as date & server?
+	res.header["Date"] = getDate();
+	res.header["Server"] = "Webserv42/1.0.0";
 	try {
 		res.body = getFileContent(path);
 		res.header["Content-Length"] = toString(res.body.length());
