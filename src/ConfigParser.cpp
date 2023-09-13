@@ -30,10 +30,6 @@ std::vector<ServerConfig> ConfigParser::parse(const std::string filename)
 	std::string content = getFileContent(filename);
 	lex(content, " \t\n", "{};");
 
-	// std::deque<std::string>::iterator it;
-	// for (it = m_tokens.begin(); it != m_tokens.end(); it++)
-	// 	std::cout << *it << std::endl;
-
 	std::vector<ServerConfig> configs;
 	while (!m_tokens.empty()) {
 		configs.push_back(parseServer());

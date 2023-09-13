@@ -117,8 +117,10 @@ HttpResponse Server::buildAutoindex(std::string path)
 {
     std::string body("<!DOCTYPE html>");
 
-    body += "<html><head><title>Directory Index</title><style>" + getFileContent("./public/style/autoindex.css") + "</style></head>";
-    body += "<body><div class=\"container\"><h1 class=\"heading\">Directory Autoindex</h1><ul class=\"list\">";
+    body += "<html><head><title>Directory Index</title>";
+    body += "<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/autoindex.css\"></head>";
+    body += "<body><div class=\"container\"><h1 class=\"heading\">";
+    body += "Directory Autoindex</h1><ul class=\"list\">";
 
     DIR* dir;
     dirent* entry;
@@ -135,7 +137,7 @@ HttpResponse Server::buildAutoindex(std::string path)
         std::string filePath = fullPath(path, name);
         stat(filePath.c_str(), &fileInfo);
         name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
-        // add <a href=\"" + name + "\">?
+        // add a href?
         body += "<li class=\"list-item\"><div class=\"name\">" + name + "</div></li>";
     }
     body += "</ul></div></body></html>";
