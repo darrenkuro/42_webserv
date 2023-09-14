@@ -82,7 +82,8 @@ inline std::ostream& operator<<(std::ostream& os, HttpRequest req)
 	os << "Method[" << req.method << "] ";
 	os << "Uri[" << req.uri << "] ";
 	os << "Version[" << req.version << "] ";
-	os << "Host[" << req.headers.find("Host")->second << "]";
+	os << "Host[" << req.headers.find("Host")->second << "] ";
+	os << "Content-Length[" << req.headers.find("Content-Length")->second << "]";
 	return os;
 }
 
@@ -129,6 +130,6 @@ inline void logHttp(HttpResponse res, int clientID)
 	displayLogLevel(INFO);
 
 	std::cout << ORANGE;
-	std::cout << "HTTP <<Res Client[ID " << clientID << "]";
+	std::cout << "HTTP <<Res Client[ID " << clientID << "]" << std::endl;
 	std::cout << res << RESET << std::endl;
 }

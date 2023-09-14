@@ -32,18 +32,23 @@ void parseHeader(std::map<std::string, std::string> &header, std::string &conten
 
 HttpRequest parseHttpRequest(std::string content)
 {
-	HttpRequest request;
+	HttpRequest req;
 
-	parsePart(" ", request.method, content);
-	parsePart(" ", request.uri, content);
-	parsePart("\r\n", request.version, content);
+	parsePart(" ", req.method, content);
+	parsePart(" ", req.uri, content);
+	parsePart("\r\n", req.version, content);
 	while (content.find("\r\n") != 0) {
-		parseHeader(request.headers, content);
+		parseHeader(req.headers, content);
 	}
 
 	// Remove the blank line after the headers
 	content.erase(content.begin(), content.begin() + 2);
-	request.body = content;
-	return request;
+	req.body = content;
+	return req;
 }
 
+HttpRequest appendBody(HttpRequest& req, std::string body)
+{
+	req.body += body;
+	return req;
+}

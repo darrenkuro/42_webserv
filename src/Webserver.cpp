@@ -128,10 +128,24 @@ void Webserver::handleClientPOLLIN(Client& client)
 	}
 	else {
 		try {
-			HttpRequest request = parseHttpRequest(std::string(buffer));
-			logHttp(request, client.getID());
-			HttpResponse response = processRequest(request, client);
-			client.setResponse(response);
+			std::string bufferStr(buffer);
+
+			if (!client.getRequestParsed()) {
+				client.setRequest(parseHttpRequest(bufferStr));
+				bufferStr.clear();
+
+				std::map<std::string, std::string>::iterator lengthIt;
+				lengthIt = client.getRequest().headers.find("Content-Length");
+				if (lengthIt != client.getRequest().headers.end())
+					client.setBytesExpected(toInt(lengthIt->second));
+			}
+			if (!client.getRequestIsReady())
+				client.appendData(bufferStr);
+			if (client.getRequestIsReady()) {
+				logHttp(client.getRequest(), client.getID());
+				HttpResponse res = processRequest(client.getRequest(), client);
+				client.setResponse(res);
+			}
 		}
 		catch (...) {
 			client.setResponse(createBasicResponse(400, DEFAULT_400_PATH));

@@ -15,3 +15,4 @@ struct HttpRequest
 
 // Main Parse Function
 HttpRequest parseHttpRequest(std::string content);
+HttpRequest appendBody(HttpRequest& req, std::string body);
