@@ -324,6 +324,7 @@ ServerConfig ConfigParser::defaultServer(void)
 	config.errorPages[403] = "/default_error/403.html";
 	config.errorPages[404] = "/default_error/404.html";
 	config.errorPages[405] = "/default_error/405.html";
+	config.errorPages[413] = "/default_error/413.html";
 	config.errorPages[500] = "/default_error/500.html";
 	config.errorPages[501] = "/default_error/501.html";
 	config.errorPages[505] = "/default_error/505.html";

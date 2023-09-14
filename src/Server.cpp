@@ -22,17 +22,18 @@ HttpResponse Server::handleRequest(HttpRequest req)
 {
 	LocationConfig route = routeRequest(req.uri);
 
-
-	// Exceed client max body size
-	if (hasMaxBodySize() && getMaxBodySize() < toInt(req)) {
+	// Check client max body size
+	std::map<std::string, std::string>::iterator it;
+	it = req.headers.find("Content-Length");
+	if (it != req.headers.end() && !bodySizeAllowed(toInt(it->second)))
 		return createBasicResponse(413, getErrorPage(413));
-	}
 
 	// Check if method is allowed
 	std::vector<std::string> methods = route.allowedMethods;
 	if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
 		return createBasicResponse(405, getErrorPage(405));
 	}
+
 	try {
 		if (req.method == "GET")
 			return handleGetRequest(req, route);

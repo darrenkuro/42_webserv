@@ -130,22 +130,20 @@ void Webserver::handleClientPOLLIN(Client& client)
 		try {
 			std::string bufferStr(buffer);
 
+			std::cerr << bufferStr << std::endl;
+			std::cerr << "-----------------------" << std::endl;
+			//std::cerr << bufferStr << std::endl;
 			if (!client.getRequestParsed()) {
 				client.setRequest(parseHttpRequest(bufferStr));
-				bufferStr.clear();
 
 				// Check Content-Length and set expecting bytes
 				std::map<std::string, std::string>::iterator it;
 				it = client.getRequest().headers.find("Content-Length");
-				Server& server = routeRequest(client.getRequest(), client);
-				if (server.hasMaxBodySize() && server.getMaxBodySize() < toInt(it->second)) {
-					client.setResponse(createBasicResponse(413, server.getErrorPage(413)));
-				}
-				else if (it != client.getRequest().headers.end()) {
+				std::cerr << toInt(it->second) << std::endl;
+				if (it != client.getRequest().headers.end())
 					client.setBytesExpected(toInt(it->second));
-				}
 			}
-
+			std::cerr << bufferStr << std::endl;
 			if (!client.getRequestIsReady())
 				client.appendData(bufferStr);
 
@@ -154,6 +152,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 				HttpResponse res = processRequest(client.getRequest(), client);
 				client.setResponse(res);
 			}
+
 		}
 		catch (...) {
 			client.setResponse(createBasicResponse(400, DEFAULT_400_PATH));
