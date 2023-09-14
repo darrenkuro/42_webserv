@@ -30,7 +30,7 @@ void parseHeader(std::map<std::string, std::string> &header, std::string &conten
 	header[key] = value;
 }
 
-HttpRequest parseHttpRequest(std::string content)
+HttpRequest parseHttpRequest(std::string& content)
 {
 	HttpRequest req;
 
@@ -43,7 +43,7 @@ HttpRequest parseHttpRequest(std::string content)
 
 	// Remove the blank line after the headers
 	content.erase(content.begin(), content.begin() + 2);
-	req.body = content;
+
 	return req;
 }
 

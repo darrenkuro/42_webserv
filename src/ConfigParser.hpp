@@ -26,6 +26,7 @@ struct ServerConfig
 	std::string root;
 	SocketAddress address;
 	size_t clientMaxBodySize;
+	bool hasMaxBodySize;
 	std::vector<std::string> index;
 	std::map<int, std::string> errorPages;
 	std::vector<LocationConfig> locations;

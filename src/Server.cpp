@@ -15,9 +15,18 @@ std::string Server::getErrorPage(int code) {
 	return fullPath(m_config.root, m_config.errorPages[code]);
 }
 
+bool Server::hasMaxBodySize() { return m_config.hasMaxBodySize; }
+int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
+
 HttpResponse Server::handleRequest(HttpRequest req)
 {
 	LocationConfig route = routeRequest(req.uri);
+
+
+	// Exceed client max body size
+	if (hasMaxBodySize() && getMaxBodySize() < toInt(req)) {
+		return createBasicResponse(413, getErrorPage(413));
+	}
 
 	// Check if method is allowed
 	std::vector<std::string> methods = route.allowedMethods;
@@ -147,4 +156,11 @@ HttpResponse Server::buildAutoindex(std::string path)
 	response.statusCode = 200;
 	response.body = body;
 	return response;
+}
+
+bool Server::bodySizeAllowed(int bytes)
+{
+	if (hasMaxBodySize() && getMaxBodySize() >= bytes)
+		return true;
+	return false;
 }

@@ -82,6 +82,7 @@ ServerConfig ConfigParser::parseServer()
 			config.errorPages.insert(parseErrorPage());
 		}
 		else if (token == "client_max_body_size") {
+			config.hasMaxBodySize = true;
 			config.clientMaxBodySize = parseClientMaxBodySize();
 		}
 		else if (token == "location") {
@@ -202,19 +203,6 @@ std::pair<int, std::string> ConfigParser::parseErrorPage(void)
 //------------------------------------------------------------------------------
 size_t ConfigParser::parseClientMaxBodySize(void)
 {
-	// const std::string unitChar = "kKmM";
-	// std::string token = accept();
-	// int unit = 1;
-	// if (unitChar.find(token) != std::string::npos) {
-	// 	if (token == "k" || token == "K") {
-	// 		unit = 1000;
-	// 	}
-	// 	else if (token == "m" || token == "M") {
-	// 		unit = 1000000;
-	// 	}
-	// 	token.erase(token.length() - 1);
-	// }
-
 	std::string token = accept();
 	int value;
 	try {
@@ -339,7 +327,7 @@ ServerConfig ConfigParser::defaultServer(void)
 	config.errorPages[500] = "/default_error/500.html";
 	config.errorPages[501] = "/default_error/501.html";
 	config.errorPages[505] = "/default_error/505.html";
-	config.clientMaxBodySize = 100000;
+	config.hasMaxBodySize = false;
 	// default index?
 	return config;
 }

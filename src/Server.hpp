@@ -19,6 +19,8 @@ public:
 	SocketAddress getAddress();
 	std::string getName();
 	std::string getErrorPage(int code);
+	bool hasMaxBodySize();
+	int getMaxBodySize();
 
 	// Logic
 	HttpResponse handleRequest(HttpRequest req);
@@ -31,4 +33,5 @@ private:
 
 	LocationConfig routeRequest(std::string uri);
 	HttpResponse buildAutoindex(std::string path);
+	bool bodySizeAllowed(int bytes);
 };
