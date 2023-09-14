@@ -14,6 +14,7 @@
 #define RED		"\033[31m"
 #define ORANGE	"\033[38;5;214m"
 #define DORANGE "\033[37;5;166m"
+#define PADDING	21
 #define DEBUG	4
 #define INFO	3
 #define WARNING 2
@@ -22,11 +23,19 @@
 // LOG display level configuration
 #define LOG_DISPLAY_LEVEL DEBUG
 
-inline void displayTimestamp()
+inline std::ostream& displayTimestamp(std::ostream& os)
 {
 	std::time_t result = std::time(NULL);
 	std::string timestamp(std::ctime(&result));
-	std::cout << CYAN << "[" + timestamp.substr(11, 8) + "]" << RESET;
+	os << CYAN << "[" + timestamp.substr(11, 8) + "]" << RESET;
+	return os;
+}
+
+inline std::ostream& align(std::ostream& os)
+{
+	std::string padding(PADDING, ' ');
+	os << padding;
+	return os;
 }
 
 inline void displayLogLevel(int level)
@@ -41,7 +50,7 @@ inline void displayLogLevel(int level)
 		std::cout << CYAN << "[INFO]" << RESET << "    ";
 		break;
 
-    case WARNING:
+	case WARNING:
 		std::cout << RED << "[WARNING]" << RESET << " ";
 		break;
 
@@ -53,53 +62,40 @@ inline void displayLogLevel(int level)
 
 inline void log(int level, const char* format, ...)
 {
-    if (level > LOG_DISPLAY_LEVEL) return;
-    displayTimestamp();
-    std::cout << " ";
-    displayLogLevel(level);
+	if (level > LOG_DISPLAY_LEVEL)
+		return;
+	std::cout << displayTimestamp << " ";
+	displayLogLevel(level);
 
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
+	va_list args;
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
 
-    std::cout << std::endl;
+	std::cout << std::endl;
 }
 
-inline void logHttp(HttpRequest request, int clientID)
+// Custom class / struct << operator overloading
+inline std::ostream& operator<<(std::ostream& os, HttpRequest req)
 {
-	displayTimestamp();
-    std::cout << " ";
-    displayLogLevel(INFO);
-
-	std::cout << ORANGE;
-	std::cout << "HTTP Req>> Client[ID " << clientID << "]  |  ";
-	std::cout << "Method[" << request.method << "] ";
-	std::cout << "Uri[" << request.uri << "] ";
-	std::cout << "Version[" << request.version << "] ";
-	std::cout << "Host[" << request.headers.find("Host")->second << "]";
-	std::cout << RESET << std::endl;
+	os << align;
+	os << "Method[" << req.method << "] ";
+	os << "Uri[" << req.uri << "] ";
+	os << "Version[" << req.version << "] ";
+	os << "Host[" << req.headers.find("Host")->second << "]";
+	return os;
 }
 
-inline void logHttp(HttpResponse response, int clientID)
+inline std::ostream& operator<<(std::ostream& os, HttpResponse res)
 {
-	(void)response;
-	displayTimestamp();
-	std::cout << " ";
-	displayLogLevel(INFO);
-
-	std::cout << ORANGE;
-	std::cout << "HTTP <<Res Client[ID " << clientID << "]  |  ";
-	// std::cout << "Version[" << response.version << "] ";
-	std::cout << "Status[" << response.statusCode << "] ";
-	// std::cout << "Text[" << response.statusText << "]";
-	std::cout << RESET << std::endl;
+	os << align;
+	os << "Status[" << res.statusCode << "]";
+	return os;
 }
 
 inline void logServerConfig(ServerConfig config)
 {
-	displayTimestamp();
-	std::cout << " ";
+	std::cout << displayTimestamp << " ";
 	displayLogLevel(INFO);
 
 	std::cout << ORANGE;
@@ -113,4 +109,26 @@ inline void logServerConfig(ServerConfig config)
 		std::cout << "\tautoindex: " << std::boolalpha << it->autoindex << std::endl;
 	}
 	std::cout << RESET << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+
+inline void logHttp(HttpRequest req, int clientID)
+{
+	std::cout << displayTimestamp << " ";
+	displayLogLevel(INFO);
+
+	std::cout << ORANGE;
+	std::cout << "HTTP Req>> Client[ID " << clientID << "]" << std::endl;
+	std::cout << req << RESET << std::endl;
+}
+
+inline void logHttp(HttpResponse res, int clientID)
+{
+	std::cout << displayTimestamp << " ";
+	displayLogLevel(INFO);
+
+	std::cout << ORANGE;
+	std::cout << "HTTP <<Res Client[ID " << clientID << "]";
+	std::cout << res << RESET << std::endl;
 }

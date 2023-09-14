@@ -2,7 +2,6 @@
 
 #include <string>
 #include <map>
-#include <iostream>
 #include <exception>
 
 struct HttpRequest
@@ -10,8 +9,8 @@ struct HttpRequest
 	std::string method;
 	std::string uri;
 	std::string version;
-	std::map<std::string, std::string> headers;
 	std::string body;
+	std::map<std::string, std::string> headers;
 };
 
 // Main Parse Function

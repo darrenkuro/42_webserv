@@ -1,18 +1,5 @@
 #include "HttpRequest.hpp"
 
-//std::string validMethods[] = {"GET", "POST", "DELETE"};
-
-// Method not included => 501
-// void checkMethod(std::string method)
-// {
-// 	for (int i = 0; i < 3; i++) {
-// 		if (method == validMethods[i]) {
-// 			return;
-// 		}
-// 	}
-// 	throw std::exception();
-// }
-
 void parsePart(std::string sep, std::string &field, std::string &content)
 {
 	if (content.find(sep) == std::string::npos)
@@ -59,3 +46,4 @@ HttpRequest parseHttpRequest(std::string content)
 	request.body = content;
 	return request;
 }
+

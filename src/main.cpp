@@ -1,12 +1,10 @@
 #include "Webserver.hpp"
 #include "utils.hpp"
 #include "log.hpp"
-
 #include <signal.h>
 
-#define ERR_ARG "[Error] Wrong number of arguments!"
-
-#define DEFAULT_CONF "configs/default.conf"
+#define ERR_ARG			"Wrong number of arguments!"
+#define DEFAULT_CONF	"configs/default.conf"
 
 bool g_running = true;
 
@@ -15,7 +13,7 @@ bool g_running = true;
 
 void signalHandler(int signum) {
 	if (signum == SIGINT) {
-		g_running = false;;
+		g_running = false;
 		std::cout << std::endl;
 	}
 }
@@ -23,23 +21,15 @@ void signalHandler(int signum) {
 int main(int argc, char **argv)
 {
 	try {
-		std::vector<ServerConfig> servers;
-		ConfigParser parser;
-		signal(SIGINT, signalHandler);
+		if (argc > 2) {
+			log(ERROR, ERR_ARG);
+			return 1;
+		}
 
-		if (argc == 1) {
-			servers = parser.parse(DEFAULT_CONF);
-		}
-		else if (argc == 2) {
-			servers = parser.parse(argv[1]);
-			// for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++) {
-			// 	std::cout << *it;
-			// }
-		}
-		else {
-			std::cerr << ERR_ARG << std::endl;
-			return 0;
-		}
+		signal(SIGINT, signalHandler);
+		ConfigParser parser;
+		std::string config = argc == 2 ? argv[1] : DEFAULT_CONF;
+		std::vector<ServerConfig> servers = parser.parse(config);
 
 		Webserver webserver(servers);
 		webserver.start();

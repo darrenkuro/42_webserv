@@ -2,7 +2,7 @@
 
 /**
  * Webserver Construction/Deconstruction
-*/
+ */
 //------------------------------------------------------------------------------
 Webserver::Webserver(const vector<ServerConfig> serverConfigs)
 {
@@ -27,19 +27,19 @@ Webserver::~Webserver()
 
 void Webserver::start()
 {
-    try {
-        initListenSockets();
+	try {
+		initListenSockets();
 		log(INFO, "Webserver started sucessfully. Now Listening...");
-        mainloop();
-    }
-    catch(const std::exception& e) {
+		mainloop();
+	}
+	catch(const std::exception& e) {
 		log(ERROR, e.what());
-    }
+	}
 }
 
 /**
  * Webserver Initialization Functions
-*/
+ */
 //------------------------------------------------------------------------------
 void Webserver::setupServers(const vector<ServerConfig> configs)
 {
@@ -56,7 +56,7 @@ void Webserver::initListenSockets()
 	std::set<SocketAddress>::iterator it;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
 		struct in_addr addr;
-    	addr.s_addr = it->host;
+		addr.s_addr = it->host;
 		log(DEBUG, "Created listening socket on %s:%d", inet_ntoa(addr), it->port);
 		int sockFd = initSocket(*it);
 		struct pollfd poll = {sockFd, POLLIN, 0};
@@ -71,8 +71,8 @@ int Webserver::initSocket(SocketAddress address)
 	sockaddr_in serverAddr = createAddress(address);
 
 	int sockopt = 1;
-  	setsockopt (listenFd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt,
-              sizeof (int));
+	setsockopt (listenFd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt,
+				sizeof (int));
 
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		close(listenFd);
@@ -88,7 +88,7 @@ int Webserver::initSocket(SocketAddress address)
 
 /**
  * Webserver Logic Functions
-*/
+ */
 //------------------------------------------------------------------------------
 void Webserver::mainloop()
 {
@@ -147,6 +147,7 @@ void Webserver::handleClientPOLLOUT(Client& client)
 
 	HttpResponse response = client.getResponse();
 	logHttp(response, client.getID());
+
 	// Here turn reponse into string and send
 	std::string responseStr = toString(response);
 	send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
@@ -171,7 +172,7 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 void Webserver::addClient(int socketFd)
 {
 	struct sockaddr_in serverAddress;
-    socklen_t addrLen = sizeof(serverAddress);
+	socklen_t addrLen = sizeof(serverAddress);
 	getsockname(socketFd, (struct sockaddr*)&serverAddress, &addrLen);
 
 	int clientFd = accept(socketFd, NULL, NULL);
@@ -278,7 +279,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 
 /**
  * Webserver Utility Functions
-*/
+ */
 //------------------------------------------------------------------------------
 void Webserver::filterUniqueSockets()
 {

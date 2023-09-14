@@ -13,20 +13,22 @@ struct ServerConfig;
 class Server
 {
 public:
-    Server(const ServerConfig config);
+	Server(const ServerConfig config);
 
-    SocketAddress getAddress();
-    std::string getName();
-    std::string getErrorPage(int code);
+	// Getters
+	SocketAddress getAddress();
+	std::string getName();
+	std::string getErrorPage(int code);
 
-    HttpResponse handleRequest(HttpRequest req);
-    HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
-    HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
-    HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);
+	// Logic
+	HttpResponse handleRequest(HttpRequest req);
+	HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
+	HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
+	HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);
 
 private:
-    ServerConfig m_config;
+	ServerConfig m_config;
 
-    LocationConfig routeRequest(std::string uri);
-    HttpResponse buildAutoindex(std::string path);
+	LocationConfig routeRequest(std::string uri);
+	HttpResponse buildAutoindex(std::string path);
 };
