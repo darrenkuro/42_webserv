@@ -151,6 +151,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 				logHttp(client.getRequest(), client.getID());
 				HttpResponse res = processRequest(client.getRequest(), client);
 				client.setResponse(res);
+				client.reset();
 			}
 
 		}

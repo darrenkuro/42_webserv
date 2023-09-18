@@ -36,7 +36,7 @@ public:
 
 	// Data processing
 	void appendData(std::string buffer);
-
+	void reset();
 private:
 	int m_id;
 	int m_socketFd;

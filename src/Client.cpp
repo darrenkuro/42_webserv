@@ -6,15 +6,12 @@ Client::Client(int socketFd, in_addr host, int port)
 	m_socketFd = socketFd;
 	m_port = port;
 	m_host = host;
-	m_requestIsReady = true;
 	m_responseIsReady = false;
 	m_hasDisconnected = false;
-	m_requestParsed = false;
 	m_id = clientID;
 	gettimeofday(&m_lastEventTime, NULL);
+	reset();
 	clientID++;
-	m_bytesExpected = 0;
-	m_bytesRecved = 0;
 }
 
 void Client::setResponse(HttpResponse res)
@@ -60,9 +57,18 @@ bool Client::getRequestParsed() { return m_requestParsed; }
 
 void Client::setHasDisconnected(bool status) { m_hasDisconnected = status; }
 
-void Client::setBytesExpected(int bytes) {
+void Client::setBytesExpected(int bytes)
+{
 	m_bytesExpected = bytes;
 	m_requestIsReady = false;
+}
+
+void Client::reset()
+{
+	m_bytesExpected = 0;
+	m_bytesRecved = 0;
+	m_requestIsReady = true;
+	m_requestParsed = false;
 }
 
 bool Client::didTimeout()
