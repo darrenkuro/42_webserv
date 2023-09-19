@@ -8,7 +8,6 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include "utils.hpp"
-// #include "log.hpp"
 
 struct LocationConfig
 {
@@ -70,7 +69,6 @@ private:
 	std::string parseAlias(void);
 	bool parseAutoindex(void);
 	std::vector<std::string> parseIndex(void);
-	// std::string parseRoot(void);
 };
 
 std::ostream &operator<<(std::ostream &os, const ServerConfig config);

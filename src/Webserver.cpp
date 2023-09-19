@@ -79,9 +79,8 @@ int Webserver::initSocket(SocketAddress address)
 		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
 	}
 
-	if (listen(listenFd, 10)) {
+	if (listen(listenFd, 10))
 		throw std::runtime_error("listen() failed");
-	}
 
 	return listenFd;
 }
@@ -282,8 +281,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 				return m_servers[i];
 		}
 	}
-	catch (...) {
-	}
+	catch (...) { }
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
@@ -294,7 +292,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 	}
 
-	throw std::runtime_error("Something went really wrong. should never reach this point");
+	throw std::runtime_error("Something went really wrong when routing server!");
 }
 
 
@@ -351,9 +349,8 @@ void Webserver::removeFdFromPoll(int fd)
 bool Webserver::headerIsSupported(std::string header)
 {
 	for (int i = 0; i < 1; i++) {
-		if (header == "Host") {
+		if (header == "Host")
 			return true;
-		}
 	}
 	return false;
 }

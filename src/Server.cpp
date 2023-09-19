@@ -15,6 +15,7 @@ std::string Server::getErrorPage(int code) {
 }
 
 bool Server::hasMaxBodySize() { return m_config.hasMaxBodySize; }
+
 int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
 
 HttpResponse Server::handleRequest(HttpRequest req)
@@ -79,12 +80,10 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 			if (file.good())
 				return createBasicResponse(200, filePath);
 		}
-		if (route.autoindex) {
+		if (route.autoindex)
 			return buildAutoindex(path);
-		}
-		else {
+		else
 			return createBasicResponse(403, getErrorPage(403));
-		}
 	}
 
 	return createBasicResponse(500, getErrorPage(500));
@@ -136,9 +135,8 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 						: fullPath(m_config.root, route.alias);
 	std::string path = fullPath(root, req.uri.substr(route.uri.length()));
 
-	if (std::remove(path.c_str()) == 0) {
+	if (std::remove(path.c_str()) == 0)
 		return createBasicResponse(204, "");
-	}
 
 	return createBasicResponse(403, getErrorPage(403));
 }
@@ -149,18 +147,14 @@ LocationConfig Server::routeRequest(std::string uri)
 
 	// All Server config should have default '/' location
 	for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
-		if (it->uri == uri) {
+		if (it->uri == uri)
 			return *it;
-		}
 	}
 
 	// Recursively match the less complete uri
 	size_t endPos = uri.find_last_of('/');
 	uri = endPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));
 	return routeRequest(uri);
-
-	// Didn't match anything, either function is wrong or the Server doesn't have '/' route
-	throw std::runtime_error("Couldn't match uri " + uri);
 }
 
 std::string Server::getBoundry(HttpRequest req)
@@ -176,15 +170,15 @@ std::string Server::getBoundry(HttpRequest req)
 	return "--" + it->second.substr(pos + 9);
 }
 
-// Move later
 HttpResponse Server::buildAutoindex(std::string path)
 {
 	std::string body("<!DOCTYPE html>");
 
-	body += "<html><head><title>Directory Index</title>";
-	body += "<link rel=\"stylesheet\" type=\"text/css\" href=\"/style/autoindex.css\"></head>";
-	body += "<body><div class=\"container\"><h1 class=\"heading\">";
-	body += "Directory Autoindex</h1><ul class=\"list\">";
+	body.append("<html><head><title>Directory Index</title>");
+	body.append("<link rel=\"stylesheet\" type=\"text/css\" ");
+	body.append("href=\"/style/autoindex.css\"></head>");
+	body.append("<body><div class=\"container\"><h1 class=\"heading\">");
+	body.append("Directory Autoindex</h1><ul class=\"list\">");
 
 	DIR* dir;
 	dirent* entry;
@@ -201,9 +195,10 @@ HttpResponse Server::buildAutoindex(std::string path)
 		stat(filePath.c_str(), &fileInfo);
 		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
 		// add a href?
-		body += "<li class=\"list-item\"><div class=\"name\">" + name + "</div></li>";
+		body.append("<li class=\"list-item\"><div class=\"name\">");
+		body.append(name).append("</div></li>");
 	}
-	body += "</ul></div></body></html>";
+	body.append("</ul></div></body></html>");
 
 	HttpResponse response;
 	response.statusCode = 200;

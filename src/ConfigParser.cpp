@@ -66,27 +66,21 @@ ServerConfig ConfigParser::parseServer()
 	consume("{");
 	std::string token;
 	while ((token = accept()) != "}") {
-		if (!isValidServerKey(token)) {
+		if (!isValidServerKey(token))
 			throw std::runtime_error("Parser: unknown server key " + token + "!");
-		}
-		else if (token == "listen") {
+		if (token == "listen")
 			config.address = parseAddress();
-		}
-		else if (token == "server_name") {
+		if (token == "server_name")
 			config.serverName = parseServerName();
-		}
-		else if (token == "index") {
+		if (token == "index")
 			config.index = parseIndex();
-		}
-		else if (token == "error_page") {
+		if (token == "error_page")
 			config.errorPages.insert(parseErrorPage());
-		}
-		else if (token == "client_max_body_size") {
+		if (token == "location")
+			config.locations.push_back(parseLocation());
+		if (token == "client_max_body_size") {
 			config.hasMaxBodySize = true;
 			config.clientMaxBodySize = parseClientMaxBodySize();
-		}
-		else if (token == "location") {
-			config.locations.push_back(parseLocation());
 		}
 	}
 	if (config.locations.empty()) {
@@ -103,24 +97,18 @@ LocationConfig ConfigParser::parseLocation(void)
 	consume("{");
 	std::string token;
 	while ((token = accept()) != "}") {
-		if (!isValidLocationKey(token)) {
+		if (!isValidLocationKey(token))
 			throw std::runtime_error("Parser: unknown location key " + token + "!");
-		}
-		else if (token == "allowed_method") {
+		if (token == "allowed_method")
 			location.allowedMethods = parseAllowedMethods();
-		}
-		else if (token == "return") {
+		if (token == "return")
 			location.redirect = parseRedirect();
-		}
-		else if (token == "alias") {
+		if (token == "alias")
 			location.alias = parseAlias();
-		}
-		else if (token == "autoindex") {
+		if (token == "autoindex")
 			location.autoindex = parseAutoindex();
-		}
-		else if (token == "index") {
+		if (token == "index")
 			location.index = parseIndex();
-		}
 	}
 	return location;
 }
@@ -363,6 +351,7 @@ bool ConfigParser::isValidErrorCode(int code)
 	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code) != validErrorCodes.end();
 }
 
+// MOVE
 //------------------------------------------------------------------------------
 std::ostream &operator<<(std::ostream &os, const ServerConfig config)
 {
@@ -411,15 +400,3 @@ std::ostream &operator<<(std::ostream &os, const SocketAddress address)
 	os << "Address: [host] " << address.host << " [port] " << address.port << std::endl;
 	return os;
 }
-
-
-// std::string ConfigParser::parseRoot(void)
-// {
-// 	std::string path = accept();
-// 	struct stat pathInfo;
-// 	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
-// 		throw std::runtime_error("[Error] Parser: invalid root " + path + "!");
-// 	consume(";");
-// 	return path;
-// }
-
