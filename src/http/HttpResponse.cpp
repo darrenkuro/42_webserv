@@ -128,25 +128,26 @@ std::string getMimeType(std::string ext)
 }
 
 std::string toString(HttpResponse res) {
-	std::string str("HTTP/1.1 ");
-	str += toString(res.statusCode) + " ";
-	str += getStatusText(res.statusCode) + "\r\n";
+	std::string str;
+	str.append("HTTP/1.1 ");
+	str.append(toString(res.statusCode) + " ");
+	str.append(getStatusText(res.statusCode) + "\r\n");
 
 	std::map<std::string, std::string>::iterator it;
 	for (it = res.header.begin(); it != res.header.end(); it++) {
-		str += it->first + ": " + it->second + "\r\n";
+		str.append(it->first + ": ").append(it->second + "\r\n");
 	}
-	str += "\r\n" + res.body;
+	str.append("\r\n").append(res.body);
 	return str;
 }
 
 std::string getDate(void)
 {
-    std::time_t t = std::time(NULL);
-    std::tm* timePtr = std::gmtime(&t);
+	std::time_t t = std::time(NULL);
+	std::tm* timePtr = std::gmtime(&t);
 
-    char buffer[50];
-    std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
+	char buffer[50];
+	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
 	return std::string(buffer);
 }
 

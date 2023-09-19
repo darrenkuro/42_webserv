@@ -61,9 +61,9 @@ private:
 	void removeFdFromPoll(int fd);
 	void printStatus();
 
-    // Member Data
-    set<SocketAddress> m_listenSockets;
-    vector<pollfd> m_pollFds;
-    vector<Server> m_servers;
-    map<int, Client> m_clients; // Key: Fd; Value: Client
+	// Member Data
+	set<SocketAddress> m_listenSockets;
+	vector<pollfd> m_pollFds;
+	vector<Server> m_servers;
+	map<int, Client> m_clients; // Key: Fd; Value: Client
 };

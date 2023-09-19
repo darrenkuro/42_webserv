@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
 #include <map>
-#include <vector>
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -22,4 +20,5 @@ std::string getDate(void);
 std::string getStatusText(int code);
 std::string getMimeType(std::string path);
 std::string toString(HttpResponse res);
+
 HttpResponse createBasicResponse(int code, std::string path);

@@ -59,11 +59,11 @@ sockaddr_in createAddress(SocketAddress address)
 
 bool SocketAddress::operator<(const SocketAddress& other) const
 {
-    if (host < other.host)
-        return true;
-    if (host > other.host)
-        return false;
-    return port < other.port;
+	if (host < other.host)
+		return true;
+	if (host > other.host)
+		return false;
+	return port < other.port;
 }
 
 std::string toIPString(in_addr_t ip)
@@ -81,31 +81,31 @@ std::string toIPString(in_addr_t ip)
 
 bool validatePort(const std::string& port)
 {
-    // Validate that the port is a positive integer
-    try {
-        int num = atoi(port.c_str());
-        return num > 0 && num <= 65535; // Valid port range
-    } catch (const std::invalid_argument& e) {
-        return false; // Port is not an integer
-    }
+	// Validate that the port is a positive integer
+	try {
+		int num = atoi(port.c_str());
+		return num > 0 && num <= 65535; // Valid port range
+	} catch (const std::invalid_argument& e) {
+		return false; // Port is not an integer
+	}
 }
 
 bool validateIpAddress(const std::string& ipAddress)
 {
-    // Split the IP address by "." and validate each part
-    std::istringstream ss(ipAddress);
-    std::string part;
-    int numParts = 0;
+	// Split the IP address by "." and validate each part
+	std::istringstream ss(ipAddress);
+	std::string part;
+	int numParts = 0;
 
-    while (std::getline(ss, part, '.')) {
-        int num =atoi(part.c_str());
-        if (num < 0 || num > 255) {
-            return false; // Invalid IP part
-        }
-        numParts++;
-    }
+	while (std::getline(ss, part, '.')) {
+		int num =atoi(part.c_str());
+		if (num < 0 || num > 255) {
+			return false; // Invalid IP part
+		}
+		numParts++;
+	}
 
-    return numParts == 4; // IP should have exactly 4 parts
+	return numParts == 4; // IP should have exactly 4 parts
 }
 
 in_addr_t toIPv4(std::string str)
