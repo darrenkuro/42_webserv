@@ -44,10 +44,11 @@ HttpRequest parseHttpRequest(std::string& content)
 	// Remove the blank line after the headers
 	content.erase(content.begin(), content.begin() + 2);
 
+	// GET & DELETE usually contains no relavant body
 	return req;
 }
 
-HttpRequest appendBody(HttpRequest& req, std::string body)
+HttpRequest& appendBody(HttpRequest& req, std::string body)
 {
 	req.body += body;
 	return req;

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdlib>
+#include <fstream>
 #include <cstdio>       // std::remove
 #include <dirent.h>
 #include <sys/stat.h>
@@ -33,5 +34,6 @@ private:
 
 	LocationConfig routeRequest(std::string uri);
 	HttpResponse buildAutoindex(std::string path);
+	std::string getBoundry(HttpRequest req);
 	bool bodySizeAllowed(int bytes);
 };

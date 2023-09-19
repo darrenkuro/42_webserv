@@ -157,6 +157,11 @@ HttpResponse createBasicResponse(int code, std::string path)
 	res.statusCode = code;
 	res.header["Date"] = getDate();
 	res.header["Server"] = "Webserv42/1.0.0";
+
+	// Handle 204 No Content separately
+	if (code == 204)
+		return res;
+
 	try {
 		res.body = getFileContent(path);
 		res.header["Content-Length"] = toString(res.body.length());

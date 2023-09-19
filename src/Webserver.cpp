@@ -121,29 +121,30 @@ void Webserver::mainloop()
 void Webserver::handleClientPOLLIN(Client& client)
 {
 	char buffer[RECV_SIZE];
-	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE - 1, 0);
+	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
+	std::string bufferStr(buffer, bytesRead);
+
+	// HTTP request is longer than buffer
+	if (!client.getRequestParsed() && bytesRead == RECV_SIZE) {
+		client.setResponse(createBasicResponse(400, DEFAULT_400_PATH));
+		return;
+	}
 
 	if (bytesRead <= 0) {
 		clientStatusCheck(client, bytesRead);
 	}
 	else {
 		try {
-			std::string bufferStr(buffer);
-
-			std::cerr << bufferStr << std::endl;
-			std::cerr << "-----------------------" << std::endl;
-			//std::cerr << bufferStr << std::endl;
 			if (!client.getRequestParsed()) {
 				client.setRequest(parseHttpRequest(bufferStr));
 
 				// Check Content-Length and set expecting bytes
 				std::map<std::string, std::string>::iterator it;
 				it = client.getRequest().headers.find("Content-Length");
-				std::cerr << toInt(it->second) << std::endl;
 				if (it != client.getRequest().headers.end())
 					client.setBytesExpected(toInt(it->second));
 			}
-			std::cerr << bufferStr << std::endl;
+
 			if (!client.getRequestIsReady())
 				client.appendData(bufferStr);
 
