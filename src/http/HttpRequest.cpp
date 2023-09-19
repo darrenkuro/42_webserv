@@ -47,9 +47,3 @@ HttpRequest parseHttpRequest(std::string& content)
 	// GET & DELETE usually contains no relavant body
 	return req;
 }
-
-HttpRequest& appendBody(HttpRequest& req, std::string body)
-{
-	req.body += body;
-	return req;
-}

@@ -55,9 +55,9 @@ void Webserver::initListenSockets()
 
 	std::set<SocketAddress>::iterator it;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
-		struct in_addr addr;
-		addr.s_addr = it->host;
-		log(DEBUG, "Created listening socket on %s:%d", inet_ntoa(addr), it->port);
+		// struct in_addr addr;
+		// addr.s_addr = it->host;
+		log(DEBUG, "Created listening socket on %s:%d", toIPString(it->host).c_str(), it->port);
 		int sockFd = initSocket(*it);
 		struct pollfd poll = {sockFd, POLLIN, 0};
 		m_pollFds.push_back(poll);
@@ -208,7 +208,7 @@ void Webserver::addClient(int socketFd)
 	m_clients.insert(std::make_pair(clientFd, client));
 
 	log(INFO, "Client[ID: %d] connected on %s:%d", client.getID(),
-		inet_ntoa(client.getHost()), client.getPort());
+		toIPString(client.getHost().s_addr).c_str(), client.getPort());
 	log(DEBUG, "Client fd %d added to poll", client.getFd());
 }
 
@@ -253,46 +253,44 @@ void Webserver::clientStatusCheck(Client& client, int bytesRead)
 //------------------------------------------------------------------------------
 Server& Webserver::routeRequest(HttpRequest request, Client& client)
 {
-	if (request.headers.find("Host") == request.headers.end()) {
+	if (request.headers.find("Host") == request.headers.end())
 		throw std::runtime_error("No host header");
-	}
 	std::string host = request.headers.find("Host")->second;
 
 	// Host header domain resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
-		if (m_servers[i].getName() == host) {
+		if (m_servers[i].getName() == host)
 			return m_servers[i];
-		}
 	}
 
-	// Host header ip resolution
-	size_t colonPos = host.find(':');
-	std::string ip;
-	std::string port;
-	if (colonPos != std::string::npos) {
-		ip = host.substr(0, colonPos);
-		port = host.substr(colonPos + 1);
-	}
-	else {
-		ip = host;
-		port = "80";
-	}
-	if (validateIpAddress(ip) && validatePort(port)) {
+	try {
+		// Host header ip resolution
+		size_t colonPos = host.find(':');
+		in_addr_t ip = colonPos != std::string::npos
+					? toIPv4(host.substr(0, colonPos))
+					: toIPv4(host);
+		int port = colonPos != std::string::npos
+					? toInt(host.substr(colonPos + 1))
+					: 80;
+
+		if (port <= 0 || port > 65535)
+			throw std::exception();
+
 		for (size_t i = 0; i < m_servers.size(); i++) {
 			SocketAddress addr = m_servers[i].getAddress();
-			if (addr.host == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
+			if (addr.host == ip && addr.port == port)
 				return m_servers[i];
-			}
 		}
+	}
+	catch (...) {
 	}
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		SocketAddress addr = m_servers[i].getAddress();
 		if (client.getPort() == addr.port) {
-			if (addr.host == 0 || client.getHost().s_addr == addr.host) {
+			if (addr.host == 0 || client.getHost().s_addr == addr.host)
 				return m_servers[i];
-			}
 		}
 	}
 

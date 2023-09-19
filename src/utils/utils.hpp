@@ -2,15 +2,11 @@
 
 #include <sys/socket.h>
 #include <stdexcept>
-#include <iostream>
-#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <cstring>
 #include <string>
 #include <climits>
 #include <fstream>
-#include <cstdlib>
-#include <ctime>
 #include <sstream>
 
 struct SocketAddress
@@ -28,8 +24,6 @@ std::string toString(int value);
 std::string toIPString(in_addr_t ip);
 in_addr_t toIPv4(std::string str);
 int toInt(std::string str);
-bool validatePort(const std::string& port);
-bool validateIpAddress(const std::string& ipAddress);
 bool isAllDigit(std::string str);
 
 std::string fullPath(std::string root, std::string path);
