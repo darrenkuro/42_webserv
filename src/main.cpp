@@ -4,7 +4,7 @@
 #include <signal.h>
 
 #define ERR_ARG			"Wrong number of arguments!"
-#define DEFAULT_CONF	"configs/default.conf"
+#define DEFAULT_CONF	"config/default.conf"
 
 bool g_running = true;
 
