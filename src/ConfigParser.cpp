@@ -1,5 +1,5 @@
 #include "ConfigParser.hpp"
-#include <iostream>
+
 /* -------------------------------------------------------------------------- *
  * Constants declaractions and checkers for valid keys in the config.
  * -------------------------------------------------------------------------- */
@@ -65,6 +65,7 @@ std::vector<ServerConfig> ConfigParser::parse(const std::string& filename)
 	return m_configs;
 }
 
+/* -------------------------------------------------------------------------- */
 void ConfigParser::lex (const std::string& content, const std::string& whitespace,
 						const std::string& symbol)
 {
@@ -89,6 +90,7 @@ void ConfigParser::lex (const std::string& content, const std::string& whitespac
 	}
 }
 
+/* -------------------------------------------------------------------------- */
 std::string ConfigParser::accept(void)
 {
 	if (m_tokens.empty())
@@ -136,6 +138,7 @@ void ConfigParser::parseServer(void)
 	m_configs.push_back(server);
 }
 
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseLocation(ServerConfig& server)
 {
 	LocationConfig location = createLocation();
@@ -159,15 +162,14 @@ void ConfigParser::parseLocation(ServerConfig& server)
 	server.locations.push_back(location);
 }
 
-
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseServerName(ServerConfig& server)
 {
 	server.serverName = accept();
 	consume(";");
 }
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseAddress(ServerConfig& server)
 {
 	try {
@@ -195,7 +197,7 @@ void ConfigParser::parseAddress(ServerConfig& server)
 	}
 }
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseErrorPage(ServerConfig& server)
 {
 	std::vector<std::string> tokens;
@@ -227,7 +229,7 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 	}
 }
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 {
 	try {
@@ -242,8 +244,7 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 	}
 }
 
-
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseUri(LocationConfig& location)
 {
 	location.uri = accept();
@@ -251,8 +252,7 @@ void ConfigParser::parseUri(LocationConfig& location)
 	// any illegal characters in the uri?
 }
 
-
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseAllowedMethods(LocationConfig& location)
 {
 	std::string token;
@@ -266,8 +266,7 @@ void ConfigParser::parseAllowedMethods(LocationConfig& location)
 	}
 }
 
-
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseRedirect(LocationConfig& location)
 {
 	try {
@@ -280,7 +279,7 @@ void ConfigParser::parseRedirect(LocationConfig& location)
 	}
 }
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseAlias(LocationConfig& location)
 {
 	try {
@@ -301,7 +300,7 @@ void ConfigParser::parseAlias(LocationConfig& location)
 	// should it return actually path or just the alias?
 }
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseAutoindex(LocationConfig& location)
 {
 	std::string token = accept();
@@ -316,7 +315,7 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 }
 
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 void ConfigParser::parseIndex(LocationConfig& location)
 {
 	std::string token;
@@ -325,7 +324,7 @@ void ConfigParser::parseIndex(LocationConfig& location)
 	}
 }
 
-//------------------------------------------------------------------------------
+/* -------------------------------------------------------------------------- */
 ServerConfig ConfigParser::createServer(void)
 {
 	ServerConfig config;
@@ -374,7 +373,7 @@ void ConfigParser::addDefaultLocation(ServerConfig& server)
 
 	LocationConfig location = createLocation();
 	location.uri = "/";
-	location.index.push_back("index.html");
+	location.index.push_back("index.html"); // default should be added in places where there is none as well
 
 	server.locations.push_back(location);
 }
