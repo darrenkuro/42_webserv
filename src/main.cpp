@@ -31,6 +31,9 @@ int main(int argc, char **argv)
 		std::string config = argc == 2 ? argv[1] : DEFAULT_CONF;
 		std::vector<ServerConfig> servers = parser.parse(config);
 
+		for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
+			logServerConfig(*it);
+
 		Webserver webserver(servers);
 		webserver.start();
 

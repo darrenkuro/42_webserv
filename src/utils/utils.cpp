@@ -35,8 +35,10 @@ std::string toString(int value) {
 int toInt(std::string str) {
 	std::istringstream iss(str);
 	int result;
-	iss >> result;
+	char remainingChar;
 
+	if (!(iss >> result) || (iss.get(remainingChar)))
+		throw std::runtime_error("convert " + str + " toInt fails");
 	if (result == 0 && str != "0" && str != "+0" && str != "-0")
 		throw std::runtime_error("convert " + str + " toInt fails");
 	if (result == INT_MAX && str != "2147483647" && str != "+2147483647")

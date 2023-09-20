@@ -10,3 +10,9 @@ when multiple servers listen on the same address(port), bind would fail instead 
 
 Does it matter all log info are printing to cout and not cerr?
 Is using printf alright? (Seems like it... variadic template would be preferred way of doing that but it's a c++11 feature)
+
+
+Parser:
+Duplicate handled only for location (uri).
+For error page the first will apply (insert call will fail if key exists).
+

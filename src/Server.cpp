@@ -14,8 +14,6 @@ std::string Server::getErrorPage(int code) {
 	return fullPath(m_config.root, m_config.errorPages[code]);
 }
 
-bool Server::hasMaxBodySize() { return m_config.hasMaxBodySize; }
-
 int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
 
 HttpResponse Server::handleRequest(HttpRequest req)
@@ -208,7 +206,8 @@ HttpResponse Server::buildAutoindex(std::string path)
 
 bool Server::bodySizeAllowed(int bytes)
 {
-	if (hasMaxBodySize() && getMaxBodySize() >= bytes)
+	// If clientMaxBodySize is not set (-1) or larger
+	if (getMaxBodySize() == -1 || getMaxBodySize() >= bytes)
 		return true;
 	return false;
 }
