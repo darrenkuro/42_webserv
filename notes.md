@@ -16,3 +16,8 @@ Parser:
 Duplicate handled only for location (uri).
 For error page the first will apply (insert call will fail if key exists).
 
+HTTP request can contain duplicate headers? How is this supposed to be handled?
+```GET /example HTTP/1.1
+Host: example.com
+Cookie: session_id=12345
+Cookie: user_id=67890```

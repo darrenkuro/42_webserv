@@ -68,8 +68,9 @@ inline void displayLogLevel(int level)
 /* -------------------------------------------------------------------------- */
 inline void log(int level, const char* format, ...)
 {
-	if (level > LOG_DISPLAY_LEVEL)
+	if (level > LOG_DISPLAY_LEVEL) {
 		return;
+	}
 	std::cout << displayTimestamp << " ";
 	displayLogLevel(level);
 

@@ -85,6 +85,7 @@ void Client::appendData(std::string buffer)
 	//m_request = appendBody(m_request, buffer);
 	m_request.body.append(buffer);
 	m_bytesRecved += buffer.length();
-	if (m_bytesRecved >= m_bytesExpected)
+	if (m_bytesRecved >= m_bytesExpected) {
 		m_requestIsReady = true;
+	}
 }

@@ -86,44 +86,63 @@ std::string getStatusText(int code)
 
 std::string getMimeType(std::string ext)
 {
-	if (ext == ".aac")
+	if (ext == ".aac") {
 		return "audio/aac";
-	if (ext == ".css")
+	}
+	if (ext == ".css") {
 		return "text/css";
-	if (ext == ".csv")
+	}
+	if (ext == ".csv") {
 		return "text/csv";
-	if (ext == ".gif")
+	}
+	if (ext == ".gif") {
 		return "image/git";
-	if (ext == ".htm" || ext == ".html")
+	}
+	if (ext == ".htm" || ext == ".html") {
 		return "text/html";
-	if (ext == ".ico")
+	}
+	if (ext == ".ico") {
 		return "image/vnd.microsoft.icon";
-	if (ext == ".jpeg" || ext == ".jpg")
+	}
+	if (ext == ".jpeg" || ext == ".jpg") {
 		return "image/jpeg";
-	if (ext == ".js" || ext == ".mjs")
+	}
+	if (ext == ".js" || ext == ".mjs") {
 		return "text/javascript";
-	if (ext == ".json")
+	}
+	if (ext == ".json") {
 		return "application/json";
-	if (ext == ".mp3")
+	}
+	if (ext == ".mp3") {
 		return "audio/mpeg";
-	if (ext == ".mp4")
+	}
+	if (ext == ".mp4") {
 		return "video/mp4";
-	if (ext == ".mpeg")
+	}
+	if (ext == ".mpeg") {
 		return "video/mpeg";
-	if (ext == ".png")
+	}
+	if (ext == ".png") {
 		return "image/png";
-	if (ext == ".pdf")
+	}
+	if (ext == ".pdf") {
 		return "application/pdf";
-	if (ext == ".php")
+	}
+	if (ext == ".php") {
 		return "application/x-httpd-php";
-	if (ext == ".svg")
+	}
+	if (ext == ".svg") {
 		return "image/svg+xml";
-	if (ext == ".txt")
+	}
+	if (ext == ".txt") {
 		return "text/plain";
-	if (ext == ".wav")
+	}
+	if (ext == ".wav") {
 		return "audio/wav";
-	if (ext == ".webp")
+	}
+	if (ext == ".webp") {
 		return "image/webp";
+	}
 	return "text/plain";
 }
 

@@ -4,8 +4,9 @@ int createIPv4Socket()
 {
 	int sockfd;
 
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		throw std::runtime_error("Create socket failed!");
+	}
 
 	return sockfd;
 }
@@ -13,8 +14,9 @@ int createIPv4Socket()
 std::string getFileContent(std::string path)
 {
 	std::ifstream file(path.c_str());
-	if (!file.is_open())
+	if (!file.is_open()) {
 		throw std::runtime_error("Failed to open file: " + path);
+	}
 
 	std::string content((std::istreambuf_iterator<char>(file)),
 						std::istreambuf_iterator<char>());
@@ -26,8 +28,9 @@ std::string toString(int value) {
 	ss << value;
 
 	// Unlikely to happen, bad alloc only
-	if (ss.fail())
+	if (ss.fail()) {
 		return "";
+	}
 
 	return ss.str();
 }
@@ -37,14 +40,21 @@ int toInt(std::string str) {
 	int result;
 	char remainingChar;
 
-	if (!(iss >> result) || (iss.get(remainingChar)))
+	// Check if there are leftover characters
+	if (!(iss >> result) || (iss.get(remainingChar))) {
 		throw std::runtime_error("convert " + str + " toInt fails");
-	if (result == 0 && str != "0" && str != "+0" && str != "-0")
+	}
+
+	// Check fail and edge cases
+	if (result == 0 && str != "0" && str != "+0" && str != "-0") {
 		throw std::runtime_error("convert " + str + " toInt fails");
-	if (result == INT_MAX && str != "2147483647" && str != "+2147483647")
+	}
+	if (result == INT_MAX && str != "2147483647" && str != "+2147483647") {
 		throw std::runtime_error("convert " + str + " toInt fails");
-	if (result == INT_MIN && str != "-2147483648")
+	}
+	if (result == INT_MIN && str != "-2147483648") {
 		throw std::runtime_error("convert " + str + " toInt fails");
+	}
 
 	return result;
 }
@@ -64,10 +74,12 @@ sockaddr_in createAddress(SocketAddress address)
 
 bool SocketAddress::operator<(const SocketAddress& other) const
 {
-	if (host < other.host)
+	if (host < other.host) {
 		return true;
-	if (host > other.host)
+	}
+	if (host > other.host) {
 		return false;
+	}
 	return port < other.port;
 }
 
@@ -89,35 +101,40 @@ in_addr_t toIPv4(std::string str)
 	in_addr_t result = 0;
 
 	for (int i = 0; i < 4; i++) {
-		if (i < 3 && str.find('.') == std::string::npos)
+		if (i < 3 && str.find('.') == std::string::npos) {
 			throw std::runtime_error("failed to convert " + str);
+		}
 
 		std::string token = i < 3 ? str.substr(0, str.find('.')) : str;
 		int value = toInt(token);
-		if (!isAllDigit(token) || value < 0 || value > 255)
+		if (!isAllDigit(token) || value < 0 || value > 255) {
 			throw std::runtime_error("failed to convert " + str);
+		}
 
 		result = (result << 8) | value;
 
 		if (i < 3)
 			str.erase(str.begin(), str.begin() + str.find('.') + 1);
 	}
+
 	return htonl(result);
 }
 
 bool isAllDigit(std::string str)
 {
 	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i]))
+		if (!std::isdigit(str[i])) {
 			return false;
+		}
 	}
 	return true;
 }
 
 std::string fullPath(std::string root, std::string path)
 {
-	if (root.empty() || path.empty())
+	if (root.empty() || path.empty()) {
 		return "";
+	}
 
 	// Remove '/' from root and path
 	root = root[root.size() - 1] == '/' ? root.substr(0, root.size() - 1) : root;
@@ -130,8 +147,9 @@ std::string getExtension(std::string path)
 {
 	size_t pos = path.find_last_of('.');
 
-	if (pos != std::string::npos && pos != 0)
+	if (pos != std::string::npos && pos != 0) {
 		return path.substr(pos);
+	}
 
 	return "";
 }

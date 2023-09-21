@@ -1,35 +1,55 @@
 #include "HttpRequest.hpp"
 
-void parsePart(std::string sep, std::string &field, std::string &content)
+/* -------------------------------------------------------------------------- *
+ * Parse a field for HTTP request, with a given separator, consume the content.
+ * -------------------------------------------------------------------------- */
+void parsePart(const std::string& sep, std::string& field, std::string& content)
 {
-	if (content.find(sep) == std::string::npos)
+	size_t pos = content.find(sep);
+	if (pos == std::string::npos) {
 		throw std::exception();
-	field = content.substr(0, content.find(sep));
-	content.erase(content.begin(), content.begin() + content.find(sep) + sep.length());
-	if (content.find(sep) == 0)
+	}
+
+	field = content.substr(0, pos);
+	content.erase(content.begin(), content.begin() + pos + sep.length());
+
+	// Check if there's more than one separator (invalid request)
+	if (content.find(sep) == 0) {
 		throw std::exception();
+	}
 }
 
-void parseHeader(std::map<std::string, std::string> &header, std::string &content)
+/* -------------------------------------------------------------------------- *
+ * Parse a header field for HTTP request, consume the content.
+ * -------------------------------------------------------------------------- */
+void parseHeader(std::map<std::string, std::string>& header, std::string& content)
 {
-	if (content.find(':') == std::string::npos)
+	size_t colonPos = content.find(":");
+	if (colonPos == std::string::npos) {
 		throw std::exception();
-	std::string key = content.substr(0, content.find(':'));
-	content.erase(content.begin(), content.begin() + content.find(':') + 1);
+	}
+
+	std::string key = content.substr(0, colonPos);
+	content.erase(content.begin(), content.begin() + colonPos + 1);
 
 	// Handle leading white spaces before value
 	size_t valuePos = content.find_first_not_of(" \t");
-	if (valuePos == std::string::npos)
+	if (valuePos == std::string::npos) {
 		throw std::exception();
+	}
 	content.erase(content.begin(), content.begin() + valuePos);
 
-	if (content.find("\r\n") == std::string::npos)
+	size_t crlfPos = content.find("\r\n");
+	if (crlfPos == std::string::npos) {
 		throw std::exception();
-	std::string value = content.substr(0, content.find("\r\n"));
-	content.erase(content.begin(), content.begin() + content.find("\r\n") + 2);
+	}
+	std::string value = content.substr(0, crlfPos);
+	content.erase(content.begin(), content.begin() + crlfPos + 2);
+
 	header[key] = value;
 }
 
+/* -------------------------------------------------------------------------- */
 HttpRequest parseHttpRequest(std::string& content)
 {
 	HttpRequest req;

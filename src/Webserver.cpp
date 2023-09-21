@@ -79,8 +79,9 @@ int Webserver::initSocket(SocketAddress address)
 		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
 	}
 
-	if (listen(listenFd, 10))
+	if (listen(listenFd, 10)) {
 		throw std::runtime_error("listen() failed");
+	}
 
 	return listenFd;
 }
@@ -140,12 +141,14 @@ void Webserver::handleClientPOLLIN(Client& client)
 				// Check Content-Length and set expecting bytes
 				std::map<std::string, std::string>::iterator it;
 				it = client.getRequest().headers.find("Content-Length");
-				if (it != client.getRequest().headers.end())
+				if (it != client.getRequest().headers.end()) {
 					client.setBytesExpected(toInt(it->second));
+				}
 			}
 
-			if (!client.getRequestIsReady())
+			if (!client.getRequestIsReady()) {
 				client.appendData(bufferStr);
+			}
 
 			if (client.getRequestIsReady()) {
 				logHttp(client.getRequest(), client.getID());
@@ -164,8 +167,9 @@ void Webserver::handleClientPOLLIN(Client& client)
 //------------------------------------------------------------------------------
 void Webserver::handleClientPOLLOUT(Client& client)
 {
-	if (client.getResponseIsReady() == false)
+	if (client.getResponseIsReady() == false) {
 		return;
+	}
 
 	HttpResponse response = client.getResponse();
 	logHttp(response, client.getID());
@@ -220,10 +224,12 @@ void Webserver::handleDisconnects()
 	for (it = m_clients.begin(); it != m_clients.end(); it++) {
 		Client client = it->second;
 		if (client.hasDisconnected() || client.didTimeout()) {
-			if (client.hasDisconnected())
+			if (client.hasDisconnected()) {
 				log(INFO, "Client[ID: %d] disconnected", client.getID());
-			else
+			}
+			else {
 				log(INFO, "Client[ID: %d] timed out", client.getID());
+			}
 			removeIterators.push_back(it);
 			removeFdFromPoll(client.getFd());
 			close(client.getFd());
@@ -252,14 +258,16 @@ void Webserver::clientStatusCheck(Client& client, int bytesRead)
 //------------------------------------------------------------------------------
 Server& Webserver::routeRequest(HttpRequest request, Client& client)
 {
-	if (request.headers.find("Host") == request.headers.end())
+	if (request.headers.find("Host") == request.headers.end()) {
 		throw std::runtime_error("No host header");
+	}
 	std::string host = request.headers.find("Host")->second;
 
 	// Host header domain resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
-		if (m_servers[i].getName() == host)
+		if (m_servers[i].getName() == host) {
 			return m_servers[i];
+		}
 	}
 
 	try {
@@ -272,13 +280,15 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 					? toInt(host.substr(colonPos + 1))
 					: 80;
 
-		if (port <= 0 || port > 65535)
+		if (port <= 0 || port > 65535) {
 			throw std::exception();
+		}
 
 		for (size_t i = 0; i < m_servers.size(); i++) {
 			SocketAddress addr = m_servers[i].getAddress();
-			if (addr.host == ip && addr.port == port)
+			if (addr.host == ip && addr.port == port) {
 				return m_servers[i];
+			}
 		}
 	}
 	catch (...) { }
@@ -287,8 +297,9 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		SocketAddress addr = m_servers[i].getAddress();
 		if (client.getPort() == addr.port) {
-			if (addr.host == 0 || client.getHost().s_addr == addr.host)
+			if (addr.host == 0 || client.getHost().s_addr == addr.host) {
 				return m_servers[i];
+			}
 		}
 	}
 
@@ -349,8 +360,9 @@ void Webserver::removeFdFromPoll(int fd)
 bool Webserver::headerIsSupported(std::string header)
 {
 	for (int i = 0; i < 1; i++) {
-		if (header == "Host")
+		if (header == "Host") {
 			return true;
+		}
 	}
 	return false;
 }

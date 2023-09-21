@@ -56,11 +56,12 @@ std::vector<ServerConfig> ConfigParser::parse(const std::string& filename)
 {
 	std::string content = getFileContent(filename);
 	lex(content, " \t\n", "{};");
-
 	m_configs.clear();
-	while (!m_tokens.empty()) {
+
+	// Config file need to have at least one server
+	do {
 		parseServer();
-	}
+	} while (!m_tokens.empty());
 
 	return m_configs;
 }
@@ -93,8 +94,9 @@ void ConfigParser::lex (const std::string& content, const std::string& whitespac
 /* -------------------------------------------------------------------------- */
 std::string ConfigParser::accept(void)
 {
-	if (m_tokens.empty())
+	if (m_tokens.empty()) {
 		throw std::runtime_error("Parser: syntax error!");
+	}
 
 	std::string token = m_tokens.front();
 	m_tokens.pop_front();
@@ -103,9 +105,9 @@ std::string ConfigParser::accept(void)
 
 void ConfigParser::consume(const std::string& token)
 {
-	if (m_tokens.front() != token)
+	if (m_tokens.front() != token) {
 		throw std::runtime_error("can't find " + token + "!");
-
+	}
 	m_tokens.pop_front();
 }
 
@@ -117,18 +119,29 @@ void ConfigParser::parseServer(void)
 
 	std::string token;
 	while ((token = accept()) != "}") {
-		if (!isValidServerKey(token))
+		if (!isValidServerKey(token)) {
 			throw std::runtime_error("Parser: unknown server key " + token + "!");
-		if (token == "listen")
+		}
+		if (token == "listen") {
 			parseAddress(server);
-		if (token == "server_name")
+		}
+		if (token == "server_name") {
 			parseServerName(server);
-		if (token == "error_page")
+		}
+		if (token == "error_page") {
 			parseErrorPage(server);
-		if (token == "location")
+		}
+		if (token == "location") {
 			parseLocation(server);
-		if (token == "client_max_body_size")
+		}
+		if (token == "client_max_body_size") {
 			parseClientMaxBodySize(server);
+		}
+	}
+
+	// Check server include the required fields (listen)
+	if (!server.address.host && !server.address.port) {
+		throw std::runtime_error("Parser: server has no listen field!");
 	}
 
 	// Fill in the default error pages and '/' location if not provided
@@ -146,19 +159,28 @@ void ConfigParser::parseLocation(ServerConfig& server)
 
 	std::string token;
 	while ((token = accept()) != "}") {
-		if (!isValidLocationKey(token))
+		if (!isValidLocationKey(token)) {
 			throw std::runtime_error("Parser: unknown location key " + token + "!");
-		if (token == "allowed_method")
+		}
+		if (token == "allowed_method") {
 			parseAllowedMethods(location);
-		if (token == "return")
+		}
+		if (token == "return") {
 			parseRedirect(location);
-		if (token == "alias")
+		}
+		if (token == "alias") {
 			parseAlias(location);
-		if (token == "autoindex")
+		}
+		if (token == "autoindex") {
 			parseAutoindex(location);
-		if (token == "index")
+		}
+		if (token == "index") {
 			parseIndex(location);
+		}
 	}
+
+	// Check for required fields of locaiton context block?
+
 	server.locations.push_back(location);
 }
 
@@ -180,14 +202,16 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		if (colonPos != std::string::npos) {
 			server.address.host = toIPv4(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
-		} else {
+		}
+		else {
 			server.address.host = 0;
 		}
 
 		// Resolve port portion
 		int port = toInt(token);
-		if (port <= 0 || port > 65535)
+		if (port <= 0 || port > 65535) {
 			throw std::exception();
+		}
 		server.address.port = port;
 
 		consume(";");
@@ -206,8 +230,9 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 	while ((token = accept()) != ";") {
 		tokens.push_back(token);
 	}
-	if (tokens.size() < 2)
+	if (tokens.size() < 2) {
 		throw std::runtime_error("Parser: syntax error!");
+	}
 
 	// Excluding the last element which is the page path
 	try {
@@ -216,10 +241,12 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 
 			// Check if the key already exist or the code isn't used
 			std::map<int, std::string>::iterator it;
-			if (server.errorPages.find(code) != server.errorPages.end())
+			if (server.errorPages.find(code) != server.errorPages.end()) {
 				throw std::runtime_error("duplicated error code");
-			if (!isValidErrorCode(code))
+			}
+			if (!isValidErrorCode(code)) {
 				throw std::runtime_error("code " + toString(code) + " isn't used");
+			}
 
 			server.errorPages[code] = tokens.back();
 		}
@@ -234,8 +261,9 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 {
 	try {
 		int value = toInt(accept());
-		if (value < 0)
+		if (value < 0) {
 			throw std::runtime_error("negative value");
+		}
 		server.clientMaxBodySize = value;
 		consume(";");
 	}
@@ -259,8 +287,9 @@ void ConfigParser::parseAllowedMethods(LocationConfig& location)
 	while ((token = accept()) != ";") {
 		// Define all allowed methods somewhere else in an array?
 		// Potentially more and need to be accessible in other places
-		if (token != "GET" && token != "POST" && token != "DELETE")
+		if (token != "GET" && token != "POST" && token != "DELETE") {
 			throw std::runtime_error("Parser: unknown method " + token);
+		}
 
 		location.allowedMethods.push_back(token);
 	}
@@ -288,8 +317,9 @@ void ConfigParser::parseAlias(LocationConfig& location)
 
 		// Check if alias is accessible and is a directory
 		struct stat pathInfo;
-		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode))
+		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
 			throw std::runtime_error("Parser: invalid alias " + token + "!");
+		}
 
 		location.alias = token; // path or alias?
 		consume(";");
@@ -304,13 +334,10 @@ void ConfigParser::parseAlias(LocationConfig& location)
 void ConfigParser::parseAutoindex(LocationConfig& location)
 {
 	std::string token = accept();
-	if (token != "on" && token != "off")
+	if (token != "on" && token != "off") {
 		throw std::runtime_error("Parser: invalid autoindex value!");
-
-	if (token == "on")
-		location.autoindex = true;
-	if (token == "off")
-		location.autoindex = false;
+	}
+	location.autoindex = token == "on" ? true : false;
 	consume(";");
 }
 
@@ -330,7 +357,7 @@ ServerConfig ConfigParser::createServer(void)
 	ServerConfig config;
 
 	config.address.host = 0;
-	config.address.port = 80;
+	config.address.port = 0;
 	config.root = ROOT;
 	config.clientMaxBodySize = -1;
 
@@ -341,8 +368,9 @@ void ConfigParser::addDefaultErrorPages(ServerConfig& server)
 {
 	for (size_t i = 0; i < validErrorCodes.size(); i++) {
 		int code = validErrorCodes[i];
-		if (server.errorPages.find(code) == server.errorPages.end())
+		if (server.errorPages.find(code) == server.errorPages.end()) {
 			server.errorPages[code] = "/default_error/" + toString(code) + ".html";
+		}
 	}
 }
 
@@ -352,8 +380,6 @@ LocationConfig ConfigParser::createLocation(void)
 	LocationConfig location;
 
 	// Set the default values
-
-	// location.allowedMethods.push_back("GET");
 	location.autoindex = false;
 	location.alias = "";
 	location.redirect.first = 0;
@@ -367,12 +393,15 @@ void ConfigParser::addDefaultLocation(ServerConfig& server)
 	// Check if the default location already exist
 	std::vector<LocationConfig>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) {
-		if (it->uri == "/")
+		if (it->uri == "/") {
 			return;
+		}
 	}
 
+	// Should add one default or throw an error??
 	LocationConfig location = createLocation();
 	location.uri = "/";
+	location.allowedMethods.push_back("GET");
 	location.index.push_back("index.html"); // default should be added in places where there is none as well
 
 	server.locations.push_back(location);
