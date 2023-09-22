@@ -33,33 +33,33 @@ class Webserver
 {
 public:
 	Webserver(const vector<ServerConfig> serverConfigs);
-	~Webserver();
+	~Webserver(void);
 
-	void start();
+	void start(void);
 
 private:
 	// Initialization
 	void setupServers(const vector<ServerConfig> configs);
-	void initListenSockets();
+	void initListenSockets(void);
 	int initSocket(SocketAddress address);
 
 	// Logic
-	void mainloop();
+	void mainloop(void);
 	void handleClientPOLLIN(Client& client);
 	void handleClientPOLLOUT(Client& client);
 
 	HttpResponse processRequest(HttpRequest request, Client& client);
 	void addClient(int socketFd);
-	void handleDisconnects();
+	void handleDisconnects(void);
 	void clientStatusCheck(Client& client, int bytesRead);
 	Server& routeRequest(HttpRequest request, Client& client);
 
 	// Utility
-	void filterUniqueSockets();
+	void filterUniqueSockets(void);
 	Client& getClientFromIdx(int idx);
 	bool headerIsSupported(std::string header);
 	void removeFdFromPoll(int fd);
-	void printStatus();
+	void printStatus(void);
 
 	// Member Data
 	set<SocketAddress> m_listenSockets;

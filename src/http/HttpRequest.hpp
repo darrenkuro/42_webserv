@@ -10,7 +10,7 @@ struct HttpRequest
 	std::string uri;
 	std::string version;
 	std::string body;
-	std::map<std::string, std::string> headers;
+	std::map<std::string, std::string> header;
 };
 
 // Main Parse Function

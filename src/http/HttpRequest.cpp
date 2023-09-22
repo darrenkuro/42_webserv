@@ -58,7 +58,7 @@ HttpRequest parseHttpRequest(std::string& content)
 	parsePart(" ", req.uri, content);
 	parsePart("\r\n", req.version, content);
 	while (content.find("\r\n") != 0) {
-		parseHeader(req.headers, content);
+		parseHeader(req.header, content);
 	}
 
 	// Remove the blank line after the headers

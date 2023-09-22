@@ -27,13 +27,13 @@ HttpResponse Server::handleRequest(HttpRequest req)
 
 	// Check client max body size
 	std::map<std::string, std::string>::iterator it;
-	it = req.headers.find("Content-Length");
-	if (it != req.headers.end() && !bodySizeAllowed(toInt(it->second))) {
+	it = req.header.find("Content-Length");
+	if (it != req.header.end() && !bodySizeAllowed(toInt(it->second))) {
 		return createBasicResponse(413, getErrorPage(413));
 	}
 
 	// Check if PUT without Content-Length
-	if (req.method == "PUT" && it == req.headers.end()) {
+	if (req.method == "PUT" && it == req.header.end()) {
 		return createBasicResponse(411, getErrorPage(411));
 	}
 
@@ -174,8 +174,8 @@ LocationConfig Server::routeRequest(std::string uri)
 std::string Server::getBoundry(HttpRequest req)
 {
 	std::map<std::string, std::string>::iterator it;
-	it = req.headers.find("Content-Type");
-	if (it == req.headers.end()) {
+	it = req.header.find("Content-Type");
+	if (it == req.header.end()) {
 		throw std::exception();
 	}
 

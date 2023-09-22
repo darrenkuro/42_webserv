@@ -91,8 +91,8 @@ inline std::ostream& operator<<(std::ostream& os, HttpRequest req)
 	os << "Method[" << req.method << "] ";
 	os << "Uri[" << req.uri << "] ";
 	os << "Version[" << req.version << "] ";
-	os << "Host[" << req.headers.find("Host")->second << "] ";
-	os << "Content-Length[" << req.headers.find("Content-Length")->second << "]";
+	os << "Host[" << req.header.find("Host")->second << "] ";
+	os << "Content-Length[" << req.header.find("Content-Length")->second << "]";
 	return os;
 }
 
