@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <fstream>
-#include <cstdio>       // std::remove
+#include <cstdio>
 #include <dirent.h>
 #include <sys/stat.h>
 #include "Webserver.hpp"
@@ -17,11 +17,9 @@ public:
 	Server(const ServerConfig config);
 
 	// Getters
-	SocketAddress getAddress();
+	Address getAddress();
 	std::string getName();
 	std::string getErrorPage(int code);
-	bool hasMaxBodySize();
-	int getMaxBodySize();
 
 	// Logic
 	HttpResponse handleRequest(HttpRequest req);
@@ -35,5 +33,6 @@ private:
 	LocationConfig routeRequest(std::string uri);
 	HttpResponse buildAutoindex(std::string path);
 	std::string getBoundry(HttpRequest req);
+	int getMaxBodySize();
 	bool bodySizeAllowed(int bytes);
 };

@@ -60,7 +60,7 @@ int toInt(std::string str) {
 }
 
 
-sockaddr_in createAddress(SocketAddress address)
+sockaddr_in createAddress(Address address)
 {
 	sockaddr_in server_addr;
 
@@ -72,15 +72,12 @@ sockaddr_in createAddress(SocketAddress address)
 	return server_addr;
 }
 
-bool SocketAddress::operator<(const SocketAddress& other) const
+bool Address::operator<(const Address& rhs) const
 {
-	if (host < other.host) {
-		return true;
+	if (host == rhs.host) {
+		return port < rhs.port;
 	}
-	if (host > other.host) {
-		return false;
-	}
-	return port < other.port;
+	return host < rhs.host ? true : false;
 }
 
 std::string toIPString(in_addr_t ip)

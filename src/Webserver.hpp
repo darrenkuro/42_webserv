@@ -33,7 +33,7 @@ class Webserver
 {
 public:
 	Webserver(const vector<ServerConfig> serverConfigs);
-	~Webserver(void);
+	~Webserver();
 
 	void start(void);
 
@@ -41,7 +41,7 @@ private:
 	// Initialization
 	void setupServers(const vector<ServerConfig> configs);
 	void initListenSockets(void);
-	int initSocket(SocketAddress address);
+	int initSocket(Address address);
 
 	// Logic
 	void mainloop(void);
@@ -62,7 +62,7 @@ private:
 	void printStatus(void);
 
 	// Member Data
-	set<SocketAddress> m_listenSockets;
+	set<Address> m_listenSockets;
 	vector<pollfd> m_pollFds;
 	vector<Server> m_servers;
 	map<int, Client> m_clients; // Key: Fd; Value: Client

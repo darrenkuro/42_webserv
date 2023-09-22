@@ -15,7 +15,7 @@ Webserver::Webserver(const vector<ServerConfig> serverConfigs)
 	}
 };
 
-Webserver::~Webserver(void)
+Webserver::~Webserver()
 {
 	for (size_t i = 0; i < m_pollFds.size(); i++) {
 		close(m_pollFds[i].fd);
@@ -51,7 +51,7 @@ void Webserver::initListenSockets(void)
 {
 	filterUniqueSockets();
 
-	std::set<SocketAddress>::iterator it;
+	std::set<Address>::iterator it;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
 		// struct in_addr addr;
 		// addr.s_addr = it->host;
@@ -63,7 +63,7 @@ void Webserver::initListenSockets(void)
 }
 
 /* -------------------------------------------------------------------------- */
-int Webserver::initSocket(SocketAddress address)
+int Webserver::initSocket(Address address)
 {
 	int listenFd = createIPv4Socket();
 	sockaddr_in serverAddr = createAddress(address);
@@ -281,7 +281,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 
 		for (size_t i = 0; i < m_servers.size(); i++) {
-			SocketAddress addr = m_servers[i].getAddress();
+			Address addr = m_servers[i].getAddress();
 			if (addr.host == ip && addr.port == port) {
 				return m_servers[i];
 			}
@@ -291,7 +291,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
-		SocketAddress addr = m_servers[i].getAddress();
+		Address addr = m_servers[i].getAddress();
 		if (client.getPort() == addr.port) {
 			if (addr.host == 0 || client.getHost().s_addr == addr.host) {
 				return m_servers[i];
@@ -312,9 +312,9 @@ void Webserver::filterUniqueSockets(void)
 		m_listenSockets.insert(m_servers[i].getAddress());
 	}
 
-	vector<std::set<SocketAddress>::iterator> removeIterators;
-	std::set<SocketAddress>::iterator it;
-	std::set<SocketAddress>::iterator it2;
+	vector<std::set<Address>::iterator> removeIterators;
+	std::set<Address>::iterator it;
+	std::set<Address>::iterator it2;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
 		if (it->host == 0) {
 			for (it2 = m_listenSockets.begin(); it2 != m_listenSockets.end(); it2++) {

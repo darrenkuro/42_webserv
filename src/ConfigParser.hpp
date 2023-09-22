@@ -23,7 +23,7 @@ struct LocationConfig
 
 struct ServerConfig
 {
-	SocketAddress address;
+	Address address;
 	std::string serverName;
 	std::string root;
 	ssize_t clientMaxBodySize;

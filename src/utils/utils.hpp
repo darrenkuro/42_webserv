@@ -9,16 +9,16 @@
 #include <fstream>
 #include <sstream>
 
-struct SocketAddress
+struct Address
 {
 	in_addr_t host;
 	int port;
 
-	bool operator<(const SocketAddress& other) const;
+	bool operator<(const Address& rhs) const;
 };
 
 int createIPv4Socket();
-sockaddr_in createAddress(SocketAddress address);
+sockaddr_in createAddress(Address address);
 std::string getFileContent(std::string path);
 std::string toString(int value);
 std::string toIPString(in_addr_t ip);

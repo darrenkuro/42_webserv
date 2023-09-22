@@ -105,7 +105,7 @@ inline std::ostream& operator<<(std::ostream& os, HttpResponse res)
 }
 
 /* -------------------------------------------------------------------------- */
-inline std::ostream &operator<<(std::ostream &os, const SocketAddress address)
+inline std::ostream &operator<<(std::ostream &os, const Address address)
 {
 	os << "Address[" << toIPString(address.host) << ":";
 	os << address.port << "]";

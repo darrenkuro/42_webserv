@@ -6,15 +6,13 @@ Server::Server(const ServerConfig config) : m_config(config)
 		toIPString(m_config.address.host).c_str(), m_config.address.port);
 }
 
-SocketAddress Server::getAddress() { return m_config.address; }
+Address Server::getAddress() { return m_config.address; }
 
 std::string Server::getName() { return m_config.serverName; }
 
 std::string Server::getErrorPage(int code) {
 	return fullPath(m_config.root, m_config.errorPages[code]);
 }
-
-int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
 
 HttpResponse Server::handleRequest(HttpRequest req)
 {
@@ -158,7 +156,7 @@ LocationConfig Server::routeRequest(std::string uri)
 {
 	std::vector<LocationConfig>::iterator it;
 
-	// All Server config should have default '/' location
+	// All Server config will have default '/' location
 	for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
 		if (it->uri == uri) {
 			return *it;
@@ -223,6 +221,9 @@ HttpResponse Server::buildAutoindex(std::string path)
 	response.body = body;
 	return response;
 }
+
+/* -------------------------------------------------------------------------- */
+int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
 
 bool Server::bodySizeAllowed(int bytes)
 {
