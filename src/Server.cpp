@@ -35,6 +35,8 @@ HttpResponse Server::handleRequest(HttpRequest req)
 		return createBasicResponse(411, getErrorPage(411));
 	}
 
+	logServerConfig(m_config);
+
 	// Check if method is allowed
 	std::vector<std::string> methods = route.allowedMethods;
 	if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
@@ -103,8 +105,10 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 {
 	std::string root = route.alias == ""
-					? fullPath(m_config.root, route.uri)
-					: fullPath(m_config.root, route.alias);
+						? fullPath(m_config.root, route.uri)
+						: fullPath(ROOT, route.alias);
+
+	log(DEBUG, "root: %s", root.c_str());
 
 	try {
 		std::string boundry = getBoundry(req);
@@ -146,8 +150,10 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 {
 	std::string root = route.alias == ""
 						? fullPath(m_config.root, route.uri)
-						: fullPath(m_config.root, route.alias);
-	std::string path = fullPath(root, req.uri.substr(route.uri.length()));
+						: fullPath(ROOT, route.alias);
+	std::string path = req.uri.substr(route.uri.length()) == ""
+						? root
+						: fullPath(root, req.uri.substr(route.uri.length()));
 
 	if (std::remove(path.c_str()) == 0) {
 		return createBasicResponse(204, "");

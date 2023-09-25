@@ -11,17 +11,18 @@ body {
 }
 
 h1 {
-	color: #333; /* Title color */
+	color: #333;
 }
 
 .buttons {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	align-items: center;
+	justify-content: center;
 	margin-top: 20px;
 }
 
-.button {
+button {
 	margin: 10px;
 	padding: 10px 20px;
 	background-color: #0074d9; /* Button background color */
@@ -32,7 +33,7 @@ h1 {
 	text-decoration: none;
 }
 
-.button:hover {
+button:hover {
 	background-color: #0056b3; /* Button background color on hover */
 }
 

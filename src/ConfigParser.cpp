@@ -174,6 +174,13 @@ void ConfigParser::parseLocation(ServerConfig& server)
 	LocationConfig location = createLocation();
 	parseUri(location), consume("{");
 
+	// Check if location uri already exists
+	std::vector<LocationConfig>::iterator it;
+	for (it = server.locations.begin(); it != server.locations.end(); it++) {
+		if (it->uri == location.uri)
+			throw std::runtime_error("Parser: duplication location " + it->uri + "!");
+	}
+
 	std::string token;
 	while ((token = accept()) != "}") {
 		if (!isValidLocationKey(token)) {

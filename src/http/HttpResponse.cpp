@@ -193,6 +193,7 @@ HttpResponse createBasicResponse(int code, std::string path)
 		res.body = getFileContent(path);
 		res.header["Content-Length"] = toString(res.body.length());
 		res.header["Content-Type"] = getMimeType(getExtension(path));
+		//res.header["Set-Cookie"] = "username=darren";
 	}
 	catch (...) {
 		std::ifstream file(DEFAULT_404_PATH);

@@ -7,15 +7,19 @@
 <body>
 	<div class="container">
 		<h1>42Evaluators</h1>
+		<div id="usernameDisplay">Guest</div>
 		<div class="buttons">
-			<a class="button" href="#">About</a>
-			<a class="button" href="/upload">Upload</a>
-			<a class="button" href="#">Cookies</a>
-			<a class="button" href="#">CGI</a>
+			<button onclick="home()">Home</button>
+			<button onclick="upload()">Upload</button>
+			<button onclick="cookies()">Cookies</button>
+			<button onclick="cgi()">CGI</button>
 		</div>
 	</div>
+	<div id="body"><div>
 	<div class="footer">
-		&copy; Webserv sample page by Luca & Darren, 2023 42Berlin.
+		&copy; Webserv sample page by Luca & Darren, 2023. 42Berlin.
 	</div>
+	<script src="/script/username.js"></script>
+	<script src="/script/nav.js"></script>
 </body>
 </html>
