@@ -6,7 +6,8 @@
 #pragma region constants
 
 const std::string serverKeyArray[] = {
-	"listen", "server_name", "error_page", "client_max_body_size", "location"
+	"root", "listen", "server_name", "error_page",
+	"client_max_body_size", "location"
 };
 
 const std::string locationKeyArray[] = {
@@ -15,6 +16,8 @@ const std::string locationKeyArray[] = {
 
 // TODO:CHECK THESE!?
 const int errorCode[] = {400, 403, 404, 405, 408, 411, 413, 500, 501, 505};
+
+const int redirectCode[] = {301, 302, 303, 307, 308};
 
 const std::vector<std::string> ConfigParser::validServerKeys(
 	serverKeyArray, serverKeyArray +
@@ -29,6 +32,11 @@ const std::vector<std::string> ConfigParser::validLocationKeys(
 const std::vector<int> ConfigParser::validErrorCodes(errorCode,
 	errorCode + sizeof(errorCode) / sizeof(errorCode[0])
 );
+
+const std::vector<int> ConfigParser::validRedirectCodes(redirectCode,
+	redirectCode + sizeof(redirectCode) / sizeof(redirectCode[0])
+);
+
 
 /* -------------------------------------------------------------------------- */
 bool ConfigParser::isValidServerKey(std::string key)
@@ -47,6 +55,12 @@ bool ConfigParser::isValidErrorCode(int code)
 {
 	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code)
 			!= validErrorCodes.end();
+}
+
+bool ConfigParser::isValidRedirectCode(int code)
+{
+	return std::find(validRedirectCodes.begin(), validRedirectCodes.end(), code)
+			!= validRedirectCodes.end();
 }
 
 #pragma endregion
@@ -122,6 +136,9 @@ void ConfigParser::parseServer(void)
 		if (!isValidServerKey(token)) {
 			throw std::runtime_error("Parser: unknown server key " + token + "!");
 		}
+		if (token == "root") {
+			parseRoot(server);
+		}
 		if (token == "listen") {
 			parseAddress(server);
 		}
@@ -179,6 +196,11 @@ void ConfigParser::parseLocation(ServerConfig& server)
 		}
 	}
 
+	// Add default method (GET) if no allowed method is specified
+	if (location.allowedMethods.empty()) {
+		location.allowedMethods.push_back("GET");
+	}
+
 	// Check for required fields of locaiton context block?
 
 	server.locations.push_back(location);
@@ -190,6 +212,14 @@ void ConfigParser::parseServerName(ServerConfig& server)
 	server.serverName = accept();
 	consume(";");
 }
+
+/* -------------------------------------------------------------------------- */
+void ConfigParser::parseRoot(ServerConfig& server)
+{
+	server.root = fullPath(ROOT, accept());
+	consume(";");
+}
+
 
 /* -------------------------------------------------------------------------- */
 void ConfigParser::parseAddress(ServerConfig& server)
@@ -300,11 +330,14 @@ void ConfigParser::parseRedirect(LocationConfig& location)
 {
 	try {
 		location.redirect.first = toInt(accept());
+		if (!isValidRedirectCode(location.redirect.first)) {
+			throw std::runtime_error("invalid redirect code");
+		}
 		location.redirect.second = accept(); // need to validate as url?
 		consume(";");
 	}
-	catch (...) {
-		// throw errors
+	catch (std::exception& e) {
+		throw std::runtime_error("Parser: " + std::string(e.what()) + "!");
 	}
 }
 

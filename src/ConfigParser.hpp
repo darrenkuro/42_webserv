@@ -56,6 +56,7 @@ private:
 	void parseServer(void);
 	void parseLocation(ServerConfig& server);
 
+	void parseRoot(ServerConfig& server);
 	void parseAddress(ServerConfig& server);
 	void parseServerName(ServerConfig& server);
 	void parseErrorPage(ServerConfig& server);
@@ -72,7 +73,9 @@ private:
 	static const std::vector<std::string> validServerKeys;
 	static const std::vector<std::string> validLocationKeys;
 	static const std::vector<int> validErrorCodes;
+	static const std::vector<int> validRedirectCodes;
 	bool isValidServerKey(std::string key);
 	bool isValidLocationKey(std::string key);
 	bool isValidErrorCode(int code);
+	bool isValidRedirectCode(int code);
 };

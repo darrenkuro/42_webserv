@@ -63,11 +63,17 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
 	std::string root = route.alias == ""
 						? fullPath(m_config.root, route.uri)
-						: fullPath(m_config.root, route.alias);
-	std::string path = fullPath(root, req.uri.substr(route.uri.length()));
+						: fullPath(ROOT, route.alias);
+	std::string path = req.uri.substr(route.uri.length()) == ""
+						? root
+						: fullPath(root, req.uri.substr(route.uri.length()));
 
-	log(DEBUG, "path: %s", path.c_str());
-	// First handle redirection?
+	// Handle redirection
+	if (route.redirect.first) {
+		HttpResponse res = createBasicResponse(route.redirect.first, "");
+		res.header["Location"] = route.redirect.second;
+		return res;
+	}
 
 	struct stat fileInfo;
 	if (stat(path.c_str(), &fileInfo) != 0) {

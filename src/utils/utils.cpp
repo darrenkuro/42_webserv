@@ -129,14 +129,16 @@ bool isAllDigit(std::string str)
 
 std::string fullPath(std::string root, std::string path)
 {
-	if (root.empty() || path.empty()) {
+
+	try {
+		// Remove '/' from root and path
+		root = root.at(root.size() - 1) == '/' ? root.substr(0, root.size() - 1) : root;
+		path = path.at(0) == '/' ? path.substr(1) : path;
+	}
+	catch (...) {
+		// Protect against if strings are empty or index out of bound
 		return "";
 	}
-
-	// Remove '/' from root and path
-	root = root[root.size() - 1] == '/' ? root.substr(0, root.size() - 1) : root;
-	path = path[0] == '/' ? path.substr(1) : path;
-
 	return root + "/" + path;
 }
 

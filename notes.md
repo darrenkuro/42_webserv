@@ -21,3 +21,5 @@ HTTP request can contain duplicate headers? How is this supposed to be handled?
 Host: example.com
 Cookie: session_id=12345
 Cookie: user_id=67890```
+
+Should cookie be saved in the server& (different ones will have different cookies)?
