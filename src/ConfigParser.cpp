@@ -6,12 +6,12 @@
 #pragma region constants
 
 const std::string serverKeyArray[] = {
-	"root", "listen", "server_name", "error_page",
-	"client_max_body_size", "location"
+	"root","server_name",  "listen", "client_max_body_size",
+	"error_page", "location"
 };
 
 const std::string locationKeyArray[] = {
-	"allowed_method", "return", "alias", "autoindex", "index"
+	"autoindex", "alias", "allowed_method", "index", "return"
 };
 
 // TODO:CHECK THESE!?
@@ -139,20 +139,20 @@ void ConfigParser::parseServer(void)
 		if (token == "root") {
 			parseRoot(server);
 		}
+		if (token == "server_name") {
+			parseServerName(server);
+		}
 		if (token == "listen") {
 			parseAddress(server);
 		}
-		if (token == "server_name") {
-			parseServerName(server);
+		if (token == "client_max_body_size") {
+			parseClientMaxBodySize(server);
 		}
 		if (token == "error_page") {
 			parseErrorPage(server);
 		}
 		if (token == "location") {
 			parseLocation(server);
-		}
-		if (token == "client_max_body_size") {
-			parseClientMaxBodySize(server);
 		}
 	}
 
@@ -179,20 +179,20 @@ void ConfigParser::parseLocation(ServerConfig& server)
 		if (!isValidLocationKey(token)) {
 			throw std::runtime_error("Parser: unknown location key " + token + "!");
 		}
-		if (token == "allowed_method") {
-			parseAllowedMethods(location);
-		}
-		if (token == "return") {
-			parseRedirect(location);
+		if (token == "autoindex") {
+			parseAutoindex(location);
 		}
 		if (token == "alias") {
 			parseAlias(location);
 		}
-		if (token == "autoindex") {
-			parseAutoindex(location);
+		if (token == "allowed_method") {
+			parseAllowedMethods(location);
 		}
 		if (token == "index") {
 			parseIndex(location);
+		}
+		if (token == "return") {
+			parseRedirect(location);
 		}
 	}
 
@@ -207,19 +207,18 @@ void ConfigParser::parseLocation(ServerConfig& server)
 }
 
 /* -------------------------------------------------------------------------- */
-void ConfigParser::parseServerName(ServerConfig& server)
-{
-	server.serverName = accept();
-	consume(";");
-}
-
-/* -------------------------------------------------------------------------- */
 void ConfigParser::parseRoot(ServerConfig& server)
 {
 	server.root = fullPath(ROOT, accept());
 	consume(";");
 }
 
+/* -------------------------------------------------------------------------- */
+void ConfigParser::parseServerName(ServerConfig& server)
+{
+	server.serverName = accept();
+	consume(";");
+}
 
 /* -------------------------------------------------------------------------- */
 void ConfigParser::parseAddress(ServerConfig& server)
@@ -250,6 +249,23 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		throw std::runtime_error("Parser: invalid listen!");
 	}
 }
+
+/* -------------------------------------------------------------------------- */
+void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
+{
+	try {
+		int value = toInt(accept());
+		if (value < 0) {
+			throw std::runtime_error("negative value");
+		}
+		server.clientMaxBodySize = value;
+		consume(";");
+	}
+	catch (std::exception& e) {
+		throw std::runtime_error("Parser: body size, " + std::string(e.what()) + "!");
+	}
+}
+
 
 /* -------------------------------------------------------------------------- */
 void ConfigParser::parseErrorPage(ServerConfig& server)
@@ -287,22 +303,6 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 }
 
 /* -------------------------------------------------------------------------- */
-void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
-{
-	try {
-		int value = toInt(accept());
-		if (value < 0) {
-			throw std::runtime_error("negative value");
-		}
-		server.clientMaxBodySize = value;
-		consume(";");
-	}
-	catch (std::exception& e) {
-		throw std::runtime_error("Parser: body size, " + std::string(e.what()) + "!");
-	}
-}
-
-/* -------------------------------------------------------------------------- */
 void ConfigParser::parseUri(LocationConfig& location)
 {
 	location.uri = accept();
@@ -311,34 +311,14 @@ void ConfigParser::parseUri(LocationConfig& location)
 }
 
 /* -------------------------------------------------------------------------- */
-void ConfigParser::parseAllowedMethods(LocationConfig& location)
+void ConfigParser::parseAutoindex(LocationConfig& location)
 {
-	std::string token;
-	while ((token = accept()) != ";") {
-		// Define all allowed methods somewhere else in an array?
-		// Potentially more and need to be accessible in other places
-		if (token != "GET" && token != "POST" && token != "DELETE") {
-			throw std::runtime_error("Parser: unknown method " + token);
-		}
-
-		location.allowedMethods.push_back(token);
+	std::string token = accept();
+	if (token != "on" && token != "off") {
+		throw std::runtime_error("Parser: invalid autoindex value!");
 	}
-}
-
-/* -------------------------------------------------------------------------- */
-void ConfigParser::parseRedirect(LocationConfig& location)
-{
-	try {
-		location.redirect.first = toInt(accept());
-		if (!isValidRedirectCode(location.redirect.first)) {
-			throw std::runtime_error("invalid redirect code");
-		}
-		location.redirect.second = accept(); // need to validate as url?
-		consume(";");
-	}
-	catch (std::exception& e) {
-		throw std::runtime_error("Parser: " + std::string(e.what()) + "!");
-	}
+	location.autoindex = token == "on" ? true : false;
+	consume(";");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -364,16 +344,19 @@ void ConfigParser::parseAlias(LocationConfig& location)
 }
 
 /* -------------------------------------------------------------------------- */
-void ConfigParser::parseAutoindex(LocationConfig& location)
+void ConfigParser::parseAllowedMethods(LocationConfig& location)
 {
-	std::string token = accept();
-	if (token != "on" && token != "off") {
-		throw std::runtime_error("Parser: invalid autoindex value!");
-	}
-	location.autoindex = token == "on" ? true : false;
-	consume(";");
-}
+	std::string token;
+	while ((token = accept()) != ";") {
+		// Define all allowed methods somewhere else in an array?
+		// Potentially more and need to be accessible in other places
+		if (token != "GET" && token != "POST" && token != "DELETE") {
+			throw std::runtime_error("Parser: unknown method " + token);
+		}
 
+		location.allowedMethods.push_back(token);
+	}
+}
 
 /* -------------------------------------------------------------------------- */
 void ConfigParser::parseIndex(LocationConfig& location)
@@ -381,6 +364,22 @@ void ConfigParser::parseIndex(LocationConfig& location)
 	std::string token;
 	while ((token = accept()) != ";") {
 		location.index.push_back(token);
+	}
+}
+
+/* -------------------------------------------------------------------------- */
+void ConfigParser::parseRedirect(LocationConfig& location)
+{
+	try {
+		location.redirect.first = toInt(accept());
+		if (!isValidRedirectCode(location.redirect.first)) {
+			throw std::runtime_error("invalid redirect code");
+		}
+		location.redirect.second = accept(); // need to validate as url?
+		consume(";");
+	}
+	catch (std::exception& e) {
+		throw std::runtime_error("Parser: " + std::string(e.what()) + "!");
 	}
 }
 
@@ -397,17 +396,6 @@ ServerConfig ConfigParser::createServer(void)
 	return config;
 }
 
-void ConfigParser::addDefaultErrorPages(ServerConfig& server)
-{
-	for (size_t i = 0; i < validErrorCodes.size(); i++) {
-		int code = validErrorCodes[i];
-		if (server.errorPages.find(code) == server.errorPages.end()) {
-			server.errorPages[code] = "/default_error/" + toString(code) + ".html";
-		}
-	}
-}
-
-// make two different methods, one init?
 LocationConfig ConfigParser::createLocation(void)
 {
 	LocationConfig location;
@@ -419,6 +407,16 @@ LocationConfig ConfigParser::createLocation(void)
 	location.redirect.second = "";
 
 	return location;
+}
+
+void ConfigParser::addDefaultErrorPages(ServerConfig& server)
+{
+	for (size_t i = 0; i < validErrorCodes.size(); i++) {
+		int code = validErrorCodes[i];
+		if (server.errorPages.find(code) == server.errorPages.end()) {
+			server.errorPages[code] = "/default_error/" + toString(code) + ".html";
+		}
+	}
 }
 
 void ConfigParser::addDefaultLocation(ServerConfig& server)

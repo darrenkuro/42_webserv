@@ -178,9 +178,16 @@ HttpResponse createBasicResponse(int code, std::string path)
 	res.header["Date"] = getDate();
 	res.header["Server"] = "Webserv42/1.0.0";
 
-	// Handle 204 No Content separately
-	if (code == 204)
+	// Handle POST response
+	if (code == 204) {
 		return res;
+	}
+
+	// Handle redirect response
+	if (ConfigParser::isValidRedirectCode(code)) {
+		res.header["Location"] = path;
+		return res;
+	}
 
 	try {
 		res.body = getFileContent(path);

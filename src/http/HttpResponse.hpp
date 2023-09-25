@@ -5,6 +5,7 @@
 #include <fstream>
 #include <ctime>
 #include "utils.hpp"
+#include "ConfigParser.hpp"
 
 #define DEFAULT_400_PATH "./public/default_error/400.html"
 #define DEFAULT_404_PATH "./public/default_error/404.html"

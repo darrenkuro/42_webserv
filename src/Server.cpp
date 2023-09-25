@@ -70,9 +70,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 
 	// Handle redirection
 	if (route.redirect.first) {
-		HttpResponse res = createBasicResponse(route.redirect.first, "");
-		res.header["Location"] = route.redirect.second;
-		return res;
+		return createBasicResponse(route.redirect.first, route.redirect.second);
 	}
 
 	struct stat fileInfo;
