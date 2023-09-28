@@ -13,15 +13,14 @@
 class Client
 {
 public:
-	Client();
-  Client(int fd, Address addr);
-	Client(int socketFd, in_addr host, int port);
+	// Constructor & Destructor
+ 	Client(int fd, Address addr);
 
 	// Getters
 	int getID();
 	int getFd();
 	int getPort();
-	in_addr_t getHost();
+	in_addr_t getIP();
 	bool didTimeout();
 	bool hasDisconnected();
 	bool getResponseIsReady();

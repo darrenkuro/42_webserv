@@ -9,26 +9,11 @@ Client::Client(int fd, Address addr)
     clientID++;
 
     m_socketFd = fd;
+    m_address = addr;
     m_responseIsReady = false;
     m_hasDisconnected = false;
 
-    m_address = addr;
     gettimeofday(&m_lastEventTime, NULL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-Client::Client(int socketFd, in_addr host, int port)
-{
-	static int clientID = 1;
-	m_socketFd = socketFd;
-	m_port = port;
-	m_host = host;
-	m_responseIsReady = false;
-	m_hasDisconnected = false;
-	m_id = clientID;
-	gettimeofday(&m_lastEventTime, NULL);
-	reset();
-	clientID++;
 }
 
 void Client::setResponse(HttpResponse res)
@@ -62,7 +47,7 @@ int Client::getFd() { return m_socketFd; }
 
 int Client::getPort() { return m_address.port; }
 
-in_addr_t Client::getHost() { return m_address.ip; }
+in_addr_t Client::getIP() { return m_address.ip; }
 
 bool Client::hasDisconnected() { return m_hasDisconnected; }
 

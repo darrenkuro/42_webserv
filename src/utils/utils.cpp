@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "log.hpp"
 
 using std::string;
 using std::runtime_error;
@@ -197,9 +198,9 @@ Address getAddressFromFd(int fd)
 	Address addr;
 	addr.ip = serverAddress.sin_addr.s_addr;
 	addr.port = serverAddress.sin_port;
+	log(INFO, "HH %d", addr.port);
 	return addr;
 }
-
 
 struct pollfd buildPollFd(int fd, short events)
 {
