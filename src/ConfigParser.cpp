@@ -1,16 +1,18 @@
 #include "ConfigParser.hpp"
 
+using std::string;
+
 /* --------------------------------------------------------------------------------------------- *
  * Constants declaractions and checkers for valid keys in the config.
  * --------------------------------------------------------------------------------------------- */
 #pragma region constants
 
-const std::string serverKeyArray[] = {
+const string serverKeyArray[] = {
 	"root","server_name",  "listen", "client_max_body_size",
 	"error_page", "location"
 };
 
-const std::string locationKeyArray[] = {
+const string locationKeyArray[] = {
 	"autoindex", "alias", "allowed_method", "index", "return"
 };
 
@@ -19,12 +21,12 @@ const int errorCode[] = {400, 403, 404, 405, 408, 411, 413, 500, 501, 505};
 
 const int redirectCode[] = {301, 302, 303, 307, 308};
 
-const std::vector<std::string> ConfigParser::validServerKeys(
+const std::vector<string> ConfigParser::validServerKeys(
 	serverKeyArray, serverKeyArray +
 	sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
 );
 
-const std::vector<std::string> ConfigParser::validLocationKeys(
+const std::vector<string> ConfigParser::validLocationKeys(
 	locationKeyArray, locationKeyArray +
 	sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
 );
@@ -39,13 +41,13 @@ const std::vector<int> ConfigParser::validRedirectCodes(redirectCode,
 
 
 /* --------------------------------------------------------------------------------------------- */
-bool ConfigParser::isValidServerKey(std::string key)
+bool ConfigParser::isValidServerKey(string key)
 {
 	return std::find(validServerKeys.begin(), validServerKeys.end(), key)
 			!= validServerKeys.end();
 }
 
-bool ConfigParser::isValidLocationKey(std::string key)
+bool ConfigParser::isValidLocationKey(string key)
 {
 	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key)
 			!= validLocationKeys.end();
@@ -66,9 +68,9 @@ bool ConfigParser::isValidRedirectCode(int code)
 #pragma endregion
 
 /* --------------------------------------------------------------------------------------------- */
-std::vector<ServerConfig> ConfigParser::parse(const std::string& filename)
+std::vector<ServerConfig> ConfigParser::parse(const string& filename)
 {
-	std::string content = getFileContent(filename);
+	string content = getFileContent(filename);
 	lex(content, " \t\n", "{};");
 	m_configs.clear();
 
@@ -81,23 +83,22 @@ std::vector<ServerConfig> ConfigParser::parse(const std::string& filename)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-void ConfigParser::lex (const std::string& content, const std::string& whitespace,
-						const std::string& symbol)
+void ConfigParser::lex(const string& content, const string& whitespace, const string& symbol)
 {
 	m_tokens.clear();
 
 	size_t pos = 0;
 	while (pos < content.size()) {
-		if (symbol.find(content[pos]) != std::string::npos) {
-			m_tokens.push_back(std::string(1, content[pos]));
+		if (symbol.find(content[pos]) != string::npos) {
+			m_tokens.push_back(string(1, content[pos]));
 			pos++;
 		}
-		else if (whitespace.find(content[pos]) != std::string::npos) {
+		else if (whitespace.find(content[pos]) != string::npos) {
 			pos++;
 		}
 		else {
 			size_t tokEnd = content.find_first_of(whitespace + symbol, pos);
-			if (tokEnd == std::string::npos)
+			if (tokEnd == string::npos)
 				tokEnd = content.size();
 			m_tokens.push_back(content.substr(pos, tokEnd - pos));
 			pos += m_tokens.back().size();
@@ -106,18 +107,18 @@ void ConfigParser::lex (const std::string& content, const std::string& whitespac
 }
 
 /* --------------------------------------------------------------------------------------------- */
-std::string ConfigParser::accept(void)
+string ConfigParser::accept(void)
 {
 	if (m_tokens.empty()) {
 		throw std::runtime_error("Parser: syntax error!");
 	}
 
-	std::string token = m_tokens.front();
+	string token = m_tokens.front();
 	m_tokens.pop_front();
 	return token;
 }
 
-void ConfigParser::consume(const std::string& token)
+void ConfigParser::consume(const string& token)
 {
 	if (m_tokens.front() != token) {
 		throw std::runtime_error("can't find " + token + "!");
@@ -131,7 +132,7 @@ void ConfigParser::parseServer(void)
 	ServerConfig server = createServer();
 	consume("server"), consume("{");
 
-	std::string token;
+	string token;
 	while ((token = accept()) != "}") {
 		if (!isValidServerKey(token)) {
 			throw std::runtime_error("Parser: unknown server key " + token + "!");
@@ -181,7 +182,7 @@ void ConfigParser::parseLocation(ServerConfig& server)
 			throw std::runtime_error("Parser: duplication location " + it->uri + "!");
 	}
 
-	std::string token;
+	string token;
 	while ((token = accept()) != "}") {
 		if (!isValidLocationKey(token)) {
 			throw std::runtime_error("Parser: unknown location key " + token + "!");
@@ -231,11 +232,11 @@ void ConfigParser::parseServerName(ServerConfig& server)
 void ConfigParser::parseAddress(ServerConfig& server)
 {
 	try {
-		std::string token = accept();
+		string token = accept();
 
 		// Resolve host portion
 		size_t colonPos = token.find(":");
-		if (colonPos != std::string::npos) {
+		if (colonPos != string::npos) {
 			server.address.host = toIPv4(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
 		}
@@ -269,7 +270,7 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 		consume(";");
 	}
 	catch (std::exception& e) {
-		throw std::runtime_error("Parser: body size, " + std::string(e.what()) + "!");
+		throw std::runtime_error("Parser: body size, " + string(e.what()) + "!");
 	}
 }
 
@@ -277,8 +278,8 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 /* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseErrorPage(ServerConfig& server)
 {
-	std::vector<std::string> tokens;
-	std::string token;
+	std::vector<string> tokens;
+	string token;
 
 	while ((token = accept()) != ";") {
 		tokens.push_back(token);
@@ -293,7 +294,7 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 			int code = toInt(tokens[i]);
 
 			// Check if the key already exist or the code isn't used
-			std::map<int, std::string>::iterator it;
+			std::map<int, string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end()) {
 				throw std::runtime_error("duplicated error code");
 			}
@@ -305,7 +306,7 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 		}
 	}
 	catch (std::exception& e) {
-		throw std::runtime_error("Parser: error page, " + std::string(e.what()) + "!");
+		throw std::runtime_error("Parser: error page, " + string(e.what()) + "!");
 	}
 }
 
@@ -320,7 +321,7 @@ void ConfigParser::parseUri(LocationConfig& location)
 /* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAutoindex(LocationConfig& location)
 {
-	std::string token = accept();
+	string token = accept();
 	if (token != "on" && token != "off") {
 		throw std::runtime_error("Parser: invalid autoindex value!");
 	}
@@ -332,8 +333,8 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 void ConfigParser::parseAlias(LocationConfig& location)
 {
 	try {
-		std::string token = accept();
-		std::string path = fullPath(ROOT, token);
+		string token = accept();
+		string path = fullPath(ROOT, token);
 
 		// Check if alias is accessible and is a directory
 		struct stat pathInfo;
@@ -353,7 +354,7 @@ void ConfigParser::parseAlias(LocationConfig& location)
 /* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAllowedMethods(LocationConfig& location)
 {
-	std::string token;
+	string token;
 	while ((token = accept()) != ";") {
 		// Define all allowed methods somewhere else in an array?
 		// Potentially more and need to be accessible in other places
@@ -368,7 +369,7 @@ void ConfigParser::parseAllowedMethods(LocationConfig& location)
 /* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseIndex(LocationConfig& location)
 {
-	std::string token;
+	string token;
 	while ((token = accept()) != ";") {
 		location.index.push_back(token);
 	}
@@ -386,7 +387,7 @@ void ConfigParser::parseRedirect(LocationConfig& location)
 		consume(";");
 	}
 	catch (std::exception& e) {
-		throw std::runtime_error("Parser: " + std::string(e.what()) + "!");
+		throw std::runtime_error("Parser: " + string(e.what()) + "!");
 	}
 }
 

@@ -1,5 +1,7 @@
 #include "Webserver.hpp"
 
+using std::string;
+
 /* --------------------------------------------------------------------------------------------- *
  * Webserver Construction & Deconstruction
  * --------------------------------------------------------------------------------------------- */
@@ -74,7 +76,7 @@ int Webserver::initSocket(Address address)
 
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		close(listenFd);
-		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
+		throw std::runtime_error("bind() failed: " + string(strerror(errno)));
 	}
 
 	if (listen(listenFd, 10)) {
@@ -119,7 +121,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 {
 	char buffer[RECV_SIZE];
 	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
-	std::string bufferStr(buffer, bytesRead);
+	string bufferStr(buffer, bytesRead);
 
 	if (bytesRead <= 0) {
 		clientStatusCheck(client, bytesRead);
@@ -137,7 +139,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 			client.setRequest(parseHttpRequest(bufferStr));
 
 			// Check Content-Length and set expecting bytes
-			std::map<std::string, std::string>::iterator it;
+			std::map<string, string>::iterator it;
 			it = client.getRequest().header.find("Content-Length");
 			if (it != client.getRequest().header.end()) {
 				client.setBytesExpected(toInt(it->second));
@@ -171,7 +173,7 @@ void Webserver::handleClientPOLLOUT(Client& client)
 	logHttp(response, client.getID());
 
 	// Here turn reponse into string and send
-	std::string responseStr = toString(response);
+	string responseStr = toString(response);
 	send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
 }
 
@@ -257,7 +259,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	if (request.header.find("Host") == request.header.end()) {
 		throw std::runtime_error("No host header");
 	}
-	std::string host = request.header.find("Host")->second;
+	string host = request.header.find("Host")->second;
 
 	// Host header domain resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
@@ -269,10 +271,10 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	try {
 		// Host header ip resolution
 		size_t colonPos = host.find(':');
-		in_addr_t ip = colonPos != std::string::npos
+		in_addr_t ip = colonPos != string::npos
 					? toIPv4(host.substr(0, colonPos))
 					: toIPv4(host);
-		int port = colonPos != std::string::npos
+		int port = colonPos != string::npos
 					? toInt(host.substr(colonPos + 1))
 					: 80;
 
@@ -352,7 +354,7 @@ void Webserver::removeFdFromPoll(int fd)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-bool Webserver::headerIsSupported(std::string header)
+bool Webserver::headerIsSupported(string header)
 {
 	for (int i = 0; i < 1; i++) {
 		if (header == "Host") {

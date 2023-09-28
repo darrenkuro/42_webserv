@@ -1,12 +1,14 @@
 #include "HttpRequest.hpp"
 
+using std::string;
+
 /* --------------------------------------------------------------------------------------------- *
  * Parse a field for HTTP request, with a given separator, consume the content.
  * --------------------------------------------------------------------------------------------- */
-void parsePart(const std::string& sep, std::string& field, std::string& content)
+void parsePart(const string& sep, string& field, string& content)
 {
 	size_t pos = content.find(sep);
-	if (pos == std::string::npos) {
+	if (pos == string::npos) {
 		throw std::exception();
 	}
 
@@ -22,35 +24,35 @@ void parsePart(const std::string& sep, std::string& field, std::string& content)
 /* --------------------------------------------------------------------------------------------- *
  * Parse a header field for HTTP request, consume the content.
  * --------------------------------------------------------------------------------------------- */
-void parseHeader(std::map<std::string, std::string>& header, std::string& content)
+void parseHeader(std::map<string, string>& header, string& content)
 {
 	size_t colonPos = content.find(":");
-	if (colonPos == std::string::npos) {
+	if (colonPos == string::npos) {
 		throw std::exception();
 	}
 
-	std::string key = content.substr(0, colonPos);
+	string key = content.substr(0, colonPos);
 	content.erase(content.begin(), content.begin() + colonPos + 1);
 
 	// Handle leading white spaces before value
 	size_t valuePos = content.find_first_not_of(" \t");
-	if (valuePos == std::string::npos) {
+	if (valuePos == string::npos) {
 		throw std::exception();
 	}
 	content.erase(content.begin(), content.begin() + valuePos);
 
 	size_t crlfPos = content.find("\r\n");
-	if (crlfPos == std::string::npos) {
+	if (crlfPos == string::npos) {
 		throw std::exception();
 	}
-	std::string value = content.substr(0, crlfPos);
+	string value = content.substr(0, crlfPos);
 	content.erase(content.begin(), content.begin() + crlfPos + 2);
 
 	header[key] = value;
 }
 
 /* --------------------------------------------------------------------------------------------- */
-HttpRequest parseHttpRequest(std::string& content)
+HttpRequest parseHttpRequest(string& content)
 {
 	HttpRequest req;
 

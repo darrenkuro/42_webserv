@@ -1,7 +1,9 @@
 #include "HttpResponse.hpp"
 
+using std::string;
+
 /* --------------------------------------------------------------------------------------------- */
-std::string getStatusText(int code)
+string getStatusText(int code)
 {
 	switch(code) {
 		case 100:
@@ -86,7 +88,7 @@ std::string getStatusText(int code)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-std::string getMimeType(std::string ext)
+string getMimeType(string ext)
 {
 	if (ext == ".aac") {
 		return "audio/aac";
@@ -149,13 +151,13 @@ std::string getMimeType(std::string ext)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-std::string toString(HttpResponse res) {
-	std::string str;
+string toString(HttpResponse res) {
+	string str;
 	str.append("HTTP/1.1 ");
 	str.append(toString(res.statusCode) + " ");
 	str.append(getStatusText(res.statusCode) + "\r\n");
 
-	std::map<std::string, std::string>::iterator it;
+	std::map<string, string>::iterator it;
 	for (it = res.header.begin(); it != res.header.end(); it++) {
 		str.append(it->first + ": ").append(it->second + "\r\n");
 	}
@@ -163,18 +165,18 @@ std::string toString(HttpResponse res) {
 	return str;
 }
 
-std::string getDate(void)
+string getDate(void)
 {
 	std::time_t t = std::time(NULL);
 	std::tm* timePtr = std::gmtime(&t);
 
 	char buffer[50];
 	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
-	return std::string(buffer);
+	return string(buffer);
 }
 
 /* --------------------------------------------------------------------------------------------- */
-HttpResponse createBasicResponse(int code, std::string path)
+HttpResponse createBasicResponse(int code, string path)
 {
 	HttpResponse res;
 
