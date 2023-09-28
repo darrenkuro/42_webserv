@@ -2,7 +2,8 @@
 
 #include <string>
 #include <cstdlib>
-#include <cstdio>       // std::remove
+#include <fstream>
+#include <cstdio>
 #include <dirent.h>
 #include <sys/stat.h>
 #include "Webserver.hpp"
@@ -13,19 +14,25 @@ struct ServerConfig;
 class Server
 {
 public:
-    Server(const ServerConfig config);
+	Server(const ServerConfig config);
 
-    Address getAddress();
-    std::string getName();
+	// Getters
+	Address getAddress();
+	std::string getName();
+	std::string getErrorPage(int code);
 
-    HttpResponse handleRequest(HttpRequest req);
-    HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
-    HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
-    HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);
+	// Logic
+	HttpResponse handleRequest(HttpRequest req);
+	HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
+	HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
+	HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);
 
 private:
-    ServerConfig m_config;
+	ServerConfig m_config;
 
-    LocationConfig routeRequest(std::string uri);
-    HttpResponse buildAutoindex(std::string path);
+	LocationConfig routeRequest(std::string uri);
+	HttpResponse buildAutoindex(std::string path);
+	std::string getBoundry(HttpRequest req);
+	int getMaxBodySize();
+	bool bodySizeAllowed(int bytes);
 };

@@ -1,6 +1,10 @@
 #include "HttpResponse.hpp"
 
-std::string getStatusText(int code)
+using std::string;
+using std::map;
+
+/* --------------------------------------------------------------------------------------------- */
+string getStatusText(int code)
 {
 	switch(code) {
 		case 100:
@@ -82,80 +86,121 @@ std::string getStatusText(int code)
 		default:
 			return "Unknown";
 	}
-	// for (int i = 0; i < STATUS_MAP_SIZE; i++) {
-	// 	if (statusTextMap[i].first == code) {
-	// 		return statusTextMap[i].second;
-	// 	}
-	// }
-	// return "No status text provided";
 }
 
-std::string getMimeType(std::string ext)
+/* --------------------------------------------------------------------------------------------- */
+string getMimeType(string ext)
 {
-	if (ext == ".aac")
+	if (ext == ".aac") {
 		return "audio/aac";
-	if (ext == ".css")
+	}
+	if (ext == ".css") {
 		return "text/css";
-	if (ext == ".csv")
+	}
+	if (ext == ".csv") {
 		return "text/csv";
-	if (ext == ".gif")
+	}
+	if (ext == ".gif") {
 		return "image/git";
-	if (ext == ".htm" || ext == ".html")
+	}
+	if (ext == ".htm" || ext == ".html") {
 		return "text/html";
-	if (ext == ".ico")
+	}
+	if (ext == ".ico") {
 		return "image/vnd.microsoft.icon";
-	if (ext == ".jpeg" || ext == ".jpg")
+	}
+	if (ext == ".jpeg" || ext == ".jpg") {
 		return "image/jpeg";
-	if (ext == ".js" || ext == ".mjs")
+	}
+	if (ext == ".js" || ext == ".mjs") {
 		return "text/javascript";
-	if (ext == ".json")
+	}
+	if (ext == ".json") {
 		return "application/json";
-	if (ext == ".mp3")
+	}
+	if (ext == ".mp3") {
 		return "audio/mpeg";
-	if (ext == ".mp4")
+	}
+	if (ext == ".mp4") {
 		return "video/mp4";
-	if (ext == ".mpeg")
+	}
+	if (ext == ".mpeg") {
 		return "video/mpeg";
-	if (ext == ".png")
+	}
+	if (ext == ".png") {
 		return "image/png";
-	if (ext == ".pdf")
+	}
+	if (ext == ".pdf") {
 		return "application/pdf";
-	if (ext == ".php")
+	}
+	if (ext == ".php") {
 		return "application/x-httpd-php";
-	if (ext == ".svg")
+	}
+	if (ext == ".svg") {
 		return "image/svg+xml";
-	if (ext == ".txt")
+	}
+	if (ext == ".txt") {
 		return "text/plain";
-	if (ext == ".wav")
+	}
+	if (ext == ".wav") {
 		return "audio/wav";
-	if (ext == ".webp")
+	}
+	if (ext == ".webp") {
 		return "image/webp";
+	}
 	return "text/plain";
 }
 
-std::string toString(HttpResponse res) {
-	std::string str("HTTP/1.1 ");
-	str += toString(res.statusCode) + " ";
-	str += getStatusText(res.statusCode) + "\r\n";
+/* --------------------------------------------------------------------------------------------- */
+string toString(HttpResponse res) {
+	string str;
+	str.append("HTTP/1.1 ");
+	str.append(toString(res.statusCode) + " ");
+	str.append(getStatusText(res.statusCode) + "\r\n");
 
-	std::map<std::string, std::string>::iterator it;
+	map<string, string>::iterator it;
 	for (it = res.header.begin(); it != res.header.end(); it++) {
-		str += it->first + ": " + it->second + "\r\n";
+		str.append(it->first + ": ").append(it->second + "\r\n");
 	}
-	str += "\r\n" + res.body;
+	str.append("\r\n").append(res.body);
 	return str;
 }
 
-HttpResponse createBasicResponse(int code, std::string path)
+string getDate(void)
+{
+	std::time_t t = std::time(NULL);
+	std::tm* timePtr = std::gmtime(&t);
+
+	char buffer[50];
+	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
+	return string(buffer);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+HttpResponse createBasicResponse(int code, string path)
 {
 	HttpResponse res;
 
 	res.statusCode = code;
-	// Add more conventional headers such as date & server?
+	res.header["Date"] = getDate();
+	res.header["Server"] = "Webserv42/1.0.0";
+
+	// Handle POST response
+	if (code == 204) {
+		return res;
+	}
+
+	// Handle redirect response
+	if (ConfigParser::isValidRedirectCode(code)) {
+		res.header["Location"] = path;
+		return res;
+	}
+
 	try {
 		res.body = getFileContent(path);
 		res.header["Content-Length"] = toString(res.body.length());
 		res.header["Content-Type"] = getMimeType(getExtension(path));
+		//res.header["Set-Cookie"] = "username=darren";
 	}
 	catch (...) {
 		std::ifstream file(DEFAULT_404_PATH);
@@ -166,44 +211,3 @@ HttpResponse createBasicResponse(int code, std::string path)
 	}
 	return res;
 }
-
-// std::pair<int, std::string> statusTextMap[] = {
-// 	std::make_pair(100, "Continue"),
-// 	std::make_pair(101, "Switching Protocols"),
-// 	std::make_pair(200, "OK"),
-// 	std::make_pair(201, "Created"),
-// 	std::make_pair(202, "Accepted"),
-// 	std::make_pair(203, "Non-Authoritative Information"),
-// 	std::make_pair(204, "No Content"),
-// 	std::make_pair(205, "Reset Content"),
-// 	std::make_pair(206, "Partial Content"),
-// 	std::make_pair(300, "Multiple Choices"),
-// 	std::make_pair(301, "Moved Permanently"),
-// 	std::make_pair(302, "Found"),
-// 	std::make_pair(303, "See Other"),
-// 	std::make_pair(304, "Not Modified"),
-// 	std::make_pair(307, "Temporary Redirect"),
-// 	std::make_pair(400, "Bad Request"),
-// 	std::make_pair(401, "Unauthorized"),
-// 	std::make_pair(403, "Forbidden"),
-// 	std::make_pair(404, "Not Found"),
-// 	std::make_pair(405, "Method Not Allowed"),
-// 	std::make_pair(406, "Not Acceptable"),
-// 	std::make_pair(407, "Proxy Authentication Required"),
-// 	std::make_pair(408, "Request Timeout"),
-// 	std::make_pair(409, "Conflict"),
-// 	std::make_pair(410, "Gone"),
-// 	std::make_pair(411, "Length Required"),
-// 	std::make_pair(412, "Precondition Failed"),
-// 	std::make_pair(413, "Payload Too Large"),
-// 	std::make_pair(414, "URI Too Long"),
-// 	std::make_pair(415, "Unsupported Media Type"),
-// 	std::make_pair(416, "Range Not Satisfiable"),
-// 	std::make_pair(417, "Expectation Failed"),
-// 	std::make_pair(500, "Internal Server Error"),
-// 	std::make_pair(501, "Not Implemented"),
-// 	std::make_pair(502, "Bad Gateway"),
-// 	std::make_pair(503, "Service Unavailable"),
-// 	std::make_pair(504, "Gateway Timeout"),
-// 	std::make_pair(505, "HTTP Version Not Supported")
-// };

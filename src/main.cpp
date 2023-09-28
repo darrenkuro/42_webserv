@@ -1,7 +1,6 @@
 #include "Webserver.hpp"
 #include "utils.hpp"
 #include "log.hpp"
-
 #include <signal.h>
 
 #define DEFAULT_CONF "configs/default.conf"
@@ -10,7 +9,7 @@ bool g_running = true;
 
 void signalHandler(int signum) {
 	if (signum == SIGINT) {
-		g_running = false;;
+		g_running = false;
 		std::cout << std::endl;
 	}
 }
@@ -30,6 +29,7 @@ int main(int argc, char **argv)
 	else {
 		std::cerr << "[Error] Invalid argument count!" << std::endl;
 		return 0;
+
 	}
 	Webserver webserver(configPath);
 	webserver.start();

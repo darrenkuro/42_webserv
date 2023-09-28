@@ -1,9 +1,11 @@
 #include "ClientC.hpp"
 
+using std::string;
+
 ClientC::ClientC() {}
 ClientC::~ClientC() {}
 
-void ClientC::connect(std::string ipAddress, int port)
+void ClientC::connect(string ipAddress, int port)
 {
     if ((m_socketFd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("Error1\n");
@@ -25,7 +27,7 @@ void ClientC::disconnect()
     close(m_socketFd);
 }
 
-void ClientC::sendRequest(std::string request)
+void ClientC::sendRequest(string request)
 {
     send(m_socketFd, request.c_str(), request.size(), 0);
 }

@@ -6,73 +6,79 @@
 #include <algorithm>
 #include <string>
 #include <sys/stat.h>
-#include <netinet/in.h>
+#include <stdexcept>
 #include "utils.hpp"
-// #include "log.hpp"
+
+#define ROOT "./public"
 
 struct LocationConfig
 {
 	bool autoindex;
 	std::string uri;
-	std::string redirect;
 	std::string alias;
-	std::vector<std::string> index;
 	std::vector<std::string> allowedMethods;
+	std::vector<std::string> index;
+	std::pair<int, std::string> redirect;
 };
 
 struct ServerConfig
 {
-	std::string serverName;
 	std::string root;
 	Address address;
-	size_t clientMaxBodySize;
 	std::vector<std::string> index;
+	std::string serverName;
+	ssize_t clientMaxBodySize;
 	std::map<int, std::string> errorPages;
 	std::vector<LocationConfig> locations;
 };
 
-#define ERR_SYNTAX "Parser syntax error!"
-#define ROOT "./public"
-
 class ConfigParser
 {
 public:
-	std::vector<ServerConfig> parse(const std::string filename);
+	std::vector<ServerConfig> parse(const std::string& filename);
+
+	static bool isValidErrorCode(int code);
+	static bool isValidRedirectCode(int code);
 
 private:
+	std::vector<ServerConfig> m_configs;
 	std::deque<std::string> m_tokens;
 
+	// Logic
+	void lex(const std::string& content, const std::string& whitespace,
+			 const std::string& symbol);
+
+	std::string accept(void);
+	void consume(const std::string& token);
+
+	// Context & Field Parser
+	void parseServer(void);
+	void parseLocation(ServerConfig& server);
+
+	void parseRoot(ServerConfig& server);
+	void parseServerName(ServerConfig& server);
+	void parseAddress(ServerConfig& server);
+	void parseClientMaxBodySize(ServerConfig& server);
+	void parseErrorPage(ServerConfig& server);
+
+	void parseUri(LocationConfig& location);
+	void parseAutoindex(LocationConfig& location);
+	void parseAlias(LocationConfig& location);
+	void parseAllowedMethods(LocationConfig& location);
+	void parseIndex(LocationConfig& location);
+	void parseRedirect(LocationConfig& location);
+
+	// Keys
 	static const std::vector<std::string> validServerKeys;
 	static const std::vector<std::string> validLocationKeys;
 	static const std::vector<int> validErrorCodes;
-
+	static const std::vector<int> validRedirectCodes;
 	bool isValidServerKey(std::string key);
 	bool isValidLocationKey(std::string key);
-	bool isValidErrorCode(int code);
 
-	void lex(std::string content, std::string whitespace, std::string symbol);
-	void consume(const std::string token);
-	std::string accept(void);
-
-	ServerConfig defaultServer(void);
-	LocationConfig defaultLocation(void);
-
-	ServerConfig parseServer(void);
-	LocationConfig parseLocation(void);
-	Address parseAddress(void);
-	std::string parseServerName(void);
-	std::pair<int, std::string> parseErrorPage(void);
-	size_t parseClientMaxBodySize(void);
-	std::string parseUri(void);
-	std::vector<std::string> parseAllowedMethods(void);
-	std::string parseRedirect(void);
-	std::string parseAlias(void);
-	bool parseAutoindex(void);
-	std::vector<std::string> parseIndex(void);
-	// std::string parseRoot(void);
+	// Default Settings
+	ServerConfig createServer(void);
+	LocationConfig createLocation(void);
+	void addDefaultErrorPages(ServerConfig& server);
+	void addDefaultLocation(ServerConfig& server);
 };
-
-std::ostream &operator<<(std::ostream &os, const ServerConfig config);
-std::ostream &operator<<(std::ostream &os, const LocationConfig location);
-std::ostream &operator<<(std::ostream &os, const SocketAddress address);
-

@@ -1,61 +1,73 @@
 #include "HttpRequest.hpp"
 
-//std::string validMethods[] = {"GET", "POST", "DELETE"};
+using std::string;
+using std::map;
+using std::exception;
 
-// Method not included => 501
-// void checkMethod(std::string method)
-// {
-// 	for (int i = 0; i < 3; i++) {
-// 		if (method == validMethods[i]) {
-// 			return;
-// 		}
-// 	}
-// 	throw std::exception();
-// }
-
-void parsePart(std::string sep, std::string &field, std::string &content)
+/* --------------------------------------------------------------------------------------------- *
+ * Parse a field for HTTP request, with a given separator, consume the content.
+ * --------------------------------------------------------------------------------------------- */
+void parsePart(const string& sep, string& field, string& content)
 {
-	if (content.find(sep) == std::string::npos)
-		throw std::exception();
-	field = content.substr(0, content.find(sep));
-	content.erase(content.begin(), content.begin() + content.find(sep) + sep.length());
-	if (content.find(sep) == 0)
-		throw std::exception();
+	size_t pos = content.find(sep);
+	if (pos == string::npos) {
+		throw exception();
+	}
+
+	field = content.substr(0, pos);
+	content.erase(content.begin(), content.begin() + pos + sep.length());
+
+	// Check if there's more than one separator (invalid request)
+	if (content.find(sep) == 0) {
+		throw exception();
+	}
 }
 
-void parseHeader(std::map<std::string, std::string> &header, std::string &content)
+/* --------------------------------------------------------------------------------------------- *
+ * Parse a header field for HTTP request, consume the content.
+ * --------------------------------------------------------------------------------------------- */
+void parseHeader(map<string, string>& header, string& content)
 {
-	if (content.find(':') == std::string::npos)
-		throw std::exception();
-	std::string key = content.substr(0, content.find(':'));
-	content.erase(content.begin(), content.begin() + content.find(':') + 1);
+	size_t colonPos = content.find(":");
+	if (colonPos == string::npos) {
+		throw exception();
+	}
+
+	string key = content.substr(0, colonPos);
+	content.erase(content.begin(), content.begin() + colonPos + 1);
 
 	// Handle leading white spaces before value
 	size_t valuePos = content.find_first_not_of(" \t");
-	if (valuePos == std::string::npos)
-		throw std::exception();
+	if (valuePos == string::npos) {
+		throw exception();
+	}
 	content.erase(content.begin(), content.begin() + valuePos);
 
-	if (content.find("\r\n") == std::string::npos)
-		throw std::exception();
-	std::string value = content.substr(0, content.find("\r\n"));
-	content.erase(content.begin(), content.begin() + content.find("\r\n") + 2);
+	size_t crlfPos = content.find("\r\n");
+	if (crlfPos == string::npos) {
+		throw exception();
+	}
+	string value = content.substr(0, crlfPos);
+	content.erase(content.begin(), content.begin() + crlfPos + 2);
+
 	header[key] = value;
 }
 
-HttpRequest parseHttpRequest(std::string content)
+/* --------------------------------------------------------------------------------------------- */
+HttpRequest parseHttpRequest(string& content)
 {
-	HttpRequest request;
+	HttpRequest req;
 
-	parsePart(" ", request.method, content);
-	parsePart(" ", request.uri, content);
-	parsePart("\r\n", request.version, content);
+	parsePart(" ", req.method, content);
+	parsePart(" ", req.uri, content);
+	parsePart("\r\n", req.version, content);
 	while (content.find("\r\n") != 0) {
-		parseHeader(request.headers, content);
+		parseHeader(req.header, content);
 	}
 
 	// Remove the blank line after the headers
 	content.erase(content.begin(), content.begin() + 2);
-	request.body = content;
-	return request;
+
+	// GET & DELETE usually contains no relavant body
+	return req;
 }

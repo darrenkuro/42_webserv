@@ -35,7 +35,7 @@ public:
     Webserver(std::string configPath);
     ~Webserver();
 
-    void start();
+	void start(void);
 
 private:
     // Initialization

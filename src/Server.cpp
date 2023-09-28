@@ -1,152 +1,256 @@
 #include "Server.hpp"
 
-Server::Server(const ServerConfig config) :
-    m_config(config)
-{
+using std::string;
+using std::vector;
+using std::map;
+using std::exception;
+using std::runtime_error;
 
-    struct in_addr addr;
-    addr.s_addr = m_config.address.ip;
-    log(INFO, "Server: %s on %s:%d", getName().c_str(), inet_ntoa(addr), m_config.address.port);
+/* --------------------------------------------------------------------------------------------- */
+Server::Server(const ServerConfig config) : m_config(config)
+{
+	log(INFO, "Server: %s on %s:%d", getName().c_str(),
+		toIPString(m_config.address.host).c_str(), m_config.address.port);
 }
 
 Address Server::getAddress() { return m_config.address; }
-std::string Server::getName() { return m_config.serverName; }
 
+string Server::getName() { return m_config.serverName; }
+
+string Server::getErrorPage(int code) {
+	return fullPath(m_config.root, m_config.errorPages[code]);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleRequest(HttpRequest req)
 {
-    LocationConfig route = routeRequest(req.uri);
+	LocationConfig route = routeRequest(req.uri);
 
-    // Check if method is allowed
-    std::vector<std::string> methods = route.allowedMethods;
-    if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
-        return createBasicResponse(405, m_config.errorPages[405]);
-    }
+	// Check http version
+	if (req.version != "HTTP/1.1") {
+		return createBasicResponse(505, getErrorPage(505));
+	}
 
-    try {
-        if (req.method == "GET") {
-            return handleGetRequest(req, route);
-        }
-        // if (request.method == "POST") {
-        //     return handlePostRequest(request, route);
-        // }
-        if (req.method == "DELETE") {
-            return handleDeleteRequest(req, route);
-        }
-    }
-    catch (...) {
-        return createBasicResponse(500, m_config.errorPages[500]);
-    }
+	// Check client max body size
+	map<string, string>::iterator it;
+	it = req.header.find("Content-Length");
+	if (it != req.header.end() && !bodySizeAllowed(toInt(it->second))) {
+		return createBasicResponse(413, getErrorPage(413));
+	}
 
-    return createBasicResponse(501, m_config.errorPages[501]);
+	// Check if PUT without Content-Length
+	if (req.method == "PUT" && it == req.header.end()) {
+		return createBasicResponse(411, getErrorPage(411));
+	}
+
+	logServerConfig(m_config);
+
+	// Check if method is allowed
+	vector<string> methods = route.allowedMethods;
+	if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
+		return createBasicResponse(405, getErrorPage(405));
+	}
+
+	try {
+		if (req.method == "GET") {
+			return handleGetRequest(req, route);
+		}
+		if (req.method == "POST") {
+			return handlePostRequest(req, route);
+		}
+		if (req.method == "DELETE") {
+			return handleDeleteRequest(req, route);
+		}
+	}
+	catch (...) {
+		return createBasicResponse(500, getErrorPage(500));
+	}
+
+	return createBasicResponse(500, getErrorPage(500));
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
-    std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
-    //std::string path = root + req.uri.substr(route.uri.length());
-    std::string path = fullPath(root, req.uri.substr(route.uri.length()));
+	string root = route.alias == ""
+						? fullPath(m_config.root, route.uri)
+						: fullPath(ROOT, route.alias);
+	string path = req.uri.substr(route.uri.length()) == ""
+						? root
+						: fullPath(root, req.uri.substr(route.uri.length()));
 
-    log(DEBUG, "path: %s", path.c_str());
-    // First handle redirection?
+	// Handle redirection
+	if (route.redirect.first) {
+		return createBasicResponse(route.redirect.first, route.redirect.second);
+	}
 
-    // UGH messy logic, clean up later
-    struct stat fileInfo;
-    if (stat(path.c_str(), &fileInfo) == 0) {
-        if (S_ISDIR(fileInfo.st_mode)) {
-            for (std::vector<std::string>::iterator it = route.index.begin(); it != route.index.end(); it++) {
-                std::string filePath = fullPath(path, *it);
-                std::ifstream file(filePath.c_str());
-                if (file.good())
-                    return createBasicResponse(200, filePath);
-            }
-            if (route.autoindex) {
-                // build html for the directory file info
-                return buildAutoindex(path);
-            }
-            else {
-                return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
-            }
-        }
-        else if (S_ISREG(fileInfo.st_mode)) {
-            // check file types
-            return createBasicResponse(200, path);
-        }
-        else {
-            return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
-        }
-    }
-    else {
-        return createBasicResponse(404, m_config.root + m_config.errorPages[404]);
-    }
+	struct stat fileInfo;
+	if (stat(path.c_str(), &fileInfo) != 0) {
+		return createBasicResponse(404, getErrorPage(404));
+	}
+	if (S_ISREG(fileInfo.st_mode)) {
+		return createBasicResponse(200, path);
+	}
+	if (S_ISDIR(fileInfo.st_mode)) {
+		vector<string>::iterator it;
+		for (it = route.index.begin(); it != route.index.end(); it++) {
+			string filePath = fullPath(path, *it);
+			std::ifstream file(filePath.c_str());
+			if (file.good()) {
+				return createBasicResponse(200, filePath);
+			}
+		}
+		if (route.autoindex) {
+			return buildAutoindex(path);
+		}
+		else {
+			return createBasicResponse(403, getErrorPage(403));
+		}
+	}
+
+	return createBasicResponse(500, getErrorPage(500));
 }
 
-// HttpResponse Server::handlePostRequest(HttpRequest request, LocationConfig route)
-// {
-
-// }
-
-HttpResponse Server::handleDeleteRequest(HttpRequest request, LocationConfig route)
+/* --------------------------------------------------------------------------------------------- */
+HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 {
-    std::string root = route.alias == "" ? m_config.root + route.uri : m_config.root + route.alias;
-    std::string path = fullPath(root, request.uri.substr(route.uri.length()));
+	string root = route.alias == ""
+						? fullPath(m_config.root, route.uri)
+						: fullPath(ROOT, route.alias);
 
-    if (std::remove(path.c_str()) == 0) {
-        return createBasicResponse(204, "");
-    }
+	log(DEBUG, "root: %s", root.c_str());
 
-    return createBasicResponse(403, m_config.root + m_config.errorPages[403]);
+	try {
+		string boundry = getBoundry(req);
+
+		if (req.body.find(boundry) == string::npos
+			|| req.body.find("filename=\"") == string::npos) {
+			throw exception();
+		}
+
+		// Get file name
+		string filename;
+		size_t nameStart = req.body.find("filename=\"") + 10;
+		size_t nameEnd = req.body.find("\"", nameStart);
+		filename = req.body.substr(nameStart, nameEnd - nameStart);
+
+		// Trim to file content only
+		req.body = req.body.substr(req.body.find("\r\n\r\n") + 4);
+		if (req.body.find("\r\n" + boundry + "--") != string::npos) {
+			req.body = req.body.substr(0, req.body.find("\r\n" + boundry + "--"));
+		}
+
+		// Save the file content to a file
+		std::ofstream outputFile(fullPath(root, filename).c_str());
+		if (!outputFile.is_open()) {
+			throw exception();
+		}
+		outputFile << req.body;
+		outputFile.close();
+
+	}
+	catch (...) {
+		return createBasicResponse(400, getErrorPage(400));
+	}
+
+	return createBasicResponse(204, "");
 }
 
-LocationConfig Server::routeRequest(std::string uri)
+/* --------------------------------------------------------------------------------------------- */
+HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 {
-    std::vector<LocationConfig>::iterator it;
+	string root = route.alias == ""
+						? fullPath(m_config.root, route.uri)
+						: fullPath(ROOT, route.alias);
+	string path = req.uri.substr(route.uri.length()) == ""
+						? root
+						: fullPath(root, req.uri.substr(route.uri.length()));
 
-    // All Server config should have default '/' location
-    for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
-        if (it->uri == uri) {
-            return *it;
-        }
-    }
+	if (std::remove(path.c_str()) == 0) {
+		return createBasicResponse(204, "");
+	}
 
-    // Recursively match the less complete uri
-    size_t endPos = uri.find_last_of('/');
+	return createBasicResponse(403, getErrorPage(403));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+LocationConfig Server::routeRequest(string uri)
+{
+	vector<LocationConfig>::iterator it;
+
+	// All Server config will have default '/' location
+	for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
+		if (it->uri == uri) {
+			return *it;
+		}
+	}
+
+	// Recursively match the less complete uri
+	size_t endPos = uri.find_last_of('/');
 	uri = endPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));
-    return routeRequest(uri);
-
-    // Didn't match anything, either function is wrong or the Server doesn't have '/' route
-    throw std::runtime_error("Couldn't match uri " + uri);
+	return routeRequest(uri);
 }
 
-// Move later
-HttpResponse Server::buildAutoindex(std::string path)
+/* --------------------------------------------------------------------------------------------- */
+string Server::getBoundry(HttpRequest req)
 {
-    std::string body("<!DOCTYPE html>");
+	map<string, string>::iterator it;
+	it = req.header.find("Content-Type");
+	if (it == req.header.end()) {
+		throw exception();
+	}
 
-    body += "<html><head><title>Directory Index</title><style>" + getFileContent("./public/style/autoindex.css") + "</style></head>";
-    body += "<body><div class=\"container\"><h1 class=\"heading\">Directory Autoindex</h1><ul class=\"list\">";
+	size_t pos = it->second.find("boundary=");
+	if (pos == string::npos) {
+		throw exception();
+	}
+	return "--" + it->second.substr(pos + 9);
+}
 
-    DIR* dir;
-    dirent* entry;
-    if ((dir = opendir(path.c_str())) == NULL) {
-        throw std::runtime_error("opendir failed");
-    }
-    while ((entry = readdir(dir)) != NULL) {
-        std::string name(entry->d_name);
-        if (name == "." || name == "..") {
-            continue;
-        }
+/* --------------------------------------------------------------------------------------------- */
+HttpResponse Server::buildAutoindex(string path)
+{
+	string body("<!DOCTYPE html>");
 
-        struct stat fileInfo;
-        std::string filePath = fullPath(path, name);
-        stat(filePath.c_str(), &fileInfo);
-        name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
-        // add <a href=\"" + name + "\">?
-        body += "<li class=\"list-item\"><div class=\"name\">" + name + "</div></li>";
-    }
-    body += "</ul></div></body></html>";
+	body.append("<html><head><title>Directory Index</title>");
+	body.append("<link rel=\"stylesheet\" type=\"text/css\" ");
+	body.append("href=\"/style/autoindex.css\"></head>");
+	body.append("<body><div class=\"container\"><h1 class=\"heading\">");
+	body.append("Directory Autoindex</h1><ul class=\"list\">");
 
-    HttpResponse response;
-    response.statusCode = 200;
-    response.body = body;
-    return response;
+	DIR* dir;
+	dirent* entry;
+	if ((dir = opendir(path.c_str())) == NULL) {
+		throw runtime_error("opendir failed");
+	}
+
+	while ((entry = readdir(dir)) != NULL) {
+		string name(entry->d_name);
+		if (name == "." || name == "..") {
+			continue;
+		}
+
+		struct stat fileInfo;
+		string filePath = fullPath(path, name);
+		stat(filePath.c_str(), &fileInfo);
+		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
+		// add a href?
+		body.append("<li class=\"list-item\"><div class=\"name\">");
+		body.append(name).append("</div></li>");
+	}
+	body.append("</ul></div></body></html>");
+
+	HttpResponse response;
+	response.statusCode = 200;
+	response.body = body;
+	return response;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
+
+bool Server::bodySizeAllowed(int bytes)
+{
+	// If clientMaxBodySize is not set (-1) or larger
+	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }

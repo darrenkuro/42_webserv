@@ -1,9 +1,15 @@
 #include "Webserver.hpp"
 
-/**
- * Webserver Construction/Deconstruction/Start
- * ------------------------------------------------------------------------------
-*/
+using std::string;
+using std::set;
+using std::map;
+using std::vector;
+using std::exception;
+using std::runtime_error;
+
+/* --------------------------------------------------------------------------------------------- *
+ * Webserver Construction & Deconstruction
+ * --------------------------------------------------------------------------------------------- */
 Webserver::Webserver(std::string configPath)
 {
 	try {
@@ -13,7 +19,7 @@ Webserver::Webserver(std::string configPath)
 			m_servers.push_back(Server(configs[i]));
 		}
 	}
-	catch (const std::exception& e) {
+	catch (const exception& e) {
 		log(ERROR, e.what());
 	}
 };
@@ -25,18 +31,18 @@ Webserver::~Webserver()
 	}
 };
 
-void Webserver::start()
+void Webserver::start(void)
 {
     try {
         initListenSockets();
         mainloop();
     }
     catch(const std::exception& e) {
-		log(ERROR, e.what());
-    }
+		  log(ERROR, e.what());
+	  }
 }
 
-/**
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Initialization Functions
  * ------------------------------------------------------------------------------
 */
@@ -52,7 +58,7 @@ void Webserver::initListenSockets()
 	m_nbListenSockets = uniques.size();
 }
 
-/**
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Logic Functions
  * ------------------------------------------------------------------------------
 */
@@ -61,7 +67,7 @@ void Webserver::mainloop()
 	while (g_running) {
 		int pollReady = poll(m_pollFds.data(), m_pollFds.size(), 1000);
 		if (pollReady == -1) {
-			throw std::runtime_error("poll() failed");
+			throw runtime_error("poll() failed");
 		}
 
 		for (size_t i = m_nbListenSockets; i < m_pollFds.size(); i++) {
@@ -86,7 +92,8 @@ void Webserver::mainloop()
 void Webserver::handlePOLLIN(Client& client)
 {
 	char buffer[RECV_SIZE];
-	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE - 1, 0);
+	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
+	string bufferStr(buffer, bytesRead);
 
 	if (bytesRead == -1)
 		throw std::runtime_error("recv() failed");
@@ -140,19 +147,21 @@ void Webserver::addClient(int listenFd)
 	// 	inet_ntoa(client.getHost()), client.getPort());
 }
 
-//------------------------------------------------------------------------------
-void Webserver::handleDisconnects()
+/* --------------------------------------------------------------------------------------------- */
+void Webserver::handleDisconnects(void)
 {
-	std::map<int, Client>::iterator it;
-	std::vector<std::map<int, Client>::iterator> removeIterators;
+	map<int, Client>::iterator it;
+	vector<map<int, Client>::iterator> removeIterators;
 
 	for (it = m_clients.begin(); it != m_clients.end(); it++) {
 		Client client = it->second;
 		if (client.hasDisconnected() || client.didTimeout()) {
-			if (client.hasDisconnected())
+			if (client.hasDisconnected()) {
 				log(INFO, "Client[ID: %d] disconnected", client.getID());
-			else
+			}
+			else {
 				log(INFO, "Client[ID: %d] timed out", client.getID());
+			}
 			removeIterators.push_back(it);
 			removeFdFromPoll(client.getFd());
 			close(client.getFd());
@@ -169,10 +178,10 @@ void Webserver::handleDisconnects()
 //------------------------------------------------------------------------------
 Server& Webserver::routeRequest(HttpRequest request, Client& client)
 {
-	if (request.headers.find("Host") == request.headers.end()) {
-		throw std::runtime_error("No host header");
+	if (request.header.find("Host") == request.header.end()) {
+		throw runtime_error("No host header");
 	}
-	std::string host = request.headers.find("Host")->second;
+	string host = request.header.find("Host")->second;
 
 	// Host header domain resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
@@ -181,19 +190,20 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 	}
 
-	// Host header ip resolution
-	size_t colonPos = host.find(':');
-	std::string ip;
-	std::string port;
-	if (colonPos != std::string::npos) {
-		ip = host.substr(0, colonPos);
-		port = host.substr(colonPos + 1);
-	}
-	else {
-		ip = host;
-		port = "80";
-	}
-	if (validateIpAddress(ip) && validatePort(port)) {
+	try {
+		// Host header ip resolution
+		size_t colonPos = host.find(':');
+		in_addr_t ip = colonPos != string::npos
+					? toIPv4(host.substr(0, colonPos))
+					: toIPv4(host);
+		int port = colonPos != string::npos
+					? toInt(host.substr(colonPos + 1))
+					: 80;
+
+		if (port <= 0 || port > 65535) {
+			throw exception();
+		}
+
 		for (size_t i = 0; i < m_servers.size(); i++) {
 			Address addr = m_servers[i].getAddress();
 			if (addr.ip == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
@@ -201,6 +211,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 			}
 		}
 	}
+	catch (...) { }
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
@@ -212,23 +223,22 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 	}
 
-	throw std::runtime_error("Something went really wrong. should never reach this point");
+	throw runtime_error("Something went really wrong when routing server!");
 }
 
 
-/**
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Utility Functions
-*/
-//------------------------------------------------------------------------------
+------------ */
 Client& Webserver::getClientFromIdx(int idx)
 {
-	std::map<int, Client>::iterator it;
+	map<int, Client>::iterator it;
 	it = m_clients.find(m_pollFds[idx].fd);
 	Client& client = it->second;
 	return client;
 }
 
-//------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::removeFdFromPoll(int fd)
 {
 	for (size_t i = 0; i < m_pollFds.size(); i++) {

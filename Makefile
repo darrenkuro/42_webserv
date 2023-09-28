@@ -5,7 +5,7 @@ _DIR	:=	http utils
 _SRC 	:=	http/HttpRequest.cpp http/HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
 			ConfigParser.cpp utils/utils.cpp main.cpp
 _INC	:=	http/HttpRequest.hpp http/HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
-			ConfigParser.hpp utils/utils.hpp
+			ConfigParser.hpp utils/utils.hpp utils/log.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src
