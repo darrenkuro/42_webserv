@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #include "HttpResponse.hpp"
+#include "utils.hpp"
 
 #define TIMEOUT_TIME 30
 
@@ -19,7 +20,7 @@ public:
     int getID();
     int getFd();
     int getPort();
-    in_addr getHost();
+    in_addr_t getHost();
     bool didTimeout();
     bool hasDisconnected();
     bool getResponseIsReady();
@@ -35,6 +36,7 @@ private:
     bool m_hasDisconnected;
     bool m_responseIsReady;
     timeval m_lastEventTime;
+    Address m_address;
     int m_port;
     in_addr m_host;
     HttpResponse m_response;

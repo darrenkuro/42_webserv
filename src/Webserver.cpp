@@ -132,12 +132,12 @@ void Webserver::addClient(int listenFd)
 	int clientFd = accept(listenFd, NULL, NULL);
 
 	Client client(clientFd, getAddressFromFd(listenFd));
-	m_clients[clientFd] = client;
+	m_clients.insert(std::make_pair(clientFd, client));
 
 	m_pollFds.push_back(buildPollFd(clientFd, POLLIN | POLLOUT));
 
-	log(INFO, "Client[ID: %d] connected on %s:%d", client.getID(),
-		inet_ntoa(client.getHost()), client.getPort());
+	// log(INFO, "Client[ID: %d] connected on %s:%d", client.getID(),
+	// 	inet_ntoa(client.getHost()), client.getPort());
 }
 
 //------------------------------------------------------------------------------
@@ -195,8 +195,8 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	}
 	if (validateIpAddress(ip) && validatePort(port)) {
 		for (size_t i = 0; i < m_servers.size(); i++) {
-			SocketAddress addr = m_servers[i].getAddress();
-			if (addr.host == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
+			Address addr = m_servers[i].getAddress();
+			if (addr.ip == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
 				return m_servers[i];
 			}
 		}
@@ -204,9 +204,9 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
-		SocketAddress addr = m_servers[i].getAddress();
+		Address addr = m_servers[i].getAddress();
 		if (client.getPort() == addr.port) {
-			if (addr.host == 0 || client.getHost().s_addr == addr.host) {
+			if (addr.ip == 0 || client.getHost() == addr.ip) {
 				return m_servers[i];
 			}
 		}
@@ -240,8 +240,26 @@ void Webserver::removeFdFromPoll(int fd)
 	}
 }
 
-//------------------------------------------------------------------------------
-void Webserver::printStatus()
+std::set<Address> Webserver::getUniqueAddresses(std::vector<Server> servers)
 {
+	std::set<Address> uniques;
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (servers[i].getAddress().ip == 0) {
+			uniques.insert(servers[i].getAddress());			
+		}
+	}
 
+	for (size_t i = 0; i < servers.size(); i++) {
+		Address addr = servers[i].getAddress();
+		if (addr.ip != 0) {
+			std::set<Address>::iterator it;
+			for (it = uniques.begin(); it != uniques.end(); it++) {
+				if (it->ip == 0 && it->port == addr.port)
+					break;
+			}
+			if (it == uniques.end())
+				uniques.insert(addr);
+		}
+	}
+	return uniques;
 }

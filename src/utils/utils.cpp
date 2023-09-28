@@ -174,7 +174,7 @@ int createTcpListenSocket(Address addr)
 	return fd;
 }
 
-bool Address::operator<(const Address& rhs)
+bool Address::operator<(const Address& rhs) const
 {
     if (ip < rhs.ip)
         return true;
@@ -182,31 +182,6 @@ bool Address::operator<(const Address& rhs)
         return false;
     return port < rhs.port;
 }
-
-std::set<Address> getUniqueAddresses(std::vector<Server> servers)
-{
-	std::set<Address> uniques;
-	for (size_t i = 0; i < servers.size(); i++) {
-		if (servers[i].getAddress().ip == 0) {
-			uniques.insert(servers[i].getAddress());			
-		}
-	}
-
-	for (size_t i = 0; i < servers.size(); i++) {
-		Address addr = servers[i].getAddress();
-		if (addr.ip != 0) {
-			std::set<Address>::iterator it;
-			for (it = uniques.begin(); it != uniques.end(); it++) {
-				if (it->ip == 0 && it->port == addr.port)
-					break;
-			}
-			if (it == uniques.end())
-				uniques.insert(addr);
-		}
-	}
-	return uniques;
-}
-
 
 Address getAddressFromFd(int fd)
 {
@@ -221,9 +196,9 @@ Address getAddressFromFd(int fd)
 }
 
 
-pollfd buildPollFd(int fd, short events)
+struct pollfd buildPollFd(int fd, short events)
 {
-	pollfd pfd;
+	struct pollfd pfd;
 	pfd.fd = fd;
 	pfd.events = events;
 	pfd.revents = 0;

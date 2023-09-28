@@ -54,10 +54,10 @@ private:
     // Utility
     Client& getClientFromIdx(int idx);
     void removeFdFromPoll(int fd);
-    void printStatus();
+    std::set<Address> getUniqueAddresses(std::vector<Server> servers);
 
     // Member Data
-    int m_nbListenSockets;
+    size_t m_nbListenSockets;
     vector<pollfd> m_pollFds;
     vector<Server> m_servers;
     map<int, Client> m_clients; // Key: Fd; Value: Client

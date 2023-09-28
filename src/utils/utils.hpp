@@ -9,11 +9,10 @@
 #include <string>
 #include <climits>
 #include <vector>
-#include "Server.hpp"
 #include <unistd.h>
-#include "ConfigParser.hpp"
 #include <fstream>
 #include <cstdlib>
+#include <poll.h>
 #include <ctime>
 #include <sstream>
 #include <set>
@@ -29,7 +28,7 @@ struct Address
 	in_addr_t ip;
 	int port;
 
-	bool operator<(const Address& rhs);
+	bool operator<(const Address& rhs) const;
 	std::string ipToStr();
 	std::string portToStr();
 };
@@ -44,7 +43,6 @@ int toInt(std::string str);
 bool validatePort(const std::string& port);
 bool validateIpAddress(const std::string& ipAddress);
 bool isAllDigit(std::string str);
-std::set<Address> getUniqueAddresses(std::vector<Server> servers);
 
 std::string fullPath(std::string root, std::string path);
 std::string getExtension(std::string path);

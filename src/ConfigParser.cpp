@@ -386,7 +386,7 @@ std::ostream &operator<<(std::ostream &os, const ServerConfig config)
 	os << "ServerConfig" << std::endl;
 	os << "	ServerName: " << config.serverName << std::endl;
 	os << "	Root: " << config.root << std::endl;
-	os << "	" << config.address;
+	// os << "	" << config.address;
 	os << "	ClientMaxBodySize: " << config.clientMaxBodySize << std::endl;
 	os << "	Index: " << std::endl;
 	for (std::vector<std::string>::const_iterator it = config.index.begin(); it != config.index.end(); it++) {
