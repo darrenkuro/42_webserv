@@ -239,7 +239,7 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		// Resolve host portion
 		size_t colonPos = token.find(":");
 		if (colonPos != string::npos) {
-			server.address.host = toIPv4(token.substr(0, colonPos));
+			server.address.ip = toIPv4(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
 		}
 		else {
@@ -431,7 +431,7 @@ void ConfigParser::addDefaultErrorPages(ServerConfig& server)
 
 void ConfigParser::addDefaultLocation(ServerConfig& server)
 {
-	// Check if the default location already exist
+  // Check if the default location already exist
 	vector<LocationConfig>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) {
 		if (it->uri == "/") {

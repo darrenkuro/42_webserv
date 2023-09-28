@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #include "HttpResponse.hpp"
+#include "utils.hpp"
 #include "HttpRequest.hpp"
 
 #define TIMEOUT_TIME 30
@@ -13,13 +14,14 @@ class Client
 {
 public:
 	Client();
+  Client(int fd, Address addr);
 	Client(int socketFd, in_addr host, int port);
 
 	// Getters
 	int getID();
 	int getFd();
 	int getPort();
-	in_addr getHost();
+	in_addr_t getHost();
 	bool didTimeout();
 	bool hasDisconnected();
 	bool getResponseIsReady();
@@ -48,6 +50,7 @@ private:
 	bool m_requestParsed;
 	timeval m_lastEventTime;
 	in_addr m_host;
+  Address m_address;
 	HttpResponse m_response;
 	HttpRequest m_request;
 

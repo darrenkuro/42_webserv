@@ -24,8 +24,9 @@ struct LocationConfig
 struct ServerConfig
 {
 	std::string root;
-	std::string serverName;
 	Address address;
+	std::vector<std::string> index;
+	std::string serverName;
 	ssize_t clientMaxBodySize;
 	std::map<int, std::string> errorPages;
 	std::vector<LocationConfig> locations;

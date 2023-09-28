@@ -72,21 +72,12 @@ sockaddr_in createAddress(Address address)
 	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(address.port);
-	server_addr.sin_addr.s_addr = address.host;
-
+	server_addr.sin_addr.s_addr = address.ip;
+	//inet_pton(AF_INET, "192.200.199.140", &server_addr.sin_addr);
 	return server_addr;
 }
 
-bool Address::operator<(const Address& rhs) const
-{
-	if (host == rhs.host) {
-		return port < rhs.port;
-	}
-	return host < rhs.host ? true : false;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-string toIPString(in_addr_t ip)
+std::string toIPString(in_addr_t ip)
 {
 	std::ostringstream oss;
 	unsigned char* bytes = reinterpret_cast<unsigned char*>(&ip);
@@ -158,4 +149,63 @@ string getExtension(string path)
 	}
 
 	return "";
+}
+
+int createTcpListenSocket(Address addr)
+{
+	int fd;
+
+	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		throw std::runtime_error("socket() failed" + std::string(strerror(errno)));
+
+	int sockopt = 1;
+  	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1)
+		throw std::runtime_error("setsockopt() failed: " + std::string(strerror(errno)));
+
+	sockaddr_in serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(addr.port);
+	serverAddr.sin_addr.s_addr = addr.ip;
+
+	if (bind(fd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
+		close(fd);
+		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
+	}
+
+	if (listen(fd, 10))
+		throw std::runtime_error("listen() failed" + std::string(strerror(errno)));
+
+	return fd;
+}
+
+bool Address::operator<(const Address& rhs) const
+{
+    if (ip < rhs.ip)
+        return true;
+    if (ip > rhs.ip)
+        return false;
+    return port < rhs.port;
+}
+
+Address getAddressFromFd(int fd)
+{
+	struct sockaddr_in serverAddress;
+    socklen_t addrLen = sizeof(serverAddress);
+	getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen);
+
+	Address addr;
+	addr.ip = serverAddress.sin_addr.s_addr;
+	addr.port = serverAddress.sin_port;
+	return addr;
+}
+
+
+struct pollfd buildPollFd(int fd, short events)
+{
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = events;
+	pfd.revents = 0;
+	return pfd;
 }

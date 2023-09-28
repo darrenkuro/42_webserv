@@ -32,38 +32,33 @@ using std::map;
 class Webserver
 {
 public:
-	Webserver(const vector<ServerConfig> serverConfigs);
-	~Webserver();
+    Webserver(std::string configPath);
+    ~Webserver();
 
 	void start(void);
 
 private:
-	// Initialization
-	void setupServers(const vector<ServerConfig> configs);
-	void initListenSockets(void);
-	int initSocket(Address address);
+    // Initialization
+    void initListenSockets();
 
-	// Logic
-	void mainloop(void);
-	void handleClientPOLLIN(Client& client);
-	void handleClientPOLLOUT(Client& client);
+    // Logic
+    void mainloop();
+	void handlePOLLIN(Client& client);
+	void handlePOLLOUT(Client& client);
 
-	HttpResponse processRequest(HttpRequest request, Client& client);
-	void addClient(int socketFd);
-	void handleDisconnects(void);
-	void clientStatusCheck(Client& client, int bytesRead);
-	Server& routeRequest(HttpRequest request, Client& client);
+    HttpResponse processRequest(HttpRequest request, Client& client);
+    void addClient(int socketFd);
+	void handleDisconnects();
+    Server& routeRequest(HttpRequest request, Client& client);
 
-	// Utility
-	void filterUniqueSockets(void);
-	Client& getClientFromIdx(int idx);
-	bool headerIsSupported(std::string header);
-	void removeFdFromPoll(int fd);
-	void printStatus(void);
+    // Utility
+    Client& getClientFromIdx(int idx);
+    void removeFdFromPoll(int fd);
+    std::set<Address> getUniqueAddresses(std::vector<Server> servers);
 
-	// Member Data
-	set<Address> m_listenSockets;
-	vector<pollfd> m_pollFds;
-	vector<Server> m_servers;
-	map<int, Client> m_clients; // Key: Fd; Value: Client
+    // Member Data
+    size_t m_nbListenSockets;
+    vector<pollfd> m_pollFds;
+    vector<Server> m_servers;
+    map<int, Client> m_clients; // Key: Fd; Value: Client
 };

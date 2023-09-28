@@ -6,15 +6,30 @@
 #include <cstring>
 #include <string>
 #include <climits>
+#include <vector>
+#include <unistd.h>
 #include <fstream>
+#include <cstdlib>
+#include <poll.h>
+#include <ctime>
+
 #include <sstream>
+#include <set>
 
 struct Address
 {
-	in_addr_t host;
+	in_addr_t ip;
+	int port;
+};
+
+struct Address
+{
+	in_addr_t ip;
 	int port;
 
 	bool operator<(const Address& rhs) const;
+	std::string ipToStr();
+	std::string portToStr();
 };
 
 int createIPv4Socket();
@@ -28,3 +43,6 @@ bool isAllDigit(std::string str);
 
 std::string fullPath(std::string root, std::string path);
 std::string getExtension(std::string path);
+int createTcpListenSocket(Address addr);
+Address getAddressFromFd(int fd);
+pollfd buildPollFd(int fd, short events);

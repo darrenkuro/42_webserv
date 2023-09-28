@@ -2,6 +2,20 @@
 
 using std::string;
 
+Client::Client(int fd, Address addr)
+{
+    static int clientID = 1;
+    m_id = clientID;
+    clientID++;
+
+    m_socketFd = fd;
+    m_responseIsReady = false;
+    m_hasDisconnected = false;
+
+    m_address = addr;
+    gettimeofday(&m_lastEventTime, NULL);
+}
+
 /* --------------------------------------------------------------------------------------------- */
 Client::Client(int socketFd, in_addr host, int port)
 {
@@ -46,9 +60,9 @@ int Client::getID() { return m_id; }
 
 int Client::getFd() { return m_socketFd; }
 
-int Client::getPort() { return m_port; }
+int Client::getPort() { return m_address.port; }
 
-in_addr Client::getHost() { return m_host; }
+in_addr_t Client::getHost() { return m_address.ip; }
 
 bool Client::hasDisconnected() { return m_hasDisconnected; }
 

@@ -194,9 +194,20 @@ inline void logHttp(HttpResponse res, int clientID)
 /* --------------------------------------------------------------------------------------------- */
 inline void logServerConfig(ServerConfig config)
 {
-	cout << displayTimestamp << " ";
-	displayLogLevel(INFO);
+	(void) config;
+	// displayTimestamp();
+	// std::cout << " ";
+	// displayLogLevel(INFO);
 
-	cout << "ServerConfig: ";
-	cout << config;
+	// std::cout << ORANGE;
+	// std::cout << "======> WebservConfig" << std::endl;
+	// std::cout << "listen: " << std::endl;
+	// std::cout << "\thost: " << config.address.host << std::endl;
+	// std::cout << "\tport: " << config.address.port << std::endl;
+	// std::cout << "server_name: " << config.serverName << std::endl;
+	// std::cout << "location:" << std::endl;
+	// for(std::vector<LocationConfig>::const_iterator it = config.locations.begin(); it != config.locations.end(); it++) {
+	// 	std::cout << "\tautoindex: " << std::boolalpha << it->autoindex << std::endl;
+	// }
+	// std::cout << RESET << std::endl;
 }
