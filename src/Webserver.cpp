@@ -1,6 +1,11 @@
 #include "Webserver.hpp"
 
 using std::string;
+using std::set;
+using std::map;
+using std::vector;
+using std::exception;
+using std::runtime_error;
 
 /* --------------------------------------------------------------------------------------------- *
  * Webserver Construction & Deconstruction
@@ -11,7 +16,7 @@ Webserver::Webserver(const vector<ServerConfig> serverConfigs)
 	try {
 		setupServers(serverConfigs);
 	}
-	catch (const std::exception& e) {
+	catch (const exception& e) {
 		log(ERROR, e.what());
 		log(INFO, "Webserver setup failed");
 	}
@@ -33,7 +38,7 @@ void Webserver::start(void)
 		log(INFO, "Webserver started sucessfully. Now Listening...");
 		mainloop();
 	}
-	catch(const std::exception& e) {
+	catch(const exception& e) {
 		log(ERROR, e.what());
 	}
 }
@@ -53,7 +58,7 @@ void Webserver::initListenSockets(void)
 {
 	filterUniqueSockets();
 
-	std::set<Address>::iterator it;
+	set<Address>::iterator it;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
 		// struct in_addr addr;
 		// addr.s_addr = it->host;
@@ -76,11 +81,11 @@ int Webserver::initSocket(Address address)
 
 	if (bind(listenFd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		close(listenFd);
-		throw std::runtime_error("bind() failed: " + string(strerror(errno)));
+		throw runtime_error("bind() failed: " + string(strerror(errno)));
 	}
 
 	if (listen(listenFd, 10)) {
-		throw std::runtime_error("listen() failed");
+		throw runtime_error("listen() failed");
 	}
 
 	return listenFd;
@@ -94,7 +99,7 @@ void Webserver::mainloop(void)
 	while (g_running) {
 		int pollReady = poll(m_pollFds.data(), m_pollFds.size(), 1000);
 		if (pollReady == -1) {
-			throw std::runtime_error("poll() failed");
+			throw runtime_error("poll() failed");
 		}
 
 		for (size_t i = m_listenSockets.size(); i < m_pollFds.size(); i++) {
@@ -139,7 +144,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 			client.setRequest(parseHttpRequest(bufferStr));
 
 			// Check Content-Length and set expecting bytes
-			std::map<string, string>::iterator it;
+			map<string, string>::iterator it;
 			it = client.getRequest().header.find("Content-Length");
 			if (it != client.getRequest().header.end()) {
 				client.setBytesExpected(toInt(it->second));
@@ -186,7 +191,7 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 			server.getName().c_str(), RESET);
 		return server.handleRequest(request);
 	}
-	catch (std::exception& e) {
+	catch (exception& e) {
 		log(DEBUG, e.what());
 		return createBasicResponse(400, DEFAULT_400_PATH);
 	}
@@ -216,8 +221,8 @@ void Webserver::addClient(int socketFd)
 /* --------------------------------------------------------------------------------------------- */
 void Webserver::handleDisconnects(void)
 {
-	std::map<int, Client>::iterator it;
-	std::vector<std::map<int, Client>::iterator> removeIterators;
+	map<int, Client>::iterator it;
+	vector<map<int, Client>::iterator> removeIterators;
 
 	for (it = m_clients.begin(); it != m_clients.end(); it++) {
 		Client client = it->second;
@@ -257,7 +262,7 @@ void Webserver::clientStatusCheck(Client& client, int bytesRead)
 Server& Webserver::routeRequest(HttpRequest request, Client& client)
 {
 	if (request.header.find("Host") == request.header.end()) {
-		throw std::runtime_error("No host header");
+		throw runtime_error("No host header");
 	}
 	string host = request.header.find("Host")->second;
 
@@ -279,7 +284,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 					: 80;
 
 		if (port <= 0 || port > 65535) {
-			throw std::exception();
+			throw exception();
 		}
 
 		for (size_t i = 0; i < m_servers.size(); i++) {
@@ -301,7 +306,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 	}
 
-	throw std::runtime_error("Something went really wrong when routing server!");
+	throw runtime_error("Something went really wrong when routing server!");
 }
 
 
@@ -314,9 +319,9 @@ void Webserver::filterUniqueSockets(void)
 		m_listenSockets.insert(m_servers[i].getAddress());
 	}
 
-	vector<std::set<Address>::iterator> removeIterators;
-	std::set<Address>::iterator it;
-	std::set<Address>::iterator it2;
+	vector<set<Address>::iterator> removeIterators;
+	set<Address>::iterator it;
+	set<Address>::iterator it2;
 	for (it = m_listenSockets.begin(); it != m_listenSockets.end(); it++) {
 		if (it->host == 0) {
 			for (it2 = m_listenSockets.begin(); it2 != m_listenSockets.end(); it2++) {
@@ -335,7 +340,7 @@ void Webserver::filterUniqueSockets(void)
 /* --------------------------------------------------------------------------------------------- */
 Client& Webserver::getClientFromIdx(int idx)
 {
-	std::map<int, Client>::iterator it;
+	map<int, Client>::iterator it;
 	it = m_clients.find(m_pollFds[idx].fd);
 	Client& client = it->second;
 	return client;

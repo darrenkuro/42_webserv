@@ -1,7 +1,12 @@
 #include "Server.hpp"
 
 using std::string;
+using std::vector;
+using std::map;
+using std::exception;
+using std::runtime_error;
 
+/* --------------------------------------------------------------------------------------------- */
 Server::Server(const ServerConfig config) : m_config(config)
 {
 	log(INFO, "Server: %s on %s:%d", getName().c_str(),
@@ -16,6 +21,7 @@ string Server::getErrorPage(int code) {
 	return fullPath(m_config.root, m_config.errorPages[code]);
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleRequest(HttpRequest req)
 {
 	LocationConfig route = routeRequest(req.uri);
@@ -26,7 +32,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	}
 
 	// Check client max body size
-	std::map<string, string>::iterator it;
+	map<string, string>::iterator it;
 	it = req.header.find("Content-Length");
 	if (it != req.header.end() && !bodySizeAllowed(toInt(it->second))) {
 		return createBasicResponse(413, getErrorPage(413));
@@ -40,7 +46,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	logServerConfig(m_config);
 
 	// Check if method is allowed
-	std::vector<string> methods = route.allowedMethods;
+	vector<string> methods = route.allowedMethods;
 	if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
 		return createBasicResponse(405, getErrorPage(405));
 	}
@@ -63,6 +69,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	return createBasicResponse(500, getErrorPage(500));
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
 	string root = route.alias == ""
@@ -85,7 +92,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 		return createBasicResponse(200, path);
 	}
 	if (S_ISDIR(fileInfo.st_mode)) {
-		std::vector<string>::iterator it;
+		vector<string>::iterator it;
 		for (it = route.index.begin(); it != route.index.end(); it++) {
 			string filePath = fullPath(path, *it);
 			std::ifstream file(filePath.c_str());
@@ -104,6 +111,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 	return createBasicResponse(500, getErrorPage(500));
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 {
 	string root = route.alias == ""
@@ -117,7 +125,7 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 
 		if (req.body.find(boundry) == string::npos
 			|| req.body.find("filename=\"") == string::npos) {
-			throw std::exception();
+			throw exception();
 		}
 
 		// Get file name
@@ -135,7 +143,7 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 		// Save the file content to a file
 		std::ofstream outputFile(fullPath(root, filename).c_str());
 		if (!outputFile.is_open()) {
-			throw std::exception();
+			throw exception();
 		}
 		outputFile << req.body;
 		outputFile.close();
@@ -148,6 +156,7 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 	return createBasicResponse(204, "");
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 {
 	string root = route.alias == ""
@@ -164,9 +173,10 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 	return createBasicResponse(403, getErrorPage(403));
 }
 
+/* --------------------------------------------------------------------------------------------- */
 LocationConfig Server::routeRequest(string uri)
 {
-	std::vector<LocationConfig>::iterator it;
+	vector<LocationConfig>::iterator it;
 
 	// All Server config will have default '/' location
 	for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
@@ -181,21 +191,23 @@ LocationConfig Server::routeRequest(string uri)
 	return routeRequest(uri);
 }
 
+/* --------------------------------------------------------------------------------------------- */
 string Server::getBoundry(HttpRequest req)
 {
-	std::map<string, string>::iterator it;
+	map<string, string>::iterator it;
 	it = req.header.find("Content-Type");
 	if (it == req.header.end()) {
-		throw std::exception();
+		throw exception();
 	}
 
 	size_t pos = it->second.find("boundary=");
 	if (pos == string::npos) {
-		throw std::exception();
+		throw exception();
 	}
 	return "--" + it->second.substr(pos + 9);
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::buildAutoindex(string path)
 {
 	string body("<!DOCTYPE html>");
@@ -209,7 +221,7 @@ HttpResponse Server::buildAutoindex(string path)
 	DIR* dir;
 	dirent* entry;
 	if ((dir = opendir(path.c_str())) == NULL) {
-		throw std::runtime_error("opendir failed");
+		throw runtime_error("opendir failed");
 	}
 
 	while ((entry = readdir(dir)) != NULL) {

@@ -1,6 +1,9 @@
 #include "ConfigParser.hpp"
 
 using std::string;
+using std::vector;
+using std::exception;
+using std::runtime_error;
 
 /* --------------------------------------------------------------------------------------------- *
  * Constants declaractions and checkers for valid keys in the config.
@@ -21,24 +24,23 @@ const int errorCode[] = {400, 403, 404, 405, 408, 411, 413, 500, 501, 505};
 
 const int redirectCode[] = {301, 302, 303, 307, 308};
 
-const std::vector<string> ConfigParser::validServerKeys(
+const vector<string> ConfigParser::validServerKeys(
 	serverKeyArray, serverKeyArray +
 	sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
 );
 
-const std::vector<string> ConfigParser::validLocationKeys(
+const vector<string> ConfigParser::validLocationKeys(
 	locationKeyArray, locationKeyArray +
 	sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
 );
 
-const std::vector<int> ConfigParser::validErrorCodes(errorCode,
+const vector<int> ConfigParser::validErrorCodes(errorCode,
 	errorCode + sizeof(errorCode) / sizeof(errorCode[0])
 );
 
-const std::vector<int> ConfigParser::validRedirectCodes(redirectCode,
+const vector<int> ConfigParser::validRedirectCodes(redirectCode,
 	redirectCode + sizeof(redirectCode) / sizeof(redirectCode[0])
 );
-
 
 /* --------------------------------------------------------------------------------------------- */
 bool ConfigParser::isValidServerKey(string key)
@@ -68,7 +70,7 @@ bool ConfigParser::isValidRedirectCode(int code)
 #pragma endregion
 
 /* --------------------------------------------------------------------------------------------- */
-std::vector<ServerConfig> ConfigParser::parse(const string& filename)
+vector<ServerConfig> ConfigParser::parse(const string& filename)
 {
 	string content = getFileContent(filename);
 	lex(content, " \t\n", "{};");
@@ -110,7 +112,7 @@ void ConfigParser::lex(const string& content, const string& whitespace, const st
 string ConfigParser::accept(void)
 {
 	if (m_tokens.empty()) {
-		throw std::runtime_error("Parser: syntax error!");
+		throw runtime_error("Parser: syntax error!");
 	}
 
 	string token = m_tokens.front();
@@ -121,7 +123,7 @@ string ConfigParser::accept(void)
 void ConfigParser::consume(const string& token)
 {
 	if (m_tokens.front() != token) {
-		throw std::runtime_error("can't find " + token + "!");
+		throw runtime_error("can't find " + token + "!");
 	}
 	m_tokens.pop_front();
 }
@@ -135,7 +137,7 @@ void ConfigParser::parseServer(void)
 	string token;
 	while ((token = accept()) != "}") {
 		if (!isValidServerKey(token)) {
-			throw std::runtime_error("Parser: unknown server key " + token + "!");
+			throw runtime_error("Parser: unknown server key " + token + "!");
 		}
 		if (token == "root") {
 			parseRoot(server);
@@ -159,7 +161,7 @@ void ConfigParser::parseServer(void)
 
 	// Check server include the required fields (listen)
 	if (!server.address.host && !server.address.port) {
-		throw std::runtime_error("Parser: server has no listen field!");
+		throw runtime_error("Parser: server has no listen field!");
 	}
 
 	// Fill in the default error pages and '/' location if not provided
@@ -176,16 +178,16 @@ void ConfigParser::parseLocation(ServerConfig& server)
 	parseUri(location), consume("{");
 
 	// Check if location uri already exists
-	std::vector<LocationConfig>::iterator it;
+	vector<LocationConfig>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) {
 		if (it->uri == location.uri)
-			throw std::runtime_error("Parser: duplication location " + it->uri + "!");
+			throw runtime_error("Parser: duplication location " + it->uri + "!");
 	}
 
 	string token;
 	while ((token = accept()) != "}") {
 		if (!isValidLocationKey(token)) {
-			throw std::runtime_error("Parser: unknown location key " + token + "!");
+			throw runtime_error("Parser: unknown location key " + token + "!");
 		}
 		if (token == "autoindex") {
 			parseAutoindex(location);
@@ -247,14 +249,14 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		// Resolve port portion
 		int port = toInt(token);
 		if (port <= 0 || port > 65535) {
-			throw std::exception();
+			throw exception();
 		}
 		server.address.port = port;
 
 		consume(";");
 	}
 	catch (...) {
-		throw std::runtime_error("Parser: invalid listen!");
+		throw runtime_error("Parser: invalid listen!");
 	}
 }
 
@@ -264,13 +266,13 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 	try {
 		int value = toInt(accept());
 		if (value < 0) {
-			throw std::runtime_error("negative value");
+			throw runtime_error("negative value");
 		}
 		server.clientMaxBodySize = value;
 		consume(";");
 	}
-	catch (std::exception& e) {
-		throw std::runtime_error("Parser: body size, " + string(e.what()) + "!");
+	catch (exception& e) {
+		throw runtime_error("Parser: body size, " + string(e.what()) + "!");
 	}
 }
 
@@ -278,14 +280,14 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 /* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseErrorPage(ServerConfig& server)
 {
-	std::vector<string> tokens;
+	vector<string> tokens;
 	string token;
 
 	while ((token = accept()) != ";") {
 		tokens.push_back(token);
 	}
 	if (tokens.size() < 2) {
-		throw std::runtime_error("Parser: syntax error!");
+		throw runtime_error("Parser: syntax error!");
 	}
 
 	// Excluding the last element which is the page path
@@ -296,17 +298,17 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 			// Check if the key already exist or the code isn't used
 			std::map<int, string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end()) {
-				throw std::runtime_error("duplicated error code");
+				throw runtime_error("duplicated error code");
 			}
 			if (!isValidErrorCode(code)) {
-				throw std::runtime_error("code " + toString(code) + " isn't used");
+				throw runtime_error("code " + toString(code) + " isn't used");
 			}
 
 			server.errorPages[code] = tokens.back();
 		}
 	}
-	catch (std::exception& e) {
-		throw std::runtime_error("Parser: error page, " + string(e.what()) + "!");
+	catch (exception& e) {
+		throw runtime_error("Parser: error page, " + string(e.what()) + "!");
 	}
 }
 
@@ -323,7 +325,7 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 {
 	string token = accept();
 	if (token != "on" && token != "off") {
-		throw std::runtime_error("Parser: invalid autoindex value!");
+		throw runtime_error("Parser: invalid autoindex value!");
 	}
 	location.autoindex = token == "on" ? true : false;
 	consume(";");
@@ -339,7 +341,7 @@ void ConfigParser::parseAlias(LocationConfig& location)
 		// Check if alias is accessible and is a directory
 		struct stat pathInfo;
 		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
-			throw std::runtime_error("Parser: invalid alias " + token + "!");
+			throw runtime_error("Parser: invalid alias " + token + "!");
 		}
 
 		location.alias = token; // path or alias?
@@ -359,7 +361,7 @@ void ConfigParser::parseAllowedMethods(LocationConfig& location)
 		// Define all allowed methods somewhere else in an array?
 		// Potentially more and need to be accessible in other places
 		if (token != "GET" && token != "POST" && token != "DELETE") {
-			throw std::runtime_error("Parser: unknown method " + token);
+			throw runtime_error("Parser: unknown method " + token);
 		}
 
 		location.allowedMethods.push_back(token);
@@ -381,13 +383,13 @@ void ConfigParser::parseRedirect(LocationConfig& location)
 	try {
 		location.redirect.first = toInt(accept());
 		if (!isValidRedirectCode(location.redirect.first)) {
-			throw std::runtime_error("invalid redirect code");
+			throw runtime_error("invalid redirect code");
 		}
 		location.redirect.second = accept(); // need to validate as url?
 		consume(";");
 	}
-	catch (std::exception& e) {
-		throw std::runtime_error("Parser: " + string(e.what()) + "!");
+	catch (exception& e) {
+		throw runtime_error("Parser: " + string(e.what()) + "!");
 	}
 }
 
@@ -430,7 +432,7 @@ void ConfigParser::addDefaultErrorPages(ServerConfig& server)
 void ConfigParser::addDefaultLocation(ServerConfig& server)
 {
 	// Check if the default location already exist
-	std::vector<LocationConfig>::iterator it;
+	vector<LocationConfig>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) {
 		if (it->uri == "/") {
 			return;

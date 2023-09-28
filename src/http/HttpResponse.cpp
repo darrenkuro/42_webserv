@@ -1,6 +1,7 @@
 #include "HttpResponse.hpp"
 
 using std::string;
+using std::map;
 
 /* --------------------------------------------------------------------------------------------- */
 string getStatusText(int code)
@@ -157,7 +158,7 @@ string toString(HttpResponse res) {
 	str.append(toString(res.statusCode) + " ");
 	str.append(getStatusText(res.statusCode) + "\r\n");
 
-	std::map<string, string>::iterator it;
+	map<string, string>::iterator it;
 	for (it = res.header.begin(); it != res.header.end(); it++) {
 		str.append(it->first + ": ").append(it->second + "\r\n");
 	}

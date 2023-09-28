@@ -1,5 +1,8 @@
 #include "Client.hpp"
 
+using std::string;
+
+/* --------------------------------------------------------------------------------------------- */
 Client::Client(int socketFd, in_addr host, int port)
 {
 	static int clientID = 1;
@@ -80,7 +83,7 @@ bool Client::didTimeout()
 	return (timeDiffS > TIMEOUT_TIME);
 }
 
-void Client::appendData(std::string buffer)
+void Client::appendData(string buffer)
 {
 	//m_request = appendBody(m_request, buffer);
 	m_request.body.append(buffer);
