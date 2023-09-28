@@ -1,8 +1,8 @@
 #include "Webserver.hpp"
 
-/* -------------------------------------------------------------------------- *
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Construction & Deconstruction
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------------------------- */
 Webserver::Webserver(const vector<ServerConfig> serverConfigs)
 {
 	log(INFO, "Webserver created");
@@ -36,9 +36,9 @@ void Webserver::start(void)
 	}
 }
 
-/* -------------------------------------------------------------------------- *
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Initialization Functions
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------------------------- */
 void Webserver::setupServers(const vector<ServerConfig> configs)
 {
 	for (size_t i = 0; i < configs.size(); i++) {
@@ -46,7 +46,7 @@ void Webserver::setupServers(const vector<ServerConfig> configs)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::initListenSockets(void)
 {
 	filterUniqueSockets();
@@ -62,7 +62,7 @@ void Webserver::initListenSockets(void)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 int Webserver::initSocket(Address address)
 {
 	int listenFd = createIPv4Socket();
@@ -84,9 +84,9 @@ int Webserver::initSocket(Address address)
 	return listenFd;
 }
 
-/* -------------------------------------------------------------------------- *
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Logic Functions
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------------------------- */
 void Webserver::mainloop(void)
 {
 	while (g_running) {
@@ -114,7 +114,7 @@ void Webserver::mainloop(void)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::handleClientPOLLIN(Client& client)
 {
 	char buffer[RECV_SIZE];
@@ -160,7 +160,7 @@ void Webserver::handleClientPOLLIN(Client& client)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::handleClientPOLLOUT(Client& client)
 {
 	if (client.getResponseIsReady() == false) {
@@ -175,7 +175,7 @@ void Webserver::handleClientPOLLOUT(Client& client)
 	send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 {
 	try {
@@ -190,7 +190,7 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::addClient(int socketFd)
 {
 	struct sockaddr_in serverAddress;
@@ -211,7 +211,7 @@ void Webserver::addClient(int socketFd)
 	log(DEBUG, "Client fd %d added to poll", client.getFd());
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::handleDisconnects(void)
 {
 	std::map<int, Client>::iterator it;
@@ -240,7 +240,7 @@ void Webserver::handleDisconnects(void)
 	removeIterators.clear();
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::clientStatusCheck(Client& client, int bytesRead)
 {
 	if (bytesRead == 0) {
@@ -251,7 +251,7 @@ void Webserver::clientStatusCheck(Client& client, int bytesRead)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 Server& Webserver::routeRequest(HttpRequest request, Client& client)
 {
 	if (request.header.find("Host") == request.header.end()) {
@@ -303,9 +303,9 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 }
 
 
-/* -------------------------------------------------------------------------- *
+/* --------------------------------------------------------------------------------------------- *
  * Webserver Utility Functions
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------------------------- */
 void Webserver::filterUniqueSockets(void)
 {
 	for (size_t i = 0; i < m_servers.size(); i++) {
@@ -330,7 +330,7 @@ void Webserver::filterUniqueSockets(void)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 Client& Webserver::getClientFromIdx(int idx)
 {
 	std::map<int, Client>::iterator it;
@@ -339,7 +339,7 @@ Client& Webserver::getClientFromIdx(int idx)
 	return client;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::removeFdFromPoll(int fd)
 {
 	for (size_t i = 0; i < m_pollFds.size(); i++) {
@@ -351,7 +351,7 @@ void Webserver::removeFdFromPoll(int fd)
 	}
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 bool Webserver::headerIsSupported(std::string header)
 {
 	for (int i = 0; i < 1; i++) {
@@ -362,7 +362,7 @@ bool Webserver::headerIsSupported(std::string header)
 	return false;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::printStatus(void)
 {
 

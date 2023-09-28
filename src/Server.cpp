@@ -232,7 +232,7 @@ HttpResponse Server::buildAutoindex(std::string path)
 	return response;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
 
 bool Server::bodySizeAllowed(int bytes)

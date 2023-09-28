@@ -1,8 +1,8 @@
 #include "HttpRequest.hpp"
 
-/* -------------------------------------------------------------------------- *
+/* --------------------------------------------------------------------------------------------- *
  * Parse a field for HTTP request, with a given separator, consume the content.
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------------------------- */
 void parsePart(const std::string& sep, std::string& field, std::string& content)
 {
 	size_t pos = content.find(sep);
@@ -19,9 +19,9 @@ void parsePart(const std::string& sep, std::string& field, std::string& content)
 	}
 }
 
-/* -------------------------------------------------------------------------- *
+/* --------------------------------------------------------------------------------------------- *
  * Parse a header field for HTTP request, consume the content.
- * -------------------------------------------------------------------------- */
+ * --------------------------------------------------------------------------------------------- */
 void parseHeader(std::map<std::string, std::string>& header, std::string& content)
 {
 	size_t colonPos = content.find(":");
@@ -49,7 +49,7 @@ void parseHeader(std::map<std::string, std::string>& header, std::string& conten
 	header[key] = value;
 }
 
-/* -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 HttpRequest parseHttpRequest(std::string& content)
 {
 	HttpRequest req;

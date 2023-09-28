@@ -1,5 +1,6 @@
 #include "HttpResponse.hpp"
 
+/* --------------------------------------------------------------------------------------------- */
 std::string getStatusText(int code)
 {
 	switch(code) {
@@ -84,6 +85,7 @@ std::string getStatusText(int code)
 	}
 }
 
+/* --------------------------------------------------------------------------------------------- */
 std::string getMimeType(std::string ext)
 {
 	if (ext == ".aac") {
@@ -146,6 +148,7 @@ std::string getMimeType(std::string ext)
 	return "text/plain";
 }
 
+/* --------------------------------------------------------------------------------------------- */
 std::string toString(HttpResponse res) {
 	std::string str;
 	str.append("HTTP/1.1 ");
@@ -170,6 +173,7 @@ std::string getDate(void)
 	return std::string(buffer);
 }
 
+/* --------------------------------------------------------------------------------------------- */
 HttpResponse createBasicResponse(int code, std::string path)
 {
 	HttpResponse res;

@@ -1,9 +1,9 @@
 function home() {
-	const body = document.getElementById('body');
+	const body = document.getElementById('insert');
 	body.innerHTML = "";
 	const listItem = document.createElement('p');
 	listItem.textContent = 'This is a sample page for the 42 project Webserv. \
-		It is capable of ....';
+		Blah blah blah ....';
 	body.appendChild(listItem);
 }
 
@@ -14,6 +14,6 @@ function upload() {
 		<input type="file" name="file" id="file"><br>
 		<input type="submit" value="Upload">
 	</form>`;
-	const body = document.getElementById('body');
+	const body = document.getElementById('insert');
 	body.innerHTML = formHTML;
 }
