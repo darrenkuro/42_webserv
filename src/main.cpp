@@ -3,7 +3,7 @@
 #include "log.hpp"
 #include <signal.h>
 
-#define DEFAULT_CONF "configs/default.conf"
+#define DEFAULT_CONF "config/default.conf"
 
 bool g_running = true;
 

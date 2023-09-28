@@ -14,5 +14,5 @@ struct HttpRequest
 };
 
 // Main Parse Function
-HttpRequest parseHttpRequest(std::string& content);
+HttpRequest parseHttpRequest(std::string content);
 

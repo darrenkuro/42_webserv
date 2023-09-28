@@ -10,7 +10,7 @@ using std::runtime_error;
 Server::Server(const ServerConfig config) : m_config(config)
 {
 	log(INFO, "Server: %s on %s:%d", getName().c_str(),
-		toIPString(m_config.address.host).c_str(), m_config.address.port);
+		toIPString(m_config.address.ip).c_str(), m_config.address.port);
 }
 
 Address Server::getAddress() { return m_config.address; }

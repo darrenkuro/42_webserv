@@ -54,7 +54,7 @@ void parseHeader(map<string, string>& header, string& content)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-HttpRequest parseHttpRequest(string& content)
+HttpRequest parseHttpRequest(string content)
 {
 	HttpRequest req;
 

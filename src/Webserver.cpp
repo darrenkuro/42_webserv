@@ -190,28 +190,23 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 	}
 
-	try {
-		// Host header ip resolution
-		size_t colonPos = host.find(':');
-		in_addr_t ip = colonPos != string::npos
-					? toIPv4(host.substr(0, colonPos))
-					: toIPv4(host);
-		int port = colonPos != string::npos
-					? toInt(host.substr(colonPos + 1))
-					: 80;
-
-		if (port <= 0 || port > 65535) {
-			throw exception();
-		}
-
-		for (size_t i = 0; i < m_servers.size(); i++) {
-			Address addr = m_servers[i].getAddress();
-			if (addr.ip == inet_addr(ip.c_str()) && addr.port == atoi(port.c_str())) {
-				return m_servers[i];
-			}
+	// Host header ip resolution
+	size_t colonPos = host.find(':');
+	in_addr_t ip = colonPos != string::npos
+				? toIPv4(host.substr(0, colonPos))
+				: toIPv4(host);
+	int port = colonPos != string::npos
+				? toInt(host.substr(colonPos + 1))
+				: 80;
+	if (port <= 0 || port > 65535) {
+		throw exception();
+	}
+	for (size_t i = 0; i < m_servers.size(); i++) {
+		Address addr = m_servers[i].getAddress();
+		if (addr.ip == ip && addr.port == port) {
+			return m_servers[i];
 		}
 	}
-	catch (...) { }
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {

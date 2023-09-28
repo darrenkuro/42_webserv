@@ -95,11 +95,11 @@ inline void log(int level, const char* format, ...)
 inline ostream& operator<<(ostream& os, HttpRequest req)
 {
 	os << align;
+	(void)req;
 	os << "Method[" << req.method << "] ";
 	os << "Uri[" << req.uri << "] ";
 	os << "Version[" << req.version << "] ";
 	os << "Host[" << req.header.find("Host")->second << "] ";
-	os << "Content-Length[" << req.header.find("Content-Length")->second << "]";
 	return os;
 }
 
@@ -114,7 +114,7 @@ inline ostream& operator<<(ostream& os, HttpResponse res)
 /* --------------------------------------------------------------------------------------------- */
 inline ostream &operator<<(ostream &os, const Address address)
 {
-	os << "Address[" << toIPString(address.host) << ":";
+	// os << "Address[" << toIPString(address.host) << ":";
 	os << address.port << "]";
 	return os;
 }

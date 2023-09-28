@@ -20,12 +20,6 @@ struct Address
 {
 	in_addr_t ip;
 	int port;
-};
-
-struct Address
-{
-	in_addr_t ip;
-	int port;
 
 	bool operator<(const Address& rhs) const;
 	std::string ipToStr();

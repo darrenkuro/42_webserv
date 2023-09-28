@@ -8,8 +8,6 @@ using std::runtime_error;
 /* --------------------------------------------------------------------------------------------- *
  * Constants declaractions and checkers for valid keys in the config.
  * --------------------------------------------------------------------------------------------- */
-#pragma region constants
-
 const string serverKeyArray[] = {
 	"root","server_name",  "listen", "client_max_body_size",
 	"error_page", "location"
@@ -66,8 +64,6 @@ bool ConfigParser::isValidRedirectCode(int code)
 	return std::find(validRedirectCodes.begin(), validRedirectCodes.end(), code)
 			!= validRedirectCodes.end();
 }
-
-#pragma endregion
 
 /* --------------------------------------------------------------------------------------------- */
 vector<ServerConfig> ConfigParser::parse(const string& filename)
@@ -160,7 +156,7 @@ void ConfigParser::parseServer(void)
 	}
 
 	// Check server include the required fields (listen)
-	if (!server.address.host && !server.address.port) {
+	if (!server.address.ip && !server.address.port) {
 		throw runtime_error("Parser: server has no listen field!");
 	}
 
@@ -243,7 +239,7 @@ void ConfigParser::parseAddress(ServerConfig& server)
 			token.erase(token.begin(), token.begin() + colonPos + 1);
 		}
 		else {
-			server.address.host = 0;
+			server.address.ip = 0;
 		}
 
 		// Resolve port portion
@@ -398,7 +394,7 @@ ServerConfig ConfigParser::createServer(void)
 {
 	ServerConfig config;
 
-	config.address.host = 0;
+	config.address.ip = 0;
 	config.address.port = 0;
 	config.root = ROOT;
 	config.clientMaxBodySize = -1;
