@@ -1,11 +1,7 @@
 #pragma once
 
+#include <string>
 #include <map>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include "utils.hpp"
-#include "ConfigParser.hpp"
 
 #define DEFAULT_400_PATH "./public/default_error/400.html"
 #define DEFAULT_404_PATH "./public/default_error/404.html"
@@ -17,9 +13,11 @@ struct HttpResponse
 	std::string body;
 };
 
+// Helper Functions
 std::string getDate(void);
 std::string getStatusText(int code);
 std::string getMimeType(std::string path);
 std::string toString(HttpResponse res);
 
+// Main Function
 HttpResponse createBasicResponse(int code, std::string path);

@@ -1,4 +1,5 @@
 #include "HttpRequest.hpp"
+#include <exception>
 
 using std::string;
 using std::map;
