@@ -20,6 +20,8 @@ int main(int argc, char **argv)
 
 	std::string configPath;
 
+	vector
+
 	if (argc == 1) {
 		configPath = DEFAULT_CONF;
 	}
@@ -29,7 +31,6 @@ int main(int argc, char **argv)
 	else {
 		std::cerr << "[Error] Invalid argument count!" << std::endl;
 		return 0;
-
 	}
 	Webserver webserver(configPath);
 	webserver.start();

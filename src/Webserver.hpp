@@ -21,44 +21,40 @@
 
 class Server;
 extern bool g_running;
-using std::vector;
-using std::cout;
-using std::endl;
-using std::cerr;
-using std::set;
-using std::map;
-
 
 class Webserver
 {
 public:
+	/* Constructors / Destructors */
 	Webserver(std::string configPath);
 	~Webserver();
 
+	/* Start */
 	void start(void);
 
 private:
-	// Initialization
+	/* Initialization */
 	void initListenSockets();
 
-	// Logic
+	/* Logic */
 	void mainloop();
-	void handlePOLLIN(Client& client);
-	void handlePOLLOUT(Client& client);
-
+	void handlePollIn(Client& client);
+	void handlePollOut(Client& client);
+	
 	HttpResponse processRequest(HttpRequest request, Client& client);
-	void addClient(int socketFd);
-	void handleDisconnects();
 	Server& routeRequest(HttpRequest request, Client& client);
 
-	// Utility
+	void addClient(int socketFd);
+	void handleDisconnects();
+	
+	/* Utility */
 	Client& getClientFromIdx(int idx);
 	void removeFdFromPoll(int fd);
 	std::set<Address> getUniqueAddresses(std::vector<Server> servers);
 
-	// Member Data
+	/* Member Data */
 	size_t m_nbListenSockets;
-	vector<pollfd> m_pollFds;
+	vector<struct pollfd> m_pollFds;
 	vector<Server> m_servers;
 	map<int, Client> m_clients; // Key: Fd; Value: Client
 };

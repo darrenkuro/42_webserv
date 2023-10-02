@@ -10,147 +10,71 @@ using std::map;
 string getStatusText(int code)
 {
 	switch(code) {
-		case 100:
-			return "Continue";
-		case 101:
-			return "Switching Protocols";
-		case 200:
-			return "OK";
-		case 201:
-			return "Created";
-		case 202:
-			return "Accepted";
-		case 203:
-			return "Non-Authoritative Information";
-		case 204:
-			return "No Content";
-		case 205:
-			return "Reset Content";
-		case 206:
-			return "Partial Content";
-		case 300:
-			return "Multiple Choices";
-		case 301:
-			return "Moved Permanently";
-		case 302:
-			return "Found";
-		case 303:
-			return "See Other";
-		case 304:
-			return "Not Modified";
-		case 307:
-			return "Temporary Redirect";
-		case 400:
-			return "Bad Request";
-		case 401:
-			return "Unauthorized";
-		case 403:
-			return "Forbidden";
-		case 404:
-			return "Not Found";
-		case 405:
-			return "Method Not Allowed";
-		case 406:
-			return "Not Acceptable";
-		case 407:
-			return "Proxy Authentication Required";
-		case 408:
-			return "Request Timeout";
-		case 409:
-			return "Conflict";
-		case 410:
-			return "Gone";
-		case 411:
-			return "Length Required";
-		case 412:
-			return "Precondition Failed";
-		case 413:
-			return "Payload Too Large";
-		case 414:
-			return "URI Too Long";
-		case 415:
-			return "Unsupported Media Type";
-		case 416:
-			return "Range Not Satisfiable";
-		case 417:
-			return "Expectation Failed";
-		case 500:
-			return "Internal Server Error";
-		case 501:
-			return "Not Implemented";
-		case 502:
-			return "Bad Gateway";
-		case 503:
-			return "Service Unavailable";
-		case 504:
-			return "Gateway Timeout";
-		case 505:
-			return "HTTP Version Not Supported";
-		default:
-			return "Unknown";
+		case 100: return "Continue";
+		case 101: return "Switching Protocols";
+		case 200: return "OK";
+		case 201: return "Created";
+		case 202: return "Accepted";
+		case 203: return "Non-Authoritative Information";
+		case 204: return "No Content";
+		case 205: return "Reset Content";
+		case 206: return "Partial Content";
+		case 300: return "Multiple Choices";
+		case 301: return "Moved Permanently";
+		case 302: return "Found";
+		case 303: return "See Other";
+		case 304: return "Not Modified";
+		case 307: return "Temporary Redirect";
+		case 400: return "Bad Request";
+		case 401: return "Unauthorized";
+		case 403: return "Forbidden";
+		case 404: return "Not Found";
+		case 405: return "Method Not Allowed";
+		case 406: return "Not Acceptable";
+		case 407: return "Proxy Authentication Required";
+		case 408: return "Request Timeout";
+		case 409: return "Conflict";
+		case 410: return "Gone";
+		case 411: return "Length Required";
+		case 412: return "Precondition Failed";
+		case 413: return "Payload Too Large";
+		case 414: return "URI Too Long";
+		case 415: return "Unsupported Media Type";
+		case 416: return "Range Not Satisfiable";
+		case 417: return "Expectation Failed";
+		case 500: return "Internal Server Error";
+		case 501: return "Not Implemented";
+		case 502: return "Bad Gateway";
+		case 503: return "Service Unavailable";
+		case 504: return "Gateway Timeout";
+		case 505: return "HTTP Version Not Supported";
+		default: return "Unknown";
 	}
 }
 
 /* --------------------------------------------------------------------------------------------- */
 string getMimeType(string ext)
 {
-	if (ext == ".aac") {
-		return "audio/aac";
-	}
-	if (ext == ".css") {
-		return "text/css";
-	}
-	if (ext == ".csv") {
-		return "text/csv";
-	}
-	if (ext == ".gif") {
-		return "image/git";
-	}
-	if (ext == ".htm" || ext == ".html") {
-		return "text/html";
-	}
-	if (ext == ".ico") {
-		return "image/vnd.microsoft.icon";
-	}
-	if (ext == ".jpeg" || ext == ".jpg") {
-		return "image/jpeg";
-	}
-	if (ext == ".js" || ext == ".mjs") {
-		return "text/javascript";
-	}
-	if (ext == ".json") {
-		return "application/json";
-	}
-	if (ext == ".mp3") {
-		return "audio/mpeg";
-	}
-	if (ext == ".mp4") {
-		return "video/mp4";
-	}
-	if (ext == ".mpeg") {
-		return "video/mpeg";
-	}
-	if (ext == ".png") {
-		return "image/png";
-	}
-	if (ext == ".pdf") {
-		return "application/pdf";
-	}
-	if (ext == ".php") {
-		return "application/x-httpd-php";
-	}
-	if (ext == ".svg") {
-		return "image/svg+xml";
-	}
-	if (ext == ".txt") {
-		return "text/plain";
-	}
-	if (ext == ".wav") {
-		return "audio/wav";
-	}
-	if (ext == ".webp") {
-		return "image/webp";
-	}
+	if (ext == ".aac") return "audio/aac";
+	if (ext == ".css") return "text/css";
+	if (ext == ".csv") return "text/csv";
+	if (ext == ".gif") return "image/git";
+	if (ext == ".ico") return "image/vnd.microsoft.icon";
+	if (ext == ".mp3") return "audio/mpeg";
+	if (ext == ".mp4") return "video/mp4";
+	if (ext == ".png") return "image/png";
+	if (ext == ".pdf") return "application/pdf";
+	if (ext == ".php") return "application/x-httpd-php";
+	if (ext == ".svg") return "image/svg+xml";
+	if (ext == ".txt") return "text/plain";
+	if (ext == ".wav") return "audio/wav";
+	if (ext == ".mpeg") return "video/mpeg";
+	if (ext == ".webp") return "image/webp";
+	if (ext == ".json") return "application/json";
+	if (ext == ".htm" || ext == ".html") return "text/html";
+	if (ext == ".jpg" || ext == ".jpeg") return "image/jpeg";
+	if (ext == ".mjs" || ext == ".js") return "text/javascript";
+
 	return "text/plain";
 }
 

@@ -17,10 +17,10 @@ public:
 	Client(int fd, Address addr);
 
 	// Getters
-	int getID();
+	int getId();
 	int getFd();
 	int getPort();
-	in_addr_t getIP();
+	in_addr_t getIp();
 	bool didTimeout();
 	bool hasDisconnected();
 	bool getResponseIsReady();
@@ -30,8 +30,8 @@ public:
 	HttpRequest& getRequest();
 
 	// Setters
-	void setHasDisconnected(bool status);
 	void setResponse(HttpResponse res);
+	void setHasDisconnected(bool status);
 	void setRequest(HttpRequest req);
 	void setBytesExpected(int bytes);
 

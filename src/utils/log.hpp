@@ -8,13 +8,14 @@
 #include <cstdarg>
 #include <stdio.h>
 
+namespace{
 using std::cout;
 using std::endl;
 using std::string;
 using std::ostream;
 using std::map;
 using std::vector;
-
+}
 #define RESET	"\033[0m"
 #define CYAN	"\033[36m"
 #define YELLOW	"\033[33m"

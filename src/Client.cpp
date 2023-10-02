@@ -34,10 +34,10 @@ void Client::setRequest(HttpRequest req)
 
 /* --------------------------------------------------------------------------------------------- */
 HttpRequest& Client::getRequest() { return m_request; }
-int Client::getID() { return m_id; }
+int Client::getId() { return m_id; }
 int Client::getFd() { return m_socketFd; }
 int Client::getPort() { return m_address.port; }
-in_addr_t Client::getIP() { return m_address.ip; }
+in_addr_t Client::getIp() { return m_address.ip; }
 bool Client::hasDisconnected() { return m_hasDisconnected; }
 bool Client::getResponseIsReady() { return m_responseIsReady; }
 bool Client::getRequestIsReady() { return m_requestIsReady; }

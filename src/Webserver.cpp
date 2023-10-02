@@ -1,18 +1,25 @@
 #include "Webserver.hpp"
 #include <arpa/inet.h>
 
-using std::string;
-using std::set;
-using std::map;
+namespace
+{
+using std::cout;
+using std::cerr;
+using std::endl;
 using std::vector;
+using std::map;
+using std::set;
 using std::exception;
 using std::runtime_error;
+}
 
-///////////////////////////////////////////////
-//  Webserver Construction & Deconstruction  //
-///////////////////////////////////////////////
+/* ============================================================================================= */
+/*                                                                                               */
+/*                              Webserver Class Implementation                                   */
+/*                                                                                               */
+/* ============================================================================================= */
 
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constructors / Destructors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 Webserver::Webserver(string configPath)
 {
 	try {
@@ -27,6 +34,7 @@ Webserver::Webserver(string configPath)
 	}
 };
 
+/* --------------------------------------------------------------------------------------------- */
 Webserver::~Webserver()
 {
 	for (size_t i = 0; i < m_pollFds.size(); i++) {
@@ -34,6 +42,7 @@ Webserver::~Webserver()
 	}
 };
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Start ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void Webserver::start(void)
 {
 	try {
@@ -45,11 +54,7 @@ void Webserver::start(void)
 	}
 }
 
-//////////////////////////////////////////
-//  Webserver Initialization Functions  //
-//////////////////////////////////////////
-
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Initialization ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void Webserver::initListenSockets()
 {
 	set<Address> uniques = getUniqueAddresses(m_servers);
@@ -63,11 +68,7 @@ void Webserver::initListenSockets()
 	m_nbListenSockets = uniques.size();
 }
 
-/////////////////////////////////
-//  Webserver Logic Functions  //
-/////////////////////////////////
-
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Logic ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void Webserver::mainloop()
 {
 	while (g_running) {
@@ -119,6 +120,10 @@ void Webserver::handlePOLLIN(Client& client)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/*
+	Takes a HTTP request and the client corresponding client and proccesses the HTTP request,
+	builds a response and return it.
+*/
 HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 {
 	Server& server = routeRequest(request, client);
@@ -229,11 +234,7 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	throw runtime_error("Something went really wrong when routing server!");
 }
 
-///////////////////////////////////
-//  Webserver Utility Functions  //
-///////////////////////////////////
-
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utility ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 Client& Webserver::getClientFromIdx(int idx)
 {
 	map<int, Client>::iterator it;
@@ -278,3 +279,5 @@ set<Address> Webserver::getUniqueAddresses(vector<Server> servers)
 	}
 	return uniques;
 }
+
+
