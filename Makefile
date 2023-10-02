@@ -2,10 +2,10 @@ NAME = webserv
 
 # Source files
 _DIR	:=	http utils
-_SRC 	:=	http/HttpRequest.cpp http/HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
-			ConfigParser.cpp utils/utils.cpp main.cpp
+_SRC	:=	http/HttpRequest.cpp http/HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
+			ConfigParser.cpp Cgi.cpp utils/utils.cpp main.cpp
 _INC	:=	http/HttpRequest.hpp http/HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
-			ConfigParser.hpp utils/utils.hpp utils/log.hpp
+			ConfigParser.hpp Cgi.hpp utils/utils.hpp utils/log.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src
@@ -33,9 +33,9 @@ clean:
 fclean: clean
 	$(RM) $(NAME)
 
-re : fclean all
+re: fclean all
 
-.PHONY : all clean fclean re
+.PHONY: all clean fclean re
 
 sim:
 	make

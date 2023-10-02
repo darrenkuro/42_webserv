@@ -3,13 +3,8 @@
 #include <vector>
 #include <deque>
 #include <map>
-#include <algorithm>
 #include <string>
-#include <sys/stat.h>
-#include <stdexcept>
 #include "utils.hpp"
-
-#define ROOT "./public"
 
 struct LocationConfig
 {
@@ -45,8 +40,7 @@ private:
 	std::deque<std::string> m_tokens;
 
 	// Logic
-	void lex(const std::string& content, const std::string& whitespace,
-			 const std::string& symbol);
+	void lex(const std::string& content, const std::string& whitespace, const std::string& symbol);
 
 	std::string accept(void);
 	void consume(const std::string& token);

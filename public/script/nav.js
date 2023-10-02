@@ -17,3 +17,9 @@ function upload() {
 	const body = document.getElementById('insert');
 	body.innerHTML = formHTML;
 }
+
+function cookies() {
+	const cookiesHTML = ``;
+	const body = document.getElementById('insert');
+	body.innerHTML = cookiesHTML;
+}

@@ -11,6 +11,8 @@
 
 struct ServerConfig;
 
+typedef std::map<std::string, std::string> Cookies;
+
 class Server
 {
 public:
@@ -29,6 +31,7 @@ public:
 
 private:
 	ServerConfig m_config;
+	std::map<std::string, Cookies> m_cookies;
 
 	LocationConfig routeRequest(std::string uri);
 	HttpResponse buildAutoindex(std::string path);

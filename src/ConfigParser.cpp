@@ -1,3 +1,6 @@
+#include <stdexcept>
+#include <algorithm>
+#include <sys/stat.h>
 #include "ConfigParser.hpp"
 
 using std::string;
@@ -5,12 +8,10 @@ using std::vector;
 using std::exception;
 using std::runtime_error;
 
-/* --------------------------------------------------------------------------------------------- *
- * Constants declaractions and checkers for valid keys in the config.
- * --------------------------------------------------------------------------------------------- */
+#define ROOT "./public"
+
 const string serverKeyArray[] = {
-	"root","server_name",  "listen", "client_max_body_size",
-	"error_page", "location"
+	"root","server_name",  "listen", "client_max_body_size", "error_page", "location"
 };
 
 const string locationKeyArray[] = {
@@ -23,13 +24,11 @@ const int errorCode[] = {400, 403, 404, 405, 408, 411, 413, 500, 501, 505};
 const int redirectCode[] = {301, 302, 303, 307, 308};
 
 const vector<string> ConfigParser::validServerKeys(
-	serverKeyArray, serverKeyArray +
-	sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
+	serverKeyArray, serverKeyArray + sizeof(serverKeyArray) / sizeof(serverKeyArray[0])
 );
 
 const vector<string> ConfigParser::validLocationKeys(
-	locationKeyArray, locationKeyArray +
-	sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
+	locationKeyArray, locationKeyArray + sizeof(locationKeyArray) / sizeof(locationKeyArray[0])
 );
 
 const vector<int> ConfigParser::validErrorCodes(errorCode,
@@ -43,20 +42,17 @@ const vector<int> ConfigParser::validRedirectCodes(redirectCode,
 /* --------------------------------------------------------------------------------------------- */
 bool ConfigParser::isValidServerKey(string key)
 {
-	return std::find(validServerKeys.begin(), validServerKeys.end(), key)
-			!= validServerKeys.end();
+	return std::find(validServerKeys.begin(), validServerKeys.end(), key) != validServerKeys.end();
 }
 
 bool ConfigParser::isValidLocationKey(string key)
 {
-	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key)
-			!= validLocationKeys.end();
+	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) != validLocationKeys.end();
 }
 
 bool ConfigParser::isValidErrorCode(int code)
 {
-	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code)
-			!= validErrorCodes.end();
+	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code) != validErrorCodes.end();
 }
 
 bool ConfigParser::isValidRedirectCode(int code)
@@ -219,14 +215,12 @@ void ConfigParser::parseRoot(ServerConfig& server)
 	consume(";");
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseServerName(ServerConfig& server)
 {
 	server.serverName = accept();
 	consume(";");
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAddress(ServerConfig& server)
 {
 	try {
@@ -256,7 +250,6 @@ void ConfigParser::parseAddress(ServerConfig& server)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 {
 	try {
@@ -271,7 +264,6 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 		throw runtime_error("Parser: body size, " + string(e.what()) + "!");
 	}
 }
-
 
 /* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseErrorPage(ServerConfig& server)
@@ -316,7 +308,6 @@ void ConfigParser::parseUri(LocationConfig& location)
 	// any illegal characters in the uri?
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAutoindex(LocationConfig& location)
 {
 	string token = accept();
@@ -327,7 +318,6 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 	consume(";");
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAlias(LocationConfig& location)
 {
 	try {
@@ -349,7 +339,6 @@ void ConfigParser::parseAlias(LocationConfig& location)
 	// should it return actually path or just the alias?
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAllowedMethods(LocationConfig& location)
 {
 	string token;
@@ -364,7 +353,6 @@ void ConfigParser::parseAllowedMethods(LocationConfig& location)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseIndex(LocationConfig& location)
 {
 	string token;
@@ -373,7 +361,6 @@ void ConfigParser::parseIndex(LocationConfig& location)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
 void ConfigParser::parseRedirect(LocationConfig& location)
 {
 	try {
@@ -427,7 +414,7 @@ void ConfigParser::addDefaultErrorPages(ServerConfig& server)
 
 void ConfigParser::addDefaultLocation(ServerConfig& server)
 {
-  // Check if the default location already exist
+	// Check if the default location already exist
 	vector<LocationConfig>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) {
 		if (it->uri == "/") {

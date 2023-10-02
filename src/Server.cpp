@@ -6,6 +6,8 @@ using std::map;
 using std::exception;
 using std::runtime_error;
 
+#define ROOT "./public"
+
 /* --------------------------------------------------------------------------------------------- */
 Server::Server(const ServerConfig config) : m_config(config)
 {
@@ -114,9 +116,10 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 /* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 {
-	string root = route.alias == ""
-						? fullPath(m_config.root, route.uri)
-						: fullPath(ROOT, route.alias);
+	string root =
+		route.alias == ""
+			? fullPath(m_config.root, route.uri)
+			: fullPath(ROOT, route.alias);
 
 	log(DEBUG, "root: %s", root.c_str());
 
@@ -159,12 +162,14 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 /* --------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 {
-	string root = route.alias == ""
-						? fullPath(m_config.root, route.uri)
-						: fullPath(ROOT, route.alias);
-	string path = req.uri.substr(route.uri.length()) == ""
-						? root
-						: fullPath(root, req.uri.substr(route.uri.length()));
+	string root =
+		route.alias == ""
+			? fullPath(m_config.root, route.uri)
+			: fullPath(ROOT, route.alias);
+	string path =
+		req.uri.substr(route.uri.length()) == ""
+			? root
+			: fullPath(root, req.uri.substr(route.uri.length()));
 
 	if (std::remove(path.c_str()) == 0) {
 		return createBasicResponse(204, "");

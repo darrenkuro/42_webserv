@@ -160,7 +160,7 @@ int createTcpListenSocket(Address addr)
 		throw std::runtime_error("socket() failed" + std::string(strerror(errno)));
 
 	int sockopt = 1;
-  	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1)
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1)
 		throw std::runtime_error("setsockopt() failed: " + std::string(strerror(errno)));
 
 	sockaddr_in serverAddr;
@@ -182,17 +182,17 @@ int createTcpListenSocket(Address addr)
 
 bool Address::operator<(const Address& rhs) const
 {
-    if (ip < rhs.ip)
-        return true;
-    if (ip > rhs.ip)
-        return false;
-    return port < rhs.port;
+	if (ip < rhs.ip)
+		return true;
+	if (ip > rhs.ip)
+		return false;
+	return port < rhs.port;
 }
 
 Address getAddressFromFd(int fd)
 {
 	struct sockaddr_in serverAddress;
-    socklen_t addrLen = sizeof(serverAddress);
+	socklen_t addrLen = sizeof(serverAddress);
 	getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen);
 
 	Address addr;

@@ -1,6 +1,5 @@
 #include "Webserver.hpp"
-
- #include <arpa/inet.h>
+#include <arpa/inet.h>
 
 using std::string;
 using std::set;
@@ -9,11 +8,11 @@ using std::vector;
 using std::exception;
 using std::runtime_error;
 
-/**
- * --------------------------------------------------------------------------------------------- *
- * Webserver Construction & Deconstruction
- * --------------------------------------------------------------------------------------------- *
-*/
+///////////////////////////////////////////////
+//  Webserver Construction & Deconstruction  //
+///////////////////////////////////////////////
+
+/* --------------------------------------------------------------------------------------------- */
 Webserver::Webserver(string configPath)
 {
 	try {
@@ -37,20 +36,20 @@ Webserver::~Webserver()
 
 void Webserver::start(void)
 {
-    try {
-        initListenSockets();
-        mainloop();
-    }
-    catch(const exception& e) {
-		  log(ERROR, e.what());
-	  }
+	try {
+		initListenSockets();
+		mainloop();
+	}
+	catch(const exception& e) {
+		log(ERROR, e.what());
+	}
 }
 
-/**
- * --------------------------------------------------------------------------------------------- *
- * Webserver Initialization Functions
- * --------------------------------------------------------------------------------------------- *
-*/
+//////////////////////////////////////////
+//  Webserver Initialization Functions  //
+//////////////////////////////////////////
+
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::initListenSockets()
 {
 	set<Address> uniques = getUniqueAddresses(m_servers);
@@ -64,11 +63,11 @@ void Webserver::initListenSockets()
 	m_nbListenSockets = uniques.size();
 }
 
-/**
- * --------------------------------------------------------------------------------------------- *
- * Webserver Logic Functions
- * --------------------------------------------------------------------------------------------- *
-*/
+/////////////////////////////////
+//  Webserver Logic Functions  //
+/////////////////////////////////
+
+/* --------------------------------------------------------------------------------------------- */
 void Webserver::mainloop()
 {
 	while (g_running) {
@@ -153,7 +152,7 @@ void Webserver::addClient(int listenFd)
 	log(INFO, "Port = %d", client.getPort());
 
 	log(INFO, "Client[ID: %d] connected on %s:%d", client.getID(),
-		toIPString(client.getIP()), client.getPort());
+		toIPString(client.getIP()).c_str(), client.getPort());
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -230,11 +229,11 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	throw runtime_error("Something went really wrong when routing server!");
 }
 
-/**
- * --------------------------------------------------------------------------------------------- *
- * Webserver Utility Functions
- * --------------------------------------------------------------------------------------------- *
-*/
+///////////////////////////////////
+//  Webserver Utility Functions  //
+///////////////////////////////////
+
+/* --------------------------------------------------------------------------------------------- */
 Client& Webserver::getClientFromIdx(int idx)
 {
 	map<int, Client>::iterator it;
@@ -261,7 +260,7 @@ set<Address> Webserver::getUniqueAddresses(vector<Server> servers)
 	set<Address> uniques;
 	for (size_t i = 0; i < servers.size(); i++) {
 		if (servers[i].getAddress().ip == 0) {
-			uniques.insert(servers[i].getAddress());			
+			uniques.insert(servers[i].getAddress());
 		}
 	}
 

@@ -4,8 +4,9 @@ using std::string;
 using std::map;
 using std::exception;
 
-/* --------------------------------------------------------------------------------------------- *
- * Parse a field for HTTP request, with a given separator, consume the content.
+/**
+ * Parse a field for HTTP request, with a given separator.
+ * This function will consume the content.
  * --------------------------------------------------------------------------------------------- */
 void parsePart(const string& sep, string& field, string& content)
 {
@@ -23,8 +24,9 @@ void parsePart(const string& sep, string& field, string& content)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- *
- * Parse a header field for HTTP request, consume the content.
+/**
+ * Parse a header field for HTTP request.
+ * This function will consume the content.
  * --------------------------------------------------------------------------------------------- */
 void parseHeader(map<string, string>& header, string& content)
 {

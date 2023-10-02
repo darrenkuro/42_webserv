@@ -30,9 +30,7 @@ using std::vector;
 // LOG display level configuration
 #define LOG_DISPLAY_LEVEL DEBUG
 
-/* --------------------------------------------------------------------------------------------- *
- * Utilities.
- * --------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 inline ostream& displayTimestamp(ostream& os)
 {
 	std::time_t result = std::time(NULL);
@@ -41,7 +39,6 @@ inline ostream& displayTimestamp(ostream& os)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline ostream& align(ostream& os)
 {
 	string padding(PADDING, ' ');
@@ -49,7 +46,6 @@ inline ostream& align(ostream& os)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline void displayLogLevel(int level)
 {
 	switch (level)
@@ -72,7 +68,6 @@ inline void displayLogLevel(int level)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline void log(int level, const char* format, ...)
 {
 	if (level > LOG_DISPLAY_LEVEL) {
@@ -89,9 +84,7 @@ inline void log(int level, const char* format, ...)
 	cout << endl;
 }
 
-/* --------------------------------------------------------------------------------------------- *
- * Stream insertion operator overloads for custom structs and classes.
- * --------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 inline ostream& operator<<(ostream& os, HttpRequest req)
 {
 	os << align;
@@ -103,7 +96,6 @@ inline ostream& operator<<(ostream& os, HttpRequest req)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline ostream& operator<<(ostream& os, HttpResponse res)
 {
 	os << align;
@@ -111,7 +103,6 @@ inline ostream& operator<<(ostream& os, HttpResponse res)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline ostream &operator<<(ostream &os, const Address address)
 {
 	// os << "Address[" << toIPString(address.host) << ":";
@@ -119,7 +110,6 @@ inline ostream &operator<<(ostream &os, const Address address)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline ostream &operator<<(ostream &os, const LocationConfig location)
 {
 	os << "URI[" << location.uri << "] ";
@@ -140,7 +130,6 @@ inline ostream &operator<<(ostream &os, const LocationConfig location)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline ostream &operator<<(ostream &os, const ServerConfig config)
 {
 	os << "ServerName[" << config.serverName << "] ";
@@ -167,9 +156,7 @@ inline ostream &operator<<(ostream &os, const ServerConfig config)
 	return os;
 }
 
-/* --------------------------------------------------------------------------------------------- *
- * Log with information and color for structures and classes.
- * --------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 inline void logHttp(HttpRequest req, int clientID)
 {
 	cout << displayTimestamp << " ";
@@ -180,7 +167,6 @@ inline void logHttp(HttpRequest req, int clientID)
 	cout << req << RESET << endl;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline void logHttp(HttpResponse res, int clientID)
 {
 	cout << displayTimestamp << " ";
@@ -191,23 +177,11 @@ inline void logHttp(HttpResponse res, int clientID)
 	cout << res << RESET << endl;
 }
 
-/* --------------------------------------------------------------------------------------------- */
 inline void logServerConfig(ServerConfig config)
 {
-	(void) config;
-	// displayTimestamp();
-	// std::cout << " ";
-	// displayLogLevel(INFO);
+	cout << displayTimestamp << " ";
+	displayLogLevel(INFO);
 
-	// std::cout << ORANGE;
-	// std::cout << "======> WebservConfig" << std::endl;
-	// std::cout << "listen: " << std::endl;
-	// std::cout << "\thost: " << config.address.host << std::endl;
-	// std::cout << "\tport: " << config.address.port << std::endl;
-	// std::cout << "server_name: " << config.serverName << std::endl;
-	// std::cout << "location:" << std::endl;
-	// for(std::vector<LocationConfig>::const_iterator it = config.locations.begin(); it != config.locations.end(); it++) {
-	// 	std::cout << "\tautoindex: " << std::boolalpha << it->autoindex << std::endl;
-	// }
-	// std::cout << RESET << std::endl;
+	cout << "ServerConfig: ";
+	cout << config;
 }

@@ -14,7 +14,7 @@ class Client
 {
 public:
 	// Constructor & Destructor
- 	Client(int fd, Address addr);
+	Client(int fd, Address addr);
 
 	// Getters
 	int getID();
@@ -42,14 +42,12 @@ public:
 private:
 	int m_id;
 	int m_socketFd;
-	int m_port;
 	bool m_hasDisconnected;
 	bool m_responseIsReady;
 	bool m_requestIsReady;
 	bool m_requestParsed;
 	timeval m_lastEventTime;
-	in_addr m_host;
-  Address m_address;
+	Address m_address;
 	HttpResponse m_response;
 	HttpRequest m_request;
 

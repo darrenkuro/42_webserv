@@ -32,33 +32,33 @@ using std::map;
 class Webserver
 {
 public:
-    Webserver(std::string configPath);
-    ~Webserver();
+	Webserver(std::string configPath);
+	~Webserver();
 
 	void start(void);
 
 private:
-    // Initialization
-    void initListenSockets();
+	// Initialization
+	void initListenSockets();
 
-    // Logic
-    void mainloop();
+	// Logic
+	void mainloop();
 	void handlePOLLIN(Client& client);
 	void handlePOLLOUT(Client& client);
 
-    HttpResponse processRequest(HttpRequest request, Client& client);
-    void addClient(int socketFd);
+	HttpResponse processRequest(HttpRequest request, Client& client);
+	void addClient(int socketFd);
 	void handleDisconnects();
-    Server& routeRequest(HttpRequest request, Client& client);
+	Server& routeRequest(HttpRequest request, Client& client);
 
-    // Utility
-    Client& getClientFromIdx(int idx);
-    void removeFdFromPoll(int fd);
-    std::set<Address> getUniqueAddresses(std::vector<Server> servers);
+	// Utility
+	Client& getClientFromIdx(int idx);
+	void removeFdFromPoll(int fd);
+	std::set<Address> getUniqueAddresses(std::vector<Server> servers);
 
-    // Member Data
-    size_t m_nbListenSockets;
-    vector<pollfd> m_pollFds;
-    vector<Server> m_servers;
-    map<int, Client> m_clients; // Key: Fd; Value: Client
+	// Member Data
+	size_t m_nbListenSockets;
+	vector<pollfd> m_pollFds;
+	vector<Server> m_servers;
+	map<int, Client> m_clients; // Key: Fd; Value: Client
 };
