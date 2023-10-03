@@ -383,7 +383,7 @@ int Webserver::createTcpListenSocket(Address addr)
 		throw runtime_error("bind() failed: " + string(strerror(errno)));
 	}
 
-	if (listen(fd, 10))
+	if (listen(fd, 100))
 		throw runtime_error("listen() failed" + string(strerror(errno)));
 
 	return fd;
