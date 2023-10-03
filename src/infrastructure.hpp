@@ -77,9 +77,10 @@ struct ServerConfig
 #define DEFAULT_404		"./public/default_error/404.html"
 #define DEFAULT_CONF	"./config/default.conf"
 #define ROOT			"./public"
+#define CGI_BIN			"/cgi-bin/"
 
 #define HTTP_VERSION	"HTTP/1.1"
-#define SERVER_NAME		"Webserv42/1.0"
+#define SERVER_SOFTWARE	"Webserv42/1.0"
 
 #define RECV_SIZE		4096
 #define CLIENT_TIMEOUT	60

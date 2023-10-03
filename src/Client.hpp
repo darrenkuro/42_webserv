@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 #include <queue>
-#include "global.hpp"
+#include "infrastructure.hpp"
 #include "utils.hpp"
 
 #define TIMEOUT_TIME 30

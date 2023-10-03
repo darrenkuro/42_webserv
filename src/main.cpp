@@ -1,6 +1,6 @@
 #include "Webserver.hpp"
 #include "utils.hpp"
-#include "global.hpp"
+#include "infrastructure.hpp"
 #include <signal.h>
 
 bool g_running = true;

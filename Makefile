@@ -4,7 +4,7 @@ NAME = webserv
 _SRC	:=	Webserver.cpp Server.cpp Client.cpp ConfigParser.cpp Cgi.cpp \
 			utils.cpp main.cpp
 _INC	:=	Webserver.hpp Server.hpp Client.hpp ConfigParser.hpp Cgi.hpp \
-			utils.hpp global.hpp
+			utils.hpp infrastructure.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src

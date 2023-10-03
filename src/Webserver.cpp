@@ -165,8 +165,7 @@ HttpRequest Webserver::parseHttpRequest(string content)
 /* ---------------------------------------------------------------------------------------------- */
 void Webserver::handlePollOut(Client& client)
 {
-	if (client.getResponseIsReady() == false)
-		return;
+	if (client.getResponseIsReady() == false) return;
 
 	HttpResponse response = client.getResponse();
 	log(response, client.getId());
@@ -254,7 +253,8 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 			}
 		}
 	}
-	catch (...) { }
+	catch (...) {
+	}
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
@@ -305,11 +305,9 @@ set<Address> Webserver::getUniqueAddresses(vector<Server> servers)
 		if (addr.ip != 0) {
 			set<Address>::iterator it;
 			for (it = uniques.begin(); it != uniques.end(); it++) {
-				if (it->ip == 0 && it->port == addr.port)
-					break;
+				if (it->ip == 0 && it->port == addr.port) break;
 			}
-			if (it == uniques.end())
-				uniques.insert(addr);
+			if (it == uniques.end()) uniques.insert(addr);
 		}
 	}
 	return uniques;
@@ -319,41 +317,33 @@ set<Address> Webserver::getUniqueAddresses(vector<Server> servers)
 void Webserver::parseRequestPart(const string& sep, string& field, string& content)
 {
 	size_t pos = content.find(sep);
-	if (pos == string::npos) {
-		throw exception();
-	}
+	if (pos == string::npos) throw exception();
 
 	field = content.substr(0, pos);
 	content.erase(content.begin(), content.begin() + pos + sep.length());
 
 	// Check if there's more than one separator (invalid request)
-	if (content.find(sep) == 0) {
-		throw exception();
-	}
+	if (content.find(sep) == 0) throw exception();
 }
 
 /* ---------------------------------------------------------------------------------------------- */
 void Webserver::parseRequestHeader(StringMap& header, string& content)
 {
 	size_t colonPos = content.find(":");
-	if (colonPos == string::npos) {
-		throw exception();
-	}
+	if (colonPos == string::npos) throw exception();
 
 	string key = content.substr(0, colonPos);
 	content.erase(content.begin(), content.begin() + colonPos + 1);
 
 	// Handle leading white spaces before value
 	size_t valuePos = content.find_first_not_of(" \t");
-	if (valuePos == string::npos) {
-		throw exception();
-	}
+	if (valuePos == string::npos) throw exception();
+
 	content.erase(content.begin(), content.begin() + valuePos);
 
 	size_t crlfPos = content.find("\r\n");
-	if (crlfPos == string::npos) {
-		throw exception();
-	}
+	if (crlfPos == string::npos) throw exception();
+
 	string value = content.substr(0, crlfPos);
 	content.erase(content.begin(), content.begin() + crlfPos + 2);
 
@@ -365,12 +355,14 @@ int Webserver::createTcpListenSocket(Address addr)
 {
 	int fd;
 
-	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		throw runtime_error("socket() failed" + string(strerror(errno)));
+	}
 
 	int sockopt = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1)
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1) {
 		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
+	}
 
 	sockaddr_in serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
@@ -383,8 +375,9 @@ int Webserver::createTcpListenSocket(Address addr)
 		throw runtime_error("bind() failed: " + string(strerror(errno)));
 	}
 
-	if (listen(fd, 100))
+	if (listen(fd, 10)) {
 		throw runtime_error("listen() failed" + string(strerror(errno)));
+	}
 
 	return fd;
 }

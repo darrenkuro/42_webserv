@@ -4,7 +4,7 @@
 #include <cstring>
 #include <errno.h>
 #include <unistd.h>
-#include "global.hpp"
+#include "infrastructure.hpp"
 #include "utils.hpp"
 #include "Server.hpp"
 #include "Client.hpp"

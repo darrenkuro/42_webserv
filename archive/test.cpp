@@ -1,6 +1,9 @@
 #include <iostream>
 #include <ctime>
 
+using namespace std;
+using std::string;
+
 std::string getExtension(std::string path)
 {
 	size_t dotPos = path.find_last_of('.');
@@ -8,6 +11,17 @@ std::string getExtension(std::string path)
 		return path.substr(dotPos);
 	}
 	return "";
+}
+
+string getScriptName(const string& uri)
+{
+	// if (uri.find("/cgi-bin/") == string::npos) {
+	// 	//throw runtime_error("no " + "/cgi-bin/" + " in path");
+	// }
+
+	// size_t i = uri.find_first_of("/", string("/cgi-bin/").size());
+	// //cout << i << endl;
+	return uri.substr(uri.find_first_of("?") + 1);
 }
 
 // Base case for the recursive template function
@@ -29,6 +43,7 @@ std::ostream& appendFunction(std::ostream& os, int arg1, double arg2) {
 }
 
 int main(int ac, char **av) {
-	customPrint("test", "ugh", 1, 42);
+	cout << getScriptName("/cgi-bin/someabc.py/pathquery=what") << endl;
+
 	return 0;
 }

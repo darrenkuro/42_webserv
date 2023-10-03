@@ -396,7 +396,7 @@ HttpResponse createBasicResponse(int code, string path)
 
 	res.statusCode = code;
 	res.header["Date"] = getDate();
-	res.header["Server"] = SERVER_NAME;
+	res.header["Server"] = SERVER_SOFTWARE;
 
 	// Handle POST response
 	if (code == 204) {

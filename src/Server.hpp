@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include "Webserver.hpp"
 #include "utils.hpp"
-#include "global.hpp"
+#include "infrastructure.hpp"
 
 struct ServerConfig;
 
@@ -39,5 +39,3 @@ private:
 	int getMaxBodySize();
 	bool bodySizeAllowed(int bytes);
 };
-
-// StringMap generateCgiEnv(HttpRequest& req, const Client& client);

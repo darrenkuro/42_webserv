@@ -14,7 +14,7 @@
 #include <sstream>
 
 #include <sys/time.h> // gettimeofday
-#include "global.hpp"
+#include "infrastructure.hpp"
 
 string getFileContent(string path);
 string toString(int value);
