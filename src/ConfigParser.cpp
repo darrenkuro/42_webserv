@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <sys/stat.h>
 #include "ConfigParser.hpp"
+#include "http.hpp"
 
 /* ============================================================================================== */
 /*                                                                                                */

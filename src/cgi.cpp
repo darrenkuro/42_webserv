@@ -1,10 +1,10 @@
-#include "Cgi.hpp"
+#include "cgi.hpp"
 #include <cstring>
 
 string getScriptName(const string& uri)
 {
 	if (uri.find(CGI_BIN) != 0) {
-		throw runtime_error("no " + CGI_BIN + " at the start");
+		throw runtime_error("no " + string(CGI_BIN) + " at the start");
 	}
 
 	size_t end = uri.find_first_of("/", string(CGI_BIN).size());
@@ -22,6 +22,9 @@ string translatePath(const string& uri, const Server& server)
 {
 	// translate onto path on the filesystem
 	// you need to get the related path correct? Although that seems more like a chdir after fork
+	(void)uri;
+	(void)server;
+	return "";
 }
 
 StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server)
@@ -35,13 +38,13 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 	metaVars["PATH_TRANSLATED"] = translatePath(req.uri, server);
 	metaVars["QUERY_STRING"] = getQueryString(req.uri);
 	metaVars["REMOTE_ADDR"] = ""; // MUST, need getpeername??
-	metaVars["REMOTE_HOST"] = "";
 	metaVars["REQUEST_METHOD"] = req.method;
 	metaVars["SCRIPT_NAME"] = getScriptName(req.uri);
 	metaVars["SERVER_NAME"] = server.getName();
 	metaVars["SERVER_PORT"] = toString(server.getAddress().port);
 	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
 	metaVars["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
+	(void) client;
 
 	return metaVars;
 }
@@ -51,7 +54,7 @@ char** getEnvPointer(const StringMap& envMap)
 	char** envPointers = new char*[envMap.size() + 1];
 
 	size_t i = 0;
-	for (StringMap::iterator it = envMap.begin(); it != envMap.end(); it++) {
+	for (StringMap::const_iterator it = envMap.begin(); it != envMap.end(); it++) {
 		string envString = it->first + "=" + it->second;
 		envPointers[i++] = strdup(envString.c_str());
 	}

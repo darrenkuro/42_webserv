@@ -19,9 +19,9 @@ public:
 	Server(const ServerConfig config);
 
 	// Getters
-	Address getAddress();
-	string getName();
-	string getErrorPage(int code);
+	Address getAddress() const;
+	string getName() const;
+	string getErrorPage(int code) const;
 
 	// Logic
 	HttpResponse handleRequest(HttpRequest req);

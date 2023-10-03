@@ -33,7 +33,6 @@ private:
 	void handlePollOut(Client& client);
 
 	HttpResponse processRequest(HttpRequest request, Client& client);
-	HttpRequest parseHttpRequest(string content);
 	Server& routeRequest(HttpRequest request, Client& client);
 
 	void addClient(int socketFd);
@@ -43,8 +42,6 @@ private:
 	Client& getClientFromIdx(int idx);
 	void removeFdFromPoll(int fd);
 	set<Address> getUniqueAddresses(vector<Server> servers);
-	void parseRequestPart(const string& sep, string& field, string& content);
-	void parseRequestHeader(StringMap& header, string& content);
 	int createTcpListenSocket(Address addr);
 	PollFd buildPollFd(int fd, short events);
 

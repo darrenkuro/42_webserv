@@ -1,6 +1,8 @@
 #include <algorithm>
 #include "Server.hpp"
 #include "utils.hpp"
+#include "http.hpp"
+#include "log.hpp"
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -15,12 +17,13 @@ Server::Server(const ServerConfig config) : m_config(config)
 		toIPString(m_config.address.ip).c_str(), m_config.address.port);
 }
 
-Address Server::getAddress() { return m_config.address; }
+Address Server::getAddress() const { return m_config.address; }
 
-string Server::getName() { return m_config.serverName; }
+string Server::getName() const { return m_config.serverName; }
 
-string Server::getErrorPage(int code) {
-	return fullPath(m_config.root, m_config.errorPages[code]);
+string Server::getErrorPage(int code) const {
+	map<int, string>::const_iterator it = m_config.errorPages.find(code);
+	return it == m_config.errorPages.end() ? "" : fullPath(m_config.root, it->second);
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -250,48 +253,4 @@ bool Server::bodySizeAllowed(int bytes)
 {
 	// If clientMaxBodySize is not set (-1) or larger
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
-}
-
-string getScriptName(const string& uri)
-{
-	if (uri.find(CGI_BIN) != 0) {
-		throw runtime_error("no " + CGI_BIN + " at the start");
-	}
-
-	size_t end = uri.find_first_of("/", string(CGI_BIN).size());
-	return uri.substr(0, end);
-}
-
-string getQueryString(const string& uri)
-{
-	// Consider URL encoding?
-	size_t sepPos = uri.find_first_of("?");
-	return sepPos == string::npos ? "" : uri.substr(sepPos + 1);
-}
-
-string translatePath(const string& uri, const Server& server)
-{
-	// you need to get the related path right?
-}
-
-StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server)
-{
-	StringMap metaVars;
-
-	metaVars["CONTENT_LENGTH"] = req.header["Content-Length"];
-	metaVars["CONTENT_TYPE"] = req.header["Content-Type"];
-	metaVars["GATEWAY_INTERFACE"] = "CGI/1.1";
-	metaVars["PATH_INFO"] = req.uri;
-	metaVars["PATH_TRANSLATED"] = ""; // translate onto path on the filesystem
-	metaVars["QUERY_STRING"] = getQueryString(req.uri);
-	metaVars["REMOTE_ADDR"] = ""; // MUST, need getpeername??
-	metaVars["REMOTE_HOST"] = "";
-	metaVars["REQUEST_METHOD"] = req.method;
-	metaVars["SCRIPT_NAME"] = getScriptName(req.uri);
-	metaVars["SERVER_NAME"] = server.getName();
-	metaVars["SERVER_PORT"] = toString(server.getAddress().port);
-	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
-	metaVars["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
-
-	return metaVars;
 }

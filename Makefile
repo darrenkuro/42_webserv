@@ -1,10 +1,11 @@
 NAME = webserv
 
 # Source files
-_SRC	:=	Webserver.cpp Server.cpp Client.cpp ConfigParser.cpp Cgi.cpp \
-			utils.cpp main.cpp
-_INC	:=	Webserver.hpp Server.hpp Client.hpp ConfigParser.hpp Cgi.hpp \
-			utils.hpp infrastructure.hpp
+_DIR	:=	utils
+_SRC	:=	Webserver.cpp Server.cpp Client.cpp ConfigParser.cpp cgi.cpp http.cpp \
+			utils/utils.cpp utils/log.cpp main.cpp
+_INC	:=	Webserver.hpp Server.hpp Client.hpp ConfigParser.hpp cgi.hpp http.hpp \
+			utils/utils.hpp utils/log.hpp infrastructure.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src
@@ -15,7 +16,7 @@ CXX		:=	c++
 RM		:=	/bin/rm -rf
 
 CXXFLAGS	:=	-Wall -Werror -Wextra -std=c++98
-INCFLAGS	:=	-I $(SRCDIR)
+INCFLAGS	:=	-I $(SRCDIR) -I $(SRCDIR)/utils
 
 all: $(NAME)
 
@@ -23,7 +24,7 @@ $(NAME): $(OBJ) $(INC)
 	$(CXX) $(CXXFLAGS) $(OBJ) -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INC)
-	@mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR) && cd $(OBJDIR) && mkdir -p $(_DIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCFLAGS)
 
 clean:
