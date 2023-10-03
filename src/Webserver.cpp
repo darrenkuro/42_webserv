@@ -97,10 +97,31 @@ void Webserver::handlePollIn(Client& client)
 		return;
 	}
 
+	// HTTP request is longer than buffer
+	if (!client.getRequestParsed() && bytesRead == RECV_SIZE) {
+		client.setResponse(createBasicResponse(400, DEFAULT_400));
+		return;
+	}
+
 	try {
-		HttpRequest req = parseHttpRequest(string(buffer));
-		client.setResponse(processRequest(req, client));
-		log(req, client.getId());
+		if (!client.getRequestParsed()) {
+			client.setRequest(parseHttpRequest(bufferStr));
+
+			// Check Content-Length and set expecting bytes
+			StringMap::iterator it = client.getRequest().header.find("Content-Length");
+			if (it != client.getRequest().header.end()) {
+				client.setBytesExpected(toInt(it->second));
+			}
+		}
+
+		if (!client.getRequestIsReady()) client.appendData(bufferStr);
+
+		if (client.getRequestIsReady()) {
+			log(client.getRequest(), client.getId());
+			HttpResponse res = processRequest(client.getRequest(), client);
+			client.setResponse(res);
+			client.reset();
+		}
 	}
 	catch (...) {
 		client.setResponse(createBasicResponse(400, DEFAULT_400));
@@ -110,16 +131,24 @@ void Webserver::handlePollIn(Client& client)
 /* ---------------------------------------------------------------------------------------------- */
 HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 {
-	Server& server = routeRequest(request, client);
-	log(INFO, "%sHTTP Route Client[ID %d]  |  To: %s%s", ORANGE, client.getId(),
-		server.getName().c_str(), RESET);
-	return server.handleRequest(request);
+	try {
+		Server& server = routeRequest(request, client);
+		log(INFO, "%sHTTP Route Client[ID %d]  |  To: %s%s", ORANGE, client.getId(),
+			server.getName().c_str(), RESET);
+		return server.handleRequest(request);
+	}
+	catch (const exception& e) {
+		log(DEBUG, e.what());
+		return createBasicResponse(400, DEFAULT_400);
+	}
 }
 
 /* ---------------------------------------------------------------------------------------------- */
 HttpRequest Webserver::parseHttpRequest(string content)
 {
 	HttpRequest req;
+
+	cout << content << endl;
 
 	parseRequestPart(" ", req.method, content);
 	parseRequestPart(" ", req.uri, content);
@@ -206,27 +235,34 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 		}
 	}
 
-	// Host header ip resolution
-	size_t colonPos = host.find(':');
-	in_addr_t ip = colonPos != string::npos
-				? toIPv4(host.substr(0, colonPos))
-				: toIPv4(host);
-	int port = colonPos != string::npos
-				? toInt(host.substr(colonPos + 1))
-				: 80;
-	if (port <= 0 || port > 65535) {
-		throw exception();
-	}
-	for (size_t i = 0; i < m_servers.size(); i++) {
-		Address addr = m_servers[i].getAddress();
-		if (addr.ip == ip && addr.port == port) {
-			return m_servers[i];
+	try {
+		// Host header ip resolution
+		size_t colonPos = host.find(':');
+		in_addr_t ip = colonPos != string::npos
+					? toIPv4(host.substr(0, colonPos))
+					: toIPv4(host);
+		int port = colonPos != string::npos
+					? toInt(host.substr(colonPos + 1))
+					: 80;
+
+		if (port <= 0 || port > 65535) {
+			throw exception();
+		}
+
+		for (size_t i = 0; i < m_servers.size(); i++) {
+			Address addr = m_servers[i].getAddress();
+			if (addr.ip == ip && addr.port == port) {
+				return m_servers[i];
+			}
 		}
 	}
+	catch (...) { }
 
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		Address addr = m_servers[i].getAddress();
+		cout << toIPString(addr.ip) << " " << toIPString(client.getIp()) << endl;
+		cout << client.getPort() << endl;
 		if (client.getPort() == addr.port) {
 			if (addr.ip == 0 || client.getIp() == addr.ip) {
 				return m_servers[i];
@@ -334,11 +370,11 @@ int Webserver::createTcpListenSocket(Address addr)
 	int fd;
 
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		throw std::runtime_error("socket() failed" + std::string(strerror(errno)));
+		throw runtime_error("socket() failed" + string(strerror(errno)));
 
 	int sockopt = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1)
-		throw std::runtime_error("setsockopt() failed: " + std::string(strerror(errno)));
+		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
 
 	sockaddr_in serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
@@ -348,11 +384,11 @@ int Webserver::createTcpListenSocket(Address addr)
 
 	if (bind(fd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		close(fd);
-		throw std::runtime_error("bind() failed: " + std::string(strerror(errno)));
+		throw runtime_error("bind() failed: " + string(strerror(errno)));
 	}
 
 	if (listen(fd, 10))
-		throw std::runtime_error("listen() failed" + std::string(strerror(errno)));
+		throw runtime_error("listen() failed" + string(strerror(errno)));
 
 	return fd;
 }

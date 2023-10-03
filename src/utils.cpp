@@ -128,11 +128,13 @@ Address getAddressFromFd(int fd)
 {
 	struct sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
-	getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen);
+	if (getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen) == -1) {
+		throw runtime_error("getsockname() failed");
+	}
 
 	Address addr;
-	addr.ip = serverAddress.sin_addr.s_addr;
-	addr.port = serverAddress.sin_port;
+	addr.ip = ntohl(serverAddress.sin_addr.s_addr);
+	addr.port = ntohs(serverAddress.sin_port);
 	log(INFO, "HH %d", addr.port);
 	return addr;
 }
@@ -337,7 +339,7 @@ ostream& operator<<(ostream& os, HttpResponse res)
 
 ostream &operator<<(ostream &os, const Address address)
 {
-	// os << "Address[" << toIPString(address.host) << ":";
+	os << "Address[" << toIPString(address.ip) << ":";
 	os << address.port << "]";
 	return os;
 }

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Server.hpp"
 #include "utils.hpp"
 
