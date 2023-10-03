@@ -21,22 +21,6 @@ Client::Client(int fd, Address addr)
 	gettimeofday(&m_lastEventTime, NULL);
 }
 
-/* ---------------------------------------------------------------------------------------------- */
-void Client::setResponse(HttpResponse res)
-{
-	m_response = res;
-	gettimeofday(&m_lastEventTime, NULL);
-	m_responseIsReady = true;
-	m_requestParsed = false;
-}
-
-/* ---------------------------------------------------------------------------------------------- */
-void Client::setRequest(HttpRequest req)
-{
-	m_request = req;
-	m_requestParsed = true;
-}
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 int Client::getId() const { return m_id; }
 int Client::getFd() const { return m_socketFd; }
@@ -49,6 +33,24 @@ bool Client::getRequestParsed() const { return m_requestParsed; }
 bool Client::didTimeout() const { return getTime().tv_sec - m_lastEventTime.tv_sec > TIMEOUT_TIME; }
 HttpRequest& Client::getRequest() { return m_request; }
 HttpResponse& Client::getResponse() { return m_responseIsReady = false, m_response; }
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+void Client::setHasDisconnected(bool status) { m_hasDisconnected = status; }
+
+void Client::setRequest(HttpRequest req)
+{
+	m_request = req;
+	m_requestParsed = true;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+void Client::setResponse(HttpResponse res)
+{
+	m_response = res;
+	gettimeofday(&m_lastEventTime, NULL);
+	m_responseIsReady = true;
+	m_requestParsed = false;
+}
 
 /* ---------------------------------------------------------------------------------------------- */
 void Client::setBytesExpected(int bytes)
