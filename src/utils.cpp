@@ -215,7 +215,7 @@ string getMimeType(string ext)
 string toString(HttpResponse res)
 {
 	string str;
-	str.append("HTTP/1.1 ");
+	str.append(string(HTTP_VERSION) + " ");
 	str.append(toString(res.statusCode) + " ");
 	str.append(getStatusText(res.statusCode) + "\r\n");
 
@@ -396,7 +396,7 @@ HttpResponse createBasicResponse(int code, string path)
 
 	res.statusCode = code;
 	res.header["Date"] = getDate();
-	res.header["Server"] = "Webserv42/1.0.0";
+	res.header["Server"] = SERVER_NAME;
 
 	// Handle POST response
 	if (code == 204) {

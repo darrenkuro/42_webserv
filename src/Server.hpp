@@ -39,3 +39,5 @@ private:
 	int getMaxBodySize();
 	bool bodySizeAllowed(int bytes);
 };
+
+StringMap generateCgiEnv(HttpRequest& req, const Client& client);

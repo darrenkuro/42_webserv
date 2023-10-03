@@ -120,7 +120,7 @@ void Webserver::handlePollIn(Client& client)
 			log(client.getRequest(), client.getId());
 			HttpResponse res = processRequest(client.getRequest(), client);
 			client.setResponse(res);
-			client.reset();
+			//client.reset();
 		}
 	}
 	catch (...) {
@@ -147,8 +147,6 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 HttpRequest Webserver::parseHttpRequest(string content)
 {
 	HttpRequest req;
-
-	cout << content << endl;
 
 	parseRequestPart(" ", req.method, content);
 	parseRequestPart(" ", req.uri, content);
@@ -261,8 +259,6 @@ Server& Webserver::routeRequest(HttpRequest request, Client& client)
 	// Default server resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		Address addr = m_servers[i].getAddress();
-		cout << toIPString(addr.ip) << " " << toIPString(client.getIp()) << endl;
-		cout << client.getPort() << endl;
 		if (client.getPort() == addr.port) {
 			if (addr.ip == 0 || client.getIp() == addr.ip) {
 				return m_servers[i];

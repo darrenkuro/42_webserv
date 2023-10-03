@@ -29,7 +29,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	LocationConfig route = routeRequest(req.uri);
 
 	// Check http version
-	if (req.version != "HTTP/1.1") {
+	if (req.version != HTTP_VERSION) {
 		return createBasicResponse(505, getErrorPage(505));
 	}
 
@@ -45,8 +45,6 @@ HttpResponse Server::handleRequest(HttpRequest req)
 		return createBasicResponse(411, getErrorPage(411));
 	}
 
-	log(m_config);
-
 	// Check if method is allowed
 	vector<string> methods = route.allowedMethods;
 	if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
@@ -54,15 +52,9 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	}
 
 	try {
-		if (req.method == "GET") {
-			return handleGetRequest(req, route);
-		}
-		if (req.method == "POST") {
-			return handlePostRequest(req, route);
-		}
-		if (req.method == "DELETE") {
-			return handleDeleteRequest(req, route);
-		}
+		if (req.method == "GET") return handleGetRequest(req, route);
+		if (req.method == "POST") return handlePostRequest(req, route);
+		if (req.method == "DELETE") return handleDeleteRequest(req, route);
 	}
 	catch (...) {
 		return createBasicResponse(500, getErrorPage(500));
@@ -258,4 +250,27 @@ bool Server::bodySizeAllowed(int bytes)
 {
 	// If clientMaxBodySize is not set (-1) or larger
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
+}
+
+StringMap generateCgiEnv(HttpRequest& req, const Client& client)
+{
+	StringMap metaVars;
+	metaVars["AUTH_TYPE"] = "Basic";
+	metaVars["CONTENT_LENGTH"] = "";
+	metaVars["CONTENT_TYPE"] = "";
+	metaVars["GATEWAY_INTERFACE"] = "CGI/1.1";
+	metaVars["PATH_INO"] = "";
+	metaVars["PATH_TRANSLATED"] = "";
+	metaVars["QUERY_STRING"] = "";
+	metaVars["REMOTE_ADDR"] = "";
+	metaVars["REMOTE_HOST"] = "";
+	metaVars["REMOTE_IDENT"] = "";
+	metaVars["REMOTE_USER"] = "";
+	metaVars["REQUEST_METHOD"] = req.method;
+	metaVars["SCRIPT_NAME"] = "";
+	metaVars["SERVER_NAME"] = req.header["Host"]; // ?
+	metaVars["SERVER_PORT"] = toString(client.getPort());
+	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
+	metaVars["SERVER_SOFTWARE"] = SERVER_NAME;
+	return metaVars;
 }
