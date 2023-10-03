@@ -1,49 +1,28 @@
 #pragma once
 
 #include <vector>
-#include <deque>
 #include <map>
 #include <string>
+#include "global.hpp"
 #include "utils.hpp"
-
-struct LocationConfig
-{
-	bool autoindex;
-	std::string uri;
-	std::string alias;
-	std::vector<std::string> allowedMethods;
-	std::vector<std::string> index;
-	std::pair<int, std::string> redirect;
-};
-
-struct ServerConfig
-{
-	std::string root;
-	Address address;
-	std::vector<std::string> index;
-	std::string serverName;
-	ssize_t clientMaxBodySize;
-	std::map<int, std::string> errorPages;
-	std::vector<LocationConfig> locations;
-};
 
 class ConfigParser
 {
 public:
-	std::vector<ServerConfig> parse(const std::string& filename);
+	vector<ServerConfig> parse(const string& filename);
 
 	static bool isValidErrorCode(int code);
 	static bool isValidRedirectCode(int code);
 
 private:
-	std::vector<ServerConfig> m_configs;
-	std::deque<std::string> m_tokens;
+	vector<ServerConfig> m_configs;
+	deque<string> m_tokens;
 
 	// Logic
-	void lex(const std::string& content, const std::string& whitespace, const std::string& symbol);
+	void lex(const string& content, const string& whitespace, const string& symbol);
 
-	std::string accept(void);
-	void consume(const std::string& token);
+	string accept(void);
+	void consume(const string& token);
 
 	// Context & Field Parser
 	void parseServer(void);
@@ -63,12 +42,12 @@ private:
 	void parseRedirect(LocationConfig& location);
 
 	// Keys
-	static const std::vector<std::string> validServerKeys;
-	static const std::vector<std::string> validLocationKeys;
-	static const std::vector<int> validErrorCodes;
-	static const std::vector<int> validRedirectCodes;
-	bool isValidServerKey(std::string key);
-	bool isValidLocationKey(std::string key);
+	static const vector<string> validServerKeys;
+	static const vector<string> validLocationKeys;
+	static const vector<int> validErrorCodes;
+	static const vector<int> validRedirectCodes;
+	bool isValidServerKey(string key);
+	bool isValidLocationKey(string key);
 
 	// Default Settings
 	ServerConfig createServer(void);

@@ -1,14 +1,12 @@
 #include "Server.hpp"
 
-using std::string;
-using std::vector;
-using std::map;
-using std::exception;
-using std::runtime_error;
+/* ============================================================================================== */
+/*                                                                                                */
+/*                                  Server Class Implementation                                   */
+/*                                                                                                */
+/* ============================================================================================== */
 
-#define ROOT "./public"
-
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constructors & Destructors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 Server::Server(const ServerConfig config) : m_config(config)
 {
 	log(INFO, "Server: %s on %s:%d", getName().c_str(),
@@ -23,7 +21,7 @@ string Server::getErrorPage(int code) {
 	return fullPath(m_config.root, m_config.errorPages[code]);
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleRequest(HttpRequest req)
 {
 	LocationConfig route = routeRequest(req.uri);
@@ -45,7 +43,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 		return createBasicResponse(411, getErrorPage(411));
 	}
 
-	logServerConfig(m_config);
+	log(m_config);
 
 	// Check if method is allowed
 	vector<string> methods = route.allowedMethods;
@@ -71,7 +69,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	return createBasicResponse(500, getErrorPage(500));
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
 	string root = route.alias == ""
@@ -86,7 +84,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 		return createBasicResponse(route.redirect.first, route.redirect.second);
 	}
 
-	struct stat fileInfo;
+	Stat fileInfo;
 	if (stat(path.c_str(), &fileInfo) != 0) {
 		return createBasicResponse(404, getErrorPage(404));
 	}
@@ -113,7 +111,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 	return createBasicResponse(500, getErrorPage(500));
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 {
 	string root =
@@ -159,7 +157,7 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 	return createBasicResponse(204, "");
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 {
 	string root =
@@ -178,7 +176,7 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 	return createBasicResponse(403, getErrorPage(403));
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 LocationConfig Server::routeRequest(string uri)
 {
 	vector<LocationConfig>::iterator it;
@@ -196,7 +194,7 @@ LocationConfig Server::routeRequest(string uri)
 	return routeRequest(uri);
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 string Server::getBoundry(HttpRequest req)
 {
 	map<string, string>::iterator it;
@@ -212,7 +210,7 @@ string Server::getBoundry(HttpRequest req)
 	return "--" + it->second.substr(pos + 9);
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::buildAutoindex(string path)
 {
 	string body("<!DOCTYPE html>");
@@ -251,7 +249,7 @@ HttpResponse Server::buildAutoindex(string path)
 	return response;
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
 
 bool Server::bodySizeAllowed(int bytes)

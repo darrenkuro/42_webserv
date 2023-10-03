@@ -1,11 +1,11 @@
 NAME = webserv
 
 # Source files
-_DIR	:=	http utils
-_SRC	:=	http/HttpRequest.cpp http/HttpResponse.cpp Webserver.cpp Server.cpp Client.cpp \
-			ConfigParser.cpp Cgi.cpp utils/utils.cpp main.cpp
-_INC	:=	http/HttpRequest.hpp http/HttpResponse.hpp Webserver.hpp Server.hpp Client.hpp \
-			ConfigParser.hpp Cgi.hpp utils/utils.hpp utils/log.hpp
+_DIR	:=	utils
+_SRC	:=	Webserver.cpp Server.cpp Client.cpp ConfigParser.cpp Cgi.cpp \
+			utils.cpp main.cpp
+_INC	:=	Webserver.hpp Server.hpp Client.hpp ConfigParser.hpp Cgi.hpp \
+			utils.hpp global.hpp
 
 OBJDIR	:=	obj
 SRCDIR	:=	src

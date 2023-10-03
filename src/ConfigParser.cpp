@@ -3,11 +3,6 @@
 #include <sys/stat.h>
 #include "ConfigParser.hpp"
 
-using std::string;
-using std::vector;
-using std::exception;
-using std::runtime_error;
-
 #define ROOT "./public"
 
 const string serverKeyArray[] = {

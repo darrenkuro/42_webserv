@@ -1,8 +1,12 @@
 #include "Client.hpp"
 
-using std::string;
+/* ============================================================================================== */
+/*                                                                                                */
+/*                                  Client Class Implementation                                   */
+/*                                                                                                */
+/* ============================================================================================== */
 
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constructors & Destructors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 Client::Client(int fd, Address addr)
 {
 	static int clientID = 1;
@@ -32,31 +36,33 @@ void Client::setRequest(HttpRequest req)
 	m_requestParsed = true;
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 HttpRequest& Client::getRequest() { return m_request; }
-int Client::getID() { return m_id; }
+int Client::getId() { return m_id; }
 int Client::getFd() { return m_socketFd; }
 int Client::getPort() { return m_address.port; }
-in_addr_t Client::getIP() { return m_address.ip; }
+in_addr_t Client::getIp() { return m_address.ip; }
 bool Client::hasDisconnected() { return m_hasDisconnected; }
 bool Client::getResponseIsReady() { return m_responseIsReady; }
 bool Client::getRequestIsReady() { return m_requestIsReady; }
 bool Client::getRequestParsed() { return m_requestParsed; }
 void Client::setHasDisconnected(bool status) { m_hasDisconnected = status; }
 
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse& Client::getResponse()
 {
 	m_responseIsReady = false;
 	return m_response;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void Client::setBytesExpected(int bytes)
 {
 	m_bytesExpected = bytes;
 	m_requestIsReady = false;
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void Client::reset()
 {
 	m_bytesExpected = 0;
@@ -65,6 +71,7 @@ void Client::reset()
 	m_requestParsed = false;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 bool Client::didTimeout()
 {
 	timeval currentTime;
@@ -74,6 +81,7 @@ bool Client::didTimeout()
 	return (timeDiffS > TIMEOUT_TIME);
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void Client::appendData(string buffer)
 {
 	//m_request = appendBody(m_request, buffer);

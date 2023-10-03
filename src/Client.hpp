@@ -3,24 +3,22 @@
 #include <cstdlib>
 #include <queue>
 #include <sys/time.h>
-
-#include "HttpResponse.hpp"
+#include "global.hpp"
 #include "utils.hpp"
-#include "HttpRequest.hpp"
 
 #define TIMEOUT_TIME 30
 
 class Client
 {
 public:
-	// Constructor & Destructor
+	/* Constructor & Destructor */
 	Client(int fd, Address addr);
 
-	// Getters
-	int getID();
+	/* Getters */
+	int getId();
 	int getFd();
 	int getPort();
-	in_addr_t getIP();
+	in_addr_t getIp();
 	bool didTimeout();
 	bool hasDisconnected();
 	bool getResponseIsReady();
@@ -29,13 +27,13 @@ public:
 	HttpResponse& getResponse();
 	HttpRequest& getRequest();
 
-	// Setters
+	/* Setters */
 	void setHasDisconnected(bool status);
 	void setResponse(HttpResponse res);
 	void setRequest(HttpRequest req);
 	void setBytesExpected(int bytes);
 
-	// Data processing
+	/* Data processing */
 	void appendData(std::string buffer);
 	void reset();
 
@@ -51,7 +49,7 @@ private:
 	HttpResponse m_response;
 	HttpRequest m_request;
 
-	std::string m_dataRecved;
+	string m_dataRecved;
 	int m_bytesRecved;
 	int m_bytesExpected;
 };
