@@ -6,6 +6,7 @@ ostream& displayTimestamp(ostream& os);
 ostream& align(ostream& os);
 void displayLogLevel(int level);
 void log(int level, const char* format, ...);
+void log(int level, const string& str);
 void log(ServerConfig config);
 void log(HttpRequest req, int clientID);
 void log(HttpResponse res, int clientID);

@@ -56,7 +56,6 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	}
 
 	try {
-		if (req.uri.find(CGI_BIN) == 0) return handleCgi(req, route);
 		if (req.method == "GET") return handleGetRequest(req, route);
 		if (req.method == "POST") return handlePostRequest(req, route);
 		if (req.method == "DELETE") return handleDeleteRequest(req, route);
@@ -66,22 +65,6 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	}
 
 	return createHttpResponse(500, getErrorPage(500));
-}
-
-HttpResponse Server::handleCgi(HttpRequest req, LocationConfig route)
-{
-	string root =
-		route.alias == ""
-			? fullPath(m_config.root, route.uri)
-			: fullPath(ROOT, route.alias);
-	string path =
-		req.uri.substr(route.uri.length()) == ""
-			? root
-			: fullPath(root, req.uri.substr(route.uri.length()));
-	StringMap envMap = getCgiEnv(req, *this);
-	int code;
-	cout << executeCgi(envMap, code) << endl;
-	return createHttpResponse(400, getErrorPage(400));
 }
 
 /* ---------------------------------------------------------------------------------------------- */

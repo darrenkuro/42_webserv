@@ -20,7 +20,6 @@ public:
 
 	// Logic
 	HttpResponse handleRequest(HttpRequest req);
-	HttpResponse handleCgi(HttpRequest req, LocationConfig route);
 	HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
 	HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
 	HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);

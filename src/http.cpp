@@ -62,7 +62,7 @@ void parseRequestHeader(StringMap& header, string& content)
 }
 
 
-HttpResponse createHttpResponse(int code, string path)
+HttpResponse createHttpResponse(int code, const string& path)
 {
 	HttpResponse res;
 
@@ -83,7 +83,7 @@ HttpResponse createHttpResponse(int code, string path)
 
 	try {
 		res.body = getFileContent(path);
-		res.header["Content-Length"] = toString(res.body.length());
+		res.header["Content-Length"] = toString(res.body.size());
 		res.header["Content-Type"] = getMimeType(getExtension(path));
 		//res.header["Set-Cookie"] = "username=darren";
 	}
@@ -94,6 +94,20 @@ HttpResponse createHttpResponse(int code, string path)
 		res.header["Content-Length"] = toString(res.body.length());
 		file.close();
 	}
+	return res;
+}
+
+HttpResponse createHttpResponse(const string& str)
+{
+	HttpResponse res;
+
+	res.statusCode = 200;
+	res.body = str;
+	res.header["Date"] = getDate();
+	res.header["Server"] = SERVER_SOFTWARE;
+	res.header["Content-Length"] = toString(res.body.size());
+	res.header["Content-Type"] = "text/html";
+
 	return res;
 }
 

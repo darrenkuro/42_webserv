@@ -73,11 +73,13 @@ struct ServerConfig
 	vector<LocationConfig> locations;
 };
 
-#define DEFAULT_400		"./public/default_error/400.html"
-#define DEFAULT_404		"./public/default_error/404.html"
-#define DEFAULT_CONF	"./config/default.conf"
-#define ROOT			"./public"
-#define CGI_BIN			"/cgi-bin"
+#define DEFAULT_400		"public/default_error/400.html"
+#define DEFAULT_404		"public/default_error/404.html"
+#define DEFAULT_CONF	"config/default.conf"
+#define ROOT			"public"
+#define CGI_BIN			"/cgi-bin/"
+#define PY_PATH			"/usr/bin/python3"
+#define PHP_PATH		"/usr/bin/php"
 
 #define HTTP_VERSION	"HTTP/1.1"
 #define SERVER_SOFTWARE	"Webserv42/1.0"

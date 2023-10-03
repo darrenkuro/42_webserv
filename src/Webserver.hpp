@@ -32,8 +32,8 @@ private:
 	void handlePollIn(Client& client);
 	void handlePollOut(Client& client);
 
-	HttpResponse processRequest(HttpRequest request, Client& client);
-	Server& routeRequest(HttpRequest request, Client& client);
+	HttpResponse processRequest(HttpRequest req, Client& client);
+	Server& routeRequest(HttpRequest req, Client& client);
 
 	void addClient(int socketFd);
 	void handleDisconnects();

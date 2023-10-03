@@ -1,6 +1,7 @@
 #include "Webserver.hpp"
 #include "http.hpp"
 #include "log.hpp"
+#include "cgi.hpp"
 #include <arpa/inet.h>
 
 /* ============================================================================================== */
@@ -131,13 +132,19 @@ void Webserver::handlePollIn(Client& client)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
+HttpResponse Webserver::processRequest(HttpRequest req, Client& client)
 {
 	try {
-		Server& server = routeRequest(request, client);
+		Server& server = routeRequest(req, client);
+
 		log(INFO, "%sHTTP Route Client[ID %d]  |  To: %s%s", ORANGE, client.getId(),
 			server.getName().c_str(), RESET);
-		return server.handleRequest(request);
+
+		if (req.uri.find(CGI_BIN) == 0) {
+			return processCgiRequest(req, client, server);
+		}
+
+		return server.handleRequest(req);
 	}
 	catch (const exception& e) {
 		log(DEBUG, e.what());
@@ -201,12 +208,12 @@ void Webserver::handleDisconnects(void)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-Server& Webserver::routeRequest(HttpRequest request, Client& client)
+Server& Webserver::routeRequest(HttpRequest req, Client& client)
 {
-	if (request.header.find("Host") == request.header.end()) {
+	if (req.header.find("Host") == req.header.end()) {
 		throw runtime_error("No host header");
 	}
-	string host = request.header.find("Host")->second;
+	string host = req.header.find("Host")->second;
 
 	// Host header domain resolution
 	for (size_t i = 0; i < m_servers.size(); i++) {

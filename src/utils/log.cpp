@@ -54,6 +54,15 @@ void log(int level, const char* format, ...)
 	cout << endl;
 }
 
+void log(int level, const string& str)
+{
+	if (level > LOG_DISPLAY_LEVEL) return;
+	cout << displayTimestamp << " ";
+	displayLogLevel(level);
+
+	cout << str << endl;
+}
+
 void log(ServerConfig config)
 {
 	cout << displayTimestamp << " ";
