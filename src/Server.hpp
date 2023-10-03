@@ -40,4 +40,4 @@ private:
 	bool bodySizeAllowed(int bytes);
 };
 
-StringMap generateCgiEnv(HttpRequest& req, const Client& client);
+// StringMap generateCgiEnv(HttpRequest& req, const Client& client);

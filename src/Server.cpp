@@ -252,25 +252,25 @@ bool Server::bodySizeAllowed(int bytes)
 	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }
 
-StringMap generateCgiEnv(HttpRequest& req, const Client& client)
-{
-	StringMap metaVars;
-	metaVars["AUTH_TYPE"] = "Basic";
-	metaVars["CONTENT_LENGTH"] = "";
-	metaVars["CONTENT_TYPE"] = "";
-	metaVars["GATEWAY_INTERFACE"] = "CGI/1.1";
-	metaVars["PATH_INO"] = "";
-	metaVars["PATH_TRANSLATED"] = "";
-	metaVars["QUERY_STRING"] = "";
-	metaVars["REMOTE_ADDR"] = "";
-	metaVars["REMOTE_HOST"] = "";
-	metaVars["REMOTE_IDENT"] = "";
-	metaVars["REMOTE_USER"] = "";
-	metaVars["REQUEST_METHOD"] = req.method;
-	metaVars["SCRIPT_NAME"] = "";
-	metaVars["SERVER_NAME"] = req.header["Host"]; // ?
-	metaVars["SERVER_PORT"] = toString(client.getPort());
-	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
-	metaVars["SERVER_SOFTWARE"] = SERVER_NAME;
-	return metaVars;
-}
+// StringMap generateCgiEnv(HttpRequest& req, const Client& client)
+// {
+// 	StringMap metaVars;
+// 	metaVars["AUTH_TYPE"] = "Basic";
+// 	metaVars["CONTENT_LENGTH"] = "";
+// 	metaVars["CONTENT_TYPE"] = "";
+// 	metaVars["GATEWAY_INTERFACE"] = "CGI/1.1";
+// 	metaVars["PATH_INO"] = "";
+// 	metaVars["PATH_TRANSLATED"] = "";
+// 	metaVars["QUERY_STRING"] = "";
+// 	metaVars["REMOTE_ADDR"] = "";
+// 	metaVars["REMOTE_HOST"] = "";
+// 	metaVars["REMOTE_IDENT"] = "";
+// 	metaVars["REMOTE_USER"] = "";
+// 	metaVars["REQUEST_METHOD"] = req.method;
+// 	metaVars["SCRIPT_NAME"] = "";
+// 	metaVars["SERVER_NAME"] = req.header["Host"]; // ?
+// 	metaVars["SERVER_PORT"] = toString(client.getPort());
+// 	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
+// 	metaVars["SERVER_SOFTWARE"] = SERVER_NAME;
+// 	return metaVars;
+// }
