@@ -1,6 +1,6 @@
 #include "log.hpp"
 #include "utils.hpp"	// toIpString
-#include <ctime>		// time_t
+#include <ctime>		// time_t, time, ctime
 #include <cstdio>		// vprintf
 
 ostream& displayTimestamp(ostream& os)
@@ -154,11 +154,4 @@ ostream &operator<<(ostream &os, const ServerConfig config)
 	}
 	os << endl;
 	return os;
-}
-
-timeval getTime(void)
-{
-	timeval currentTime;
-	gettimeofday(&currentTime, NULL);
-	return currentTime;
 }

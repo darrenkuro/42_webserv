@@ -43,7 +43,7 @@ private:
 	bool m_responseIsReady;
 	bool m_requestIsReady;
 	bool m_requestParsed;
-	timeval m_lastEventTime;
+	time_t m_lastEventTime;
 	Address m_address;
 	HttpResponse m_response;
 	HttpRequest m_request;

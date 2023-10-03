@@ -13,7 +13,7 @@
 #include <ctime>
 #include <sstream>
 
-#include <sys/time.h> // gettimeofday
+//#include <sys/time.h> // gettimeofday
 #include "infrastructure.hpp"
 
 string getFileContent(string path);
@@ -28,4 +28,4 @@ string getExtension(string path);
 
 Address getAddressFromFd(int fd);
 
-timeval getTime(void);
+time_t getCurrentTime(void);

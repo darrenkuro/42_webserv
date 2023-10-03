@@ -1,5 +1,5 @@
 #include "Client.hpp"
-
+#include <ctime>		// time
 /* ============================================================================================== */
 /*                                                                                                */
 /*                                  Client Class Implementation                                   */
@@ -18,7 +18,7 @@ Client::Client(int fd, Address addr)
 	m_responseIsReady = false;
 	m_hasDisconnected = false;
 
-	gettimeofday(&m_lastEventTime, NULL);
+	m_lastEventTime = std::time(NULL);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -30,7 +30,7 @@ bool Client::hasDisconnected() const { return m_hasDisconnected; }
 bool Client::getResponseIsReady() const { return m_responseIsReady; }
 bool Client::getRequestIsReady() const { return m_requestIsReady; }
 bool Client::getRequestParsed() const { return m_requestParsed; }
-bool Client::didTimeout() const { return getTime().tv_sec - m_lastEventTime.tv_sec > TIMEOUT_TIME; }
+bool Client::didTimeout() const { return std::time(NULL) - m_lastEventTime > TIMEOUT_TIME; }
 HttpRequest& Client::getRequest() { return m_request; }
 HttpResponse& Client::getResponse() { return m_responseIsReady = false, m_response; }
 
@@ -47,7 +47,7 @@ void Client::setRequest(HttpRequest req)
 void Client::setResponse(HttpResponse res)
 {
 	m_response = res;
-	gettimeofday(&m_lastEventTime, NULL);
+	m_lastEventTime = std::time(NULL);
 	m_responseIsReady = true;
 	m_requestParsed = false;
 }

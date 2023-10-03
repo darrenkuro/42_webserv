@@ -139,3 +139,5 @@ Address getAddressFromFd(int fd)
 	log(INFO, "HH %d", addr.port);
 	return addr;
 }
+
+time_t getCurrentTime(void) { return std::time(NULL); }
