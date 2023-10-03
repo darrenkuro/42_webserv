@@ -42,9 +42,7 @@ void displayLogLevel(int level)
 
 void log(int level, const char* format, ...)
 {
-	if (level > LOG_DISPLAY_LEVEL) {
-		return;
-	}
+	if (level > LOG_DISPLAY_LEVEL) return;
 	cout << displayTimestamp << " ";
 	displayLogLevel(level);
 
@@ -88,7 +86,6 @@ void log(HttpResponse res, int clientID)
 ostream& operator<<(ostream& os, HttpRequest req)
 {
 	os << align;
-	(void)req;
 	os << "Method[" << req.method << "] ";
 	os << "Uri[" << req.uri << "] ";
 	os << "Version[" << req.version << "] ";
@@ -124,7 +121,7 @@ ostream &operator<<(ostream &os, const LocationConfig location)
 	}
 	os << " ] Index[";
 	for (it = location.index.begin(); it != location.index.end(); it++) {
-			os << " " << *it;
+		os << " " << *it;
 	}
 	os << " ]";
 	return os;
@@ -148,8 +145,9 @@ ostream &operator<<(ostream &os, const ServerConfig config)
 	map<int, string>::const_iterator it;
 	int i = 0;
 	for (it = config.errorPages.begin(); it != config.errorPages.end(); it++) {
-		if (i++ % 3 == 0)
+		if (i++ % 3 == 0) {
 			os << endl, os << align, os << ">> ";
+		}
 		os << it->first << "[" << it->second << "] ";
 	}
 	os << endl;

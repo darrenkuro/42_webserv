@@ -1,5 +1,8 @@
 #include "Client.hpp"
 #include <ctime>		// time
+
+#define TIMEOUT_TIME	30
+
 /* ============================================================================================== */
 /*                                                                                                */
 /*                                  Client Class Implementation                                   */

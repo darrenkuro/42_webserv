@@ -1,11 +1,6 @@
 #pragma once
 
-#include <cstdlib>
-#include <queue>
 #include "infrastructure.hpp"
-#include "utils.hpp"
-
-#define TIMEOUT_TIME 30
 
 class Client
 {
@@ -33,7 +28,7 @@ public:
 	void setBytesExpected(int bytes);
 
 	/* Data Handling */
-	void appendData(std::string buffer);
+	void appendData(string buffer);
 	void reset();
 
 private:

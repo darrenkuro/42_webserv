@@ -1,5 +1,8 @@
 #include <iostream>
 #include <ctime>
+#include <unistd.h>
+#include <errno.h>
+#include <cstring>
 
 using namespace std;
 using std::string;
@@ -42,8 +45,12 @@ std::ostream& appendFunction(std::ostream& os, int arg1, double arg2) {
 	return os;
 }
 
-int main(int ac, char **av) {
-	cout << getScriptName("/cgi-bin/someabc.py/pathquery=what") << endl;
-
+int main(int ac, char** av, char** env) {
+	char* argv[3] = {"/usr/bin/python3", "../public/cgi-bin/example.py", NULL};
+	if (execve(argv[0], argv, env) == -1) {
+		write(1, "c", 1);
+		std::cerr << "execve failed with error: " << strerror(errno) << std::endl;
+	}
+	sleep(1);
 	return 0;
 }

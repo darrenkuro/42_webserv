@@ -2,6 +2,8 @@
 #include "ConfigParser.hpp"
 #include "log.hpp"
 
+#include <sstream>			// stringstream
+
 /* --------------------------------------------------------------------------------------------- */
 string getFileContent(string path)
 {
@@ -139,5 +141,3 @@ Address getAddressFromFd(int fd)
 	log(INFO, "HH %d", addr.port);
 	return addr;
 }
-
-time_t getCurrentTime(void) { return std::time(NULL); }

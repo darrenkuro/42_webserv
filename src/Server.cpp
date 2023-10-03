@@ -1,8 +1,10 @@
 #include <algorithm>
+#include <sys/stat.h>	// struct stat
 #include "Server.hpp"
 #include "utils.hpp"
 #include "http.hpp"
 #include "log.hpp"
+#include "cgi.hpp"
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -31,62 +33,80 @@ HttpResponse Server::handleRequest(HttpRequest req)
 {
 	LocationConfig route = routeRequest(req.uri);
 
-	// Check http version
+	// Check HTTP version
 	if (req.version != HTTP_VERSION) {
-		return createBasicResponse(505, getErrorPage(505));
+		return createHttpResponse(505, getErrorPage(505));
 	}
 
 	// Check client max body size
-	map<string, string>::iterator it;
-	it = req.header.find("Content-Length");
+	StringMap::iterator it = req.header.find("Content-Length");
 	if (it != req.header.end() && !bodySizeAllowed(toInt(it->second))) {
-		return createBasicResponse(413, getErrorPage(413));
+		return createHttpResponse(413, getErrorPage(413));
 	}
 
 	// Check if PUT without Content-Length
 	if (req.method == "PUT" && it == req.header.end()) {
-		return createBasicResponse(411, getErrorPage(411));
+		return createHttpResponse(411, getErrorPage(411));
 	}
 
 	// Check if method is allowed
 	vector<string> methods = route.allowedMethods;
 	if (std::find(methods.begin(), methods.end(), req.method) == methods.end()) {
-		return createBasicResponse(405, getErrorPage(405));
+		return createHttpResponse(405, getErrorPage(405));
 	}
 
 	try {
+		if (req.uri.find(CGI_BIN) == 0) return handleCgi(req, route);
 		if (req.method == "GET") return handleGetRequest(req, route);
 		if (req.method == "POST") return handlePostRequest(req, route);
 		if (req.method == "DELETE") return handleDeleteRequest(req, route);
 	}
-	catch (...) {
-		return createBasicResponse(500, getErrorPage(500));
+	catch (const exception& e) {
+		log(WARNING, e.what());
 	}
 
-	return createBasicResponse(500, getErrorPage(500));
+	return createHttpResponse(500, getErrorPage(500));
+}
+
+HttpResponse Server::handleCgi(HttpRequest req, LocationConfig route)
+{
+	string root =
+		route.alias == ""
+			? fullPath(m_config.root, route.uri)
+			: fullPath(ROOT, route.alias);
+	string path =
+		req.uri.substr(route.uri.length()) == ""
+			? root
+			: fullPath(root, req.uri.substr(route.uri.length()));
+	StringMap envMap = getCgiEnv(req, *this);
+	int code;
+	cout << executeCgi(envMap, code) << endl;
+	return createHttpResponse(400, getErrorPage(400));
 }
 
 /* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 {
-	string root = route.alias == ""
-						? fullPath(m_config.root, route.uri)
-						: fullPath(ROOT, route.alias);
-	string path = req.uri.substr(route.uri.length()) == ""
-						? root
-						: fullPath(root, req.uri.substr(route.uri.length()));
+	string root =
+		route.alias == ""
+			? fullPath(m_config.root, route.uri)
+			: fullPath(ROOT, route.alias);
+	string path =
+		req.uri.substr(route.uri.length()) == ""
+			? root
+			: fullPath(root, req.uri.substr(route.uri.length()));
 
 	// Handle redirection
 	if (route.redirect.first) {
-		return createBasicResponse(route.redirect.first, route.redirect.second);
+		return createHttpResponse(route.redirect.first, route.redirect.second);
 	}
 
 	Stat fileInfo;
 	if (stat(path.c_str(), &fileInfo) != 0) {
-		return createBasicResponse(404, getErrorPage(404));
+		return createHttpResponse(404, getErrorPage(404));
 	}
 	if (S_ISREG(fileInfo.st_mode)) {
-		return createBasicResponse(200, path);
+		return createHttpResponse(200, path);
 	}
 	if (S_ISDIR(fileInfo.st_mode)) {
 		vector<string>::iterator it;
@@ -94,18 +114,18 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 			string filePath = fullPath(path, *it);
 			std::ifstream file(filePath.c_str());
 			if (file.good()) {
-				return createBasicResponse(200, filePath);
+				return createHttpResponse(200, filePath);
 			}
 		}
 		if (route.autoindex) {
-			return buildAutoindex(path);
+			return createAutoindex(path);
 		}
 		else {
-			return createBasicResponse(403, getErrorPage(403));
+			return createHttpResponse(403, getErrorPage(403));
 		}
 	}
 
-	return createBasicResponse(500, getErrorPage(500));
+	return createHttpResponse(500, getErrorPage(500));
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -148,10 +168,10 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 
 	}
 	catch (...) {
-		return createBasicResponse(400, getErrorPage(400));
+		return createHttpResponse(400, getErrorPage(400));
 	}
 
-	return createBasicResponse(204, "");
+	return createHttpResponse(204, "");
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -167,10 +187,10 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 			: fullPath(root, req.uri.substr(route.uri.length()));
 
 	if (std::remove(path.c_str()) == 0) {
-		return createBasicResponse(204, "");
+		return createHttpResponse(204, "");
 	}
 
-	return createBasicResponse(403, getErrorPage(403));
+	return createHttpResponse(403, getErrorPage(403));
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -180,9 +200,11 @@ LocationConfig Server::routeRequest(string uri)
 
 	// All Server config will have default '/' location
 	for (it = m_config.locations.begin(); it != m_config.locations.end(); it++) {
-		if (it->uri == uri) {
-			return *it;
-		}
+		if (it->uri == uri) return *it;
+	}
+
+	if (uri == "/") {
+		throw runtime_error("root location '/' not found");
 	}
 
 	// Recursively match the less complete uri
@@ -194,7 +216,7 @@ LocationConfig Server::routeRequest(string uri)
 /* ---------------------------------------------------------------------------------------------- */
 string Server::getBoundry(HttpRequest req)
 {
-	map<string, string>::iterator it;
+	StringMap::iterator it;
 	it = req.header.find("Content-Type");
 	if (it == req.header.end()) {
 		throw exception();
@@ -205,45 +227,6 @@ string Server::getBoundry(HttpRequest req)
 		throw exception();
 	}
 	return "--" + it->second.substr(pos + 9);
-}
-
-/* ---------------------------------------------------------------------------------------------- */
-HttpResponse Server::buildAutoindex(string path)
-{
-	string body("<!DOCTYPE html>");
-
-	body.append("<html><head><title>Directory Index</title>");
-	body.append("<link rel=\"stylesheet\" type=\"text/css\" ");
-	body.append("href=\"/style/autoindex.css\"></head>");
-	body.append("<body><div class=\"container\"><h1 class=\"heading\">");
-	body.append("Directory Autoindex</h1><ul class=\"list\">");
-
-	DIR* dir;
-	dirent* entry;
-	if ((dir = opendir(path.c_str())) == NULL) {
-		throw runtime_error("opendir failed");
-	}
-
-	while ((entry = readdir(dir)) != NULL) {
-		string name(entry->d_name);
-		if (name == "." || name == "..") {
-			continue;
-		}
-
-		struct stat fileInfo;
-		string filePath = fullPath(path, name);
-		stat(filePath.c_str(), &fileInfo);
-		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
-		// add a href?
-		body.append("<li class=\"list-item\"><div class=\"name\">");
-		body.append(name).append("</div></li>");
-	}
-	body.append("</ul></div></body></html>");
-
-	HttpResponse response;
-	response.statusCode = 200;
-	response.body = body;
-	return response;
 }
 
 /* ---------------------------------------------------------------------------------------------- */

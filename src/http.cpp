@@ -1,6 +1,9 @@
 #include "http.hpp"
 #include "ConfigParser.hpp"
 #include "utils.hpp"
+#include <sys/stat.h>	// struct stat
+#include <dirent.h>		// DIR
+#include <ctime>
 
 /* ---------------------------------------------------------------------------------------------- */
 HttpRequest parseHttpRequest(string content)
@@ -59,7 +62,7 @@ void parseRequestHeader(StringMap& header, string& content)
 }
 
 
-HttpResponse createBasicResponse(int code, string path)
+HttpResponse createHttpResponse(int code, string path)
 {
 	HttpResponse res;
 
@@ -93,6 +96,46 @@ HttpResponse createBasicResponse(int code, string path)
 	}
 	return res;
 }
+
+/* ---------------------------------------------------------------------------------------------- */
+HttpResponse createAutoindex(const string& path)
+{
+	string body("<!DOCTYPE html>");
+
+	body.append("<html><head><title>Directory Index</title>");
+	body.append("<link rel=\"stylesheet\" type=\"text/css\" ");
+	body.append("href=\"/style/autoindex.css\"></head>");
+	body.append("<body><div class=\"container\"><h1 class=\"heading\">");
+	body.append("Directory Autoindex</h1><ul class=\"list\">");
+
+	DIR* dir;
+	dirent* entry;
+	if ((dir = opendir(path.c_str())) == NULL) {
+		throw runtime_error("opendir failed");
+	}
+
+	while ((entry = readdir(dir)) != NULL) {
+		string name(entry->d_name);
+		if (name == "." || name == "..") {
+			continue;
+		}
+
+		struct stat fileInfo;
+		string filePath = fullPath(path, name);
+		stat(filePath.c_str(), &fileInfo);
+		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
+		// add a href?
+		body.append("<li class=\"list-item\"><div class=\"name\">");
+		body.append(name).append("</div></li>");
+	}
+	body.append("</ul></div></body></html>");
+
+	HttpResponse response;
+	response.statusCode = 200;
+	response.body = body;
+	return response;
+}
+
 
 /* --------------------------------------------------------------------------------------------- */
 string getStatusText(int code)
@@ -174,7 +217,7 @@ string toString(HttpResponse res)
 	str.append(toString(res.statusCode) + " ");
 	str.append(getStatusText(res.statusCode) + "\r\n");
 
-	map<string, string>::iterator it;
+	StringMap::iterator it;
 	for (it = res.header.begin(); it != res.header.end(); it++) {
 		str.append(it->first + ": ").append(it->second + "\r\n");
 	}

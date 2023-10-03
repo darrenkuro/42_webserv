@@ -8,11 +8,11 @@ bool g_running = true;
 void signalHandler(int signum) {
 	if (signum == SIGINT) {
 		g_running = false;
-		std::cout << std::endl;
+		cout << endl;
 	}
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	if (argc > 2) {
 		cerr << "[Error] Invalid argument count!" << endl;

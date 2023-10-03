@@ -101,7 +101,7 @@ void Webserver::handlePollIn(Client& client)
 
 	// HTTP request is longer than buffer
 	if (!client.getRequestParsed() && bytesRead == RECV_SIZE) {
-		client.setResponse(createBasicResponse(400, DEFAULT_400));
+		client.setResponse(createHttpResponse(400, DEFAULT_400));
 		return;
 	}
 
@@ -126,7 +126,7 @@ void Webserver::handlePollIn(Client& client)
 		}
 	}
 	catch (...) {
-		client.setResponse(createBasicResponse(400, DEFAULT_400));
+		client.setResponse(createHttpResponse(400, DEFAULT_400));
 	}
 }
 
@@ -141,7 +141,7 @@ HttpResponse Webserver::processRequest(HttpRequest request, Client& client)
 	}
 	catch (const exception& e) {
 		log(DEBUG, e.what());
-		return createBasicResponse(400, DEFAULT_400);
+		return createHttpResponse(400, DEFAULT_400);
 	}
 }
 

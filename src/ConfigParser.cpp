@@ -285,7 +285,7 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 			int code = toInt(tokens[i]);
 
 			// Check if the key already exist or the code isn't used
-			std::map<int, string>::iterator it;
+			map<int, string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end()) {
 				throw runtime_error("duplicated error code");
 			}
