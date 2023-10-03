@@ -431,3 +431,10 @@ HttpResponse createBasicResponse(int code, string path)
 	}
 	return res;
 }
+
+timeval getTime(void)
+{
+	timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	return currentTime;
+}

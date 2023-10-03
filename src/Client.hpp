@@ -2,7 +2,6 @@
 
 #include <cstdlib>
 #include <queue>
-#include <sys/time.h>
 #include "global.hpp"
 #include "utils.hpp"
 
@@ -15,15 +14,15 @@ public:
 	Client(int fd, Address addr);
 
 	/* Getters */
-	int getId();
-	int getFd();
-	int getPort();
-	in_addr_t getIp();
-	bool didTimeout();
-	bool hasDisconnected();
-	bool getResponseIsReady();
-	bool getRequestIsReady();
-	bool getRequestParsed();
+	int getId() const;
+	int getFd() const;
+	int getPort() const;
+	in_addr_t getIp() const;
+	bool hasDisconnected() const ;
+	bool getResponseIsReady() const;
+	bool getRequestIsReady() const;
+	bool getRequestParsed() const;
+	bool didTimeout() const;
 	HttpResponse& getResponse();
 	HttpRequest& getRequest();
 

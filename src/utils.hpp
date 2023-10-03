@@ -13,25 +13,29 @@
 #include <ctime>
 #include <sstream>
 
+#include <sys/time.h> // gettimeofday
 #include "global.hpp"
 
-std::string getFileContent(std::string path);
-std::string toString(int value);
-std::string toIPString(in_addr_t ip);
-in_addr_t toIPv4(std::string str);
-int toInt(std::string str);
-bool isAllDigit(std::string str);
+string getFileContent(string path);
+string toString(int value);
+string toIPString(in_addr_t ip);
+in_addr_t toIPv4(string str);
+int toInt(string str);
+bool isAllDigit(string str);
 
-std::string fullPath(std::string root, std::string path);
-std::string getExtension(std::string path);
+string fullPath(string root, string path);
+string getExtension(string path);
 int createTcpListenSocket(Address addr);
 Address getAddressFromFd(int fd);
 pollfd buildPollFd(int fd, short events);
 
-std::string getDate(void);
-std::string getStatusText(int code);
-std::string getMimeType(std::string path);
-std::string toString(HttpResponse res);
+
+timeval getTime(void);
+
+string getDate(void);
+string getStatusText(int code);
+string getMimeType(string path);
+string toString(HttpResponse res);
 
 ostream& displayTimestamp(ostream& os);
 ostream& align(ostream& os);
