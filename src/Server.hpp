@@ -29,8 +29,6 @@ public:
 	HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);
 	HttpResponse handleDeleteRequest(HttpRequest req, LocationConfig route);
 
-	HttpResponse createBasicResponse(int code, string path);
-
 private:
 	ServerConfig m_config;
 	map<string, Cookies> m_cookies;

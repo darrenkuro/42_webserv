@@ -1,7 +1,6 @@
 NAME = webserv
 
 # Source files
-_DIR	:=	utils
 _SRC	:=	Webserver.cpp Server.cpp Client.cpp ConfigParser.cpp Cgi.cpp \
 			utils.cpp main.cpp
 _INC	:=	Webserver.hpp Server.hpp Client.hpp ConfigParser.hpp Cgi.hpp \
@@ -16,7 +15,7 @@ CXX		:=	c++
 RM		:=	/bin/rm -rf
 
 CXXFLAGS	:=	-Wall -Werror -Wextra -std=c++98
-INCFLAGS	:=	-I $(SRCDIR) -I $(SRCDIR)/http -I $(SRCDIR)/utils
+INCFLAGS	:=	-I $(SRCDIR)
 
 all: $(NAME)
 
@@ -24,7 +23,7 @@ $(NAME): $(OBJ) $(INC)
 	$(CXX) $(CXXFLAGS) $(OBJ) -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INC)
-	@mkdir -p $(OBJDIR) && cd $(OBJDIR) && mkdir -p $(_DIR)
+	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCFLAGS)
 
 clean:

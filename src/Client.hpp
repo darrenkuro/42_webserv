@@ -23,16 +23,16 @@ public:
 	bool getRequestIsReady() const;
 	bool getRequestParsed() const;
 	bool didTimeout() const;
-	HttpResponse& getResponse();
 	HttpRequest& getRequest();
+	HttpResponse& getResponse();
 
 	/* Setters */
 	void setHasDisconnected(bool status);
-	void setResponse(HttpResponse res);
 	void setRequest(HttpRequest req);
+	void setResponse(HttpResponse res);
 	void setBytesExpected(int bytes);
 
-	/* Data processing */
+	/* Data Handling */
 	void appendData(std::string buffer);
 	void reset();
 

@@ -22,12 +22,18 @@ using std::runtime_error;
 typedef struct pollfd PollFd;
 typedef struct stat Stat;
 typedef map<string, string> StringMap;
-typedef vector<string, string> StringVec;
+typedef vector<string> StringVec;
 
 struct Address
 {
 	in_addr_t ip;
 	int port;
+	bool operator<(const Address& rhs) const
+	{
+		if (ip == rhs.ip)
+			return port < rhs.port;
+		return ip < rhs.ip ? true : false;
+	}
 };
 
 struct HttpRequest
@@ -88,4 +94,4 @@ struct ServerConfig
 #define WARNING	2
 #define ERROR	1
 
-#define DISPLAY_LEVEL	DEBUG
+#define LOG_DISPLAY_LEVEL	DEBUG

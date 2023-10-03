@@ -51,13 +51,7 @@ void Webserver::initListenSockets()
 	for (it = uniques.begin(); it != uniques.end(); it++) {
 		int fd = createTcpListenSocket(*it);
 		log(DEBUG, "new socket on %s:%d", toIPString(it->ip).c_str(), it->port);
-
-		PollFd pfd;
-		pfd.fd = fd;
-		pfd.events = POLLIN;
-		pfd.revents = 0;
-
-		m_pollFds.push_back(pfd);
+		m_pollFds.push_back(buildPollFd(fd, POLLIN));
 	}
 	m_nbListenSockets = uniques.size();
 }
@@ -361,4 +355,13 @@ int Webserver::createTcpListenSocket(Address addr)
 		throw std::runtime_error("listen() failed" + std::string(strerror(errno)));
 
 	return fd;
+}
+
+PollFd Webserver::buildPollFd(int fd, short events)
+{
+	PollFd pfd;
+	pfd.fd = fd;
+	pfd.events = events;
+	pfd.revents = 0;
+	return pfd;
 }

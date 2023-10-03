@@ -25,10 +25,8 @@ bool isAllDigit(string str);
 
 string fullPath(string root, string path);
 string getExtension(string path);
-int createTcpListenSocket(Address addr);
-Address getAddressFromFd(int fd);
-pollfd buildPollFd(int fd, short events);
 
+Address getAddressFromFd(int fd);
 
 timeval getTime(void);
 
@@ -45,10 +43,10 @@ void log(ServerConfig config);
 void log(HttpRequest req, int clientID);
 void log(HttpResponse res, int clientID);
 
-ostream& operator<<(ostream& os, HttpRequest req);
-ostream& operator<<(ostream& os, HttpResponse res);
-ostream &operator<<(ostream &os, const Address address);
-ostream &operator<<(ostream &os, const LocationConfig location);
-ostream &operator<<(ostream &os, const ServerConfig config);
+ostream& operator<<(ostream& os, const HttpRequest req);
+ostream& operator<<(ostream& os, const HttpResponse res);
+ostream& operator<<(ostream& os, const Address address);
+ostream& operator<<(ostream& os, const LocationConfig location);
+ostream& operator<<(ostream& os, const ServerConfig config);
 
 HttpResponse createBasicResponse(int code, string path);

@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "ConfigParser.hpp"
 
 /* --------------------------------------------------------------------------------------------- */
 string getFileContent(string path)
@@ -121,16 +122,6 @@ string getExtension(string path)
 	}
 
 	return "";
-}
-
-
-bool Address::operator<(const Address& rhs) const
-{
-	if (ip < rhs.ip)
-		return true;
-	if (ip > rhs.ip)
-		return false;
-	return port < rhs.port;
 }
 
 Address getAddressFromFd(int fd)
@@ -424,7 +415,7 @@ HttpResponse createBasicResponse(int code, string path)
 	}
 	catch (...) {
 		std::ifstream file(DEFAULT_404);
-		res.body = file.is_open() ? getFileContent(DEFAULT_404_PATH) : "404 Not found";
+		res.body = file.is_open() ? getFileContent(DEFAULT_404) : "404 Not found";
 		res.header["Content-Type"] = file.is_open() ? "text/html" : "text/plain";
 		res.header["Content-Length"] = toString(res.body.length());
 		file.close();

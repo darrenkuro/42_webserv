@@ -46,6 +46,7 @@ private:
 	void parseRequestPart(const string& sep, string& field, string& content);
 	void parseRequestHeader(StringMap& header, string& content);
 	int createTcpListenSocket(Address addr);
+	PollFd buildPollFd(int fd, short events);
 
 	/* Member Data */
 	size_t m_nbListenSockets;

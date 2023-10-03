@@ -3,8 +3,13 @@
 #include <sys/stat.h>
 #include "ConfigParser.hpp"
 
-#define ROOT "./public"
+/* ============================================================================================== */
+/*                                                                                                */
+/*                               ConfigParser Class Implementation                                */
+/*                                                                                                */
+/* ============================================================================================== */
 
+/* ---------------------------------------------------------------------------------------------- */
 const string serverKeyArray[] = {
 	"root","server_name",  "listen", "client_max_body_size", "error_page", "location"
 };
@@ -34,7 +39,7 @@ const vector<int> ConfigParser::validRedirectCodes(redirectCode,
 	redirectCode + sizeof(redirectCode) / sizeof(redirectCode[0])
 );
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 bool ConfigParser::isValidServerKey(string key)
 {
 	return std::find(validServerKeys.begin(), validServerKeys.end(), key) != validServerKeys.end();
@@ -56,7 +61,7 @@ bool ConfigParser::isValidRedirectCode(int code)
 			!= validRedirectCodes.end();
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 vector<ServerConfig> ConfigParser::parse(const string& filename)
 {
 	string content = getFileContent(filename);
@@ -71,7 +76,7 @@ vector<ServerConfig> ConfigParser::parse(const string& filename)
 	return m_configs;
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::lex(const string& content, const string& whitespace, const string& symbol)
 {
 	m_tokens.clear();
@@ -95,7 +100,7 @@ void ConfigParser::lex(const string& content, const string& whitespace, const st
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 string ConfigParser::accept(void)
 {
 	if (m_tokens.empty()) {
@@ -115,7 +120,7 @@ void ConfigParser::consume(const string& token)
 	m_tokens.pop_front();
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseServer(void)
 {
 	ServerConfig server = createServer();
@@ -158,7 +163,7 @@ void ConfigParser::parseServer(void)
 	m_configs.push_back(server);
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseLocation(ServerConfig& server)
 {
 	LocationConfig location = createLocation();
@@ -203,7 +208,7 @@ void ConfigParser::parseLocation(ServerConfig& server)
 	server.locations.push_back(location);
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseRoot(ServerConfig& server)
 {
 	server.root = fullPath(ROOT, accept());
@@ -260,7 +265,7 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseErrorPage(ServerConfig& server)
 {
 	vector<string> tokens;
@@ -295,7 +300,7 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseUri(LocationConfig& location)
 {
 	location.uri = accept();
@@ -371,7 +376,7 @@ void ConfigParser::parseRedirect(LocationConfig& location)
 	}
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 ServerConfig ConfigParser::createServer(void)
 {
 	ServerConfig config;
@@ -384,6 +389,7 @@ ServerConfig ConfigParser::createServer(void)
 	return config;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 LocationConfig ConfigParser::createLocation(void)
 {
 	LocationConfig location;
@@ -397,6 +403,7 @@ LocationConfig ConfigParser::createLocation(void)
 	return location;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::addDefaultErrorPages(ServerConfig& server)
 {
 	for (size_t i = 0; i < validErrorCodes.size(); i++) {
@@ -407,6 +414,7 @@ void ConfigParser::addDefaultErrorPages(ServerConfig& server)
 	}
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::addDefaultLocation(ServerConfig& server)
 {
 	// Check if the default location already exist
