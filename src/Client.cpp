@@ -77,24 +77,24 @@ void Client::reset()
 /* ---------------------------------------------------------------------------------------------- */
 void Client::appendData(string buffer)
 {
-	if (m_recvChunk) {
-		string chunkSizeStr = buffer.substr(0, buffer.find("\r\n"));
-		buffer.erase(buffer.begin(), buffer.begin() + buffer.find("\r\n") + 2);
-		// check endptr?
-		int chunkSize = strtol(chunkSizeStr.c_str(), NULL, 16);
-		if (chunkSize == 0) {
-			m_recvChunk = false;
-			m_requestIsReady = true;
-			return;
-		}
-		buffer.erase(chunkSize);
-		m_request.body.append(buffer);
-	}
-	else {
+	// if (m_recvChunk) {
+	// 	string chunkSizeStr = buffer.substr(0, buffer.find("\r\n"));
+	// 	buffer.erase(buffer.begin(), buffer.begin() + buffer.find("\r\n") + 2);
+	// 	// check endptr?
+	// 	int chunkSize = strtol(chunkSizeStr.c_str(), NULL, 16);
+	// 	if (chunkSize == 0) {
+	// 		m_recvChunk = false;
+	// 		m_requestIsReady = true;
+	// 		return;
+	// 	}
+	// 	buffer.erase(chunkSize);
+	// 	m_request.body.append(buffer);
+	// }
+	// else {
 		m_request.body.append(buffer);
 		m_bytesRecved += buffer.length();
 		if (m_bytesRecved >= m_bytesExpected) {
 			m_requestIsReady = true;
-		}
-	}
+	 	}
+	// }
 }

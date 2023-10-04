@@ -95,12 +95,13 @@ char** getArgvPointer(const StringMap& envMap)
 //     delete[] ptr;
 // }
 
-string executeCgi(const StringMap& envMap, int& code)
+string executeCgi(const StringMap& envMap, const string& reqBody, int& code)
 {
-	int fd[2];
+	int pipeIn[2];
+	int pipeOut[2];
 	pid_t pid;
 
-	if (pipe(fd) == -1) {
+	if (pipe(pipeIn) == -1 || pipe(pipeOut) == -1) {
 		log(ERROR, "pipe() failed");
 		code = 500;
 		return "";
@@ -118,8 +119,14 @@ string executeCgi(const StringMap& envMap, int& code)
 			char** argv = getArgvPointer(envMap);
 			char** env = getEnvPointer(envMap);
 
-			dup2(fd[1], 1);
-			close(fd[0]), close(fd[1]);
+			dup2(pipeIn[0], 0), dup2(pipeOut[1], 1);
+			close(pipeIn[1]), close(pipeOut[0]);
+
+			// cout << "hello" << endl;
+			// cout << stdin.c_str() << endl;
+			//if (reqBody.size()) write(p[0], reqBody.c_str(), reqBody.size());
+			//else write(fd[0], "1", 1);
+
 			if (execve(argv[0], argv, env) == -1) exit(1);
 		}
 		catch (exception& e) {
@@ -129,14 +136,19 @@ string executeCgi(const StringMap& envMap, int& code)
 	}
 	else {
 		int status;
-		close(fd[1]);
+		close(pipeOut[1]), close(pipeIn[0]);
+
+		// use content length and EOF?
+		write(pipeIn[1], reqBody.c_str(), reqBody.size());
+		close(pipeIn[1]);
 
 		char buffer[RECV_SIZE];
 		ssize_t bytesRead;
-		while((bytesRead = read(fd[0], buffer, RECV_SIZE)) > 0) {
+		while((bytesRead = read(pipeOut[0], buffer, RECV_SIZE)) > 0) {
 			result += string(buffer);
 		}
 
+		close(pipeOut[0]);
 		// Is it okay that the parent wait for the child? Still non-blocking?
 		waitpid(pid, &status, 0);
 		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) code = 200;
@@ -150,7 +162,7 @@ HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Serv
 	try {
 		int code;
 		StringMap envMap = getCgiEnv(req, client, server);
-		string output = executeCgi(envMap, code);
+		string output = executeCgi(envMap, req.body, code);
 
 		// check file exists, and has permission?
 

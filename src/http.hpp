@@ -2,7 +2,7 @@
 
 #include "infrastructure.hpp"
 
-HttpRequest parseHttpRequest(string content);
+HttpRequest parseHttpRequest(string& content);
 
 void parseRequestPart(const string& sep, string& field, string& content);
 void parseRequestHeader(StringMap& header, string& content);

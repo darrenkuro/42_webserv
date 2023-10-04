@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import cgi
 import os
 
@@ -13,4 +14,6 @@ method = os.environ['REQUEST_METHOD']
 print("<html><body>")
 print(f"Request Method: {method}<br>")
 print(f"Hello, {name}!")
+for line in sys.stdin:
+	print(line, end="")
 print("</body></html>")
