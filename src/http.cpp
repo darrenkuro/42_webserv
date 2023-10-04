@@ -4,6 +4,7 @@
 #include <sys/stat.h>	// struct stat
 #include <dirent.h>		// DIR
 #include <ctime>
+#include <cstdlib>		// strtol
 
 /* ---------------------------------------------------------------------------------------------- */
 HttpRequest parseHttpRequest(string content)

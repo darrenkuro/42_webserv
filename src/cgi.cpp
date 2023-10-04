@@ -2,7 +2,7 @@
 #include "utils.hpp"
 #include "log.hpp"
 #include <cstring>
-#include <cstdlib>	// exit
+#include <cstdlib>			// exit
 #include <sys/wait.h>		// waitpid
 #include "http.hpp"			// createHttpResponse
 #include "ConfigParser.hpp"	// isValidErrorCode
@@ -139,14 +139,8 @@ string executeCgi(const StringMap& envMap, int& code)
 
 		// Is it okay that the parent wait for the child? Still non-blocking?
 		waitpid(pid, &status, 0);
-		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-			code = 200;
-			// success, data handling for HTTP
-			cout << "CGI script executed successfully." << endl;
-		} else {
-			// failure, return something else
-			cerr << "CGI script execution failed." << endl;
-		}
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) code = 200;
+		else code = 500;
 	}
 	return result;
 }
@@ -165,8 +159,6 @@ HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Serv
 			return createHttpResponse(code, server.getErrorPage(code));
 		}
 
-		// if inside errorcode, create basic response
-		// else return string
 		return createHttpResponse(500, server.getErrorPage(500));
 	}
 	catch (exception& e) {

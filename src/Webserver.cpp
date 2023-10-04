@@ -108,13 +108,26 @@ void Webserver::handlePollIn(Client& client)
 
 	try {
 		if (!client.getRequestParsed()) {
+			// !!!! Come back to this, gotta be a better way
+			// Make sure to read all the headers?
+			// while (bufferStr.find("\r\n\r\n") == string::npos) {
+			// 	bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
+			// 	bufferStr.append(buffer, bytesRead);
+			// }
+
 			client.setRequest(parseHttpRequest(bufferStr));
+			// log(client.getRequest(), client.getId());
 
 			// Check Content-Length and set expecting bytes
 			StringMap::iterator it = client.getRequest().header.find("Content-Length");
 			if (it != client.getRequest().header.end()) {
 				client.setBytesExpected(toInt(it->second));
 			}
+
+			// it = client.getRequest().header.find("Transfer-Encoding");
+			// if (it != client.getRequest().header.end() && it->second == "chunked") {
+			// 	client.setRecvChunk(true);
+			// }
 		}
 
 		if (!client.getRequestIsReady()) client.appendData(bufferStr);

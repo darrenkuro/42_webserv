@@ -17,6 +17,7 @@ public:
 	bool getResponseIsReady() const;
 	bool getRequestIsReady() const;
 	bool getRequestParsed() const;
+	bool getRecvChunk() const;
 	bool didTimeout() const;
 	HttpRequest& getRequest();
 	HttpResponse& getResponse();
@@ -25,6 +26,7 @@ public:
 	void setHasDisconnected(bool status);
 	void setRequest(HttpRequest req);
 	void setResponse(HttpResponse res);
+	void setRecvChunk(bool recvChunk);
 	void setBytesExpected(int bytes);
 
 	/* Data Handling */
@@ -38,6 +40,7 @@ private:
 	bool m_responseIsReady;
 	bool m_requestIsReady;
 	bool m_requestParsed;
+	bool m_recvChunk;
 	time_t m_lastEventTime;
 	Address m_address;
 	HttpResponse m_response;

@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include <ctime>		// time
+#include <cstdlib>		// strtol
 
 #define TIMEOUT_TIME	30
 
@@ -33,12 +34,14 @@ bool Client::hasDisconnected() const { return m_hasDisconnected; }
 bool Client::getResponseIsReady() const { return m_responseIsReady; }
 bool Client::getRequestIsReady() const { return m_requestIsReady; }
 bool Client::getRequestParsed() const { return m_requestParsed; }
+bool Client::getRecvChunk() const { return m_recvChunk; }
 bool Client::didTimeout() const { return std::time(NULL) - m_lastEventTime > TIMEOUT_TIME; }
 HttpRequest& Client::getRequest() { return m_request; }
 HttpResponse& Client::getResponse() { return m_responseIsReady = false, m_response; }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void Client::setHasDisconnected(bool status) { m_hasDisconnected = status; }
+void Client::setRecvChunk(bool recvChunk) { m_recvChunk = recvChunk; }
 
 void Client::setRequest(HttpRequest req)
 {
@@ -74,10 +77,24 @@ void Client::reset()
 /* ---------------------------------------------------------------------------------------------- */
 void Client::appendData(string buffer)
 {
-	//m_request = appendBody(m_request, buffer);
-	m_request.body.append(buffer);
-	m_bytesRecved += buffer.length();
-	if (m_bytesRecved >= m_bytesExpected) {
-		m_requestIsReady = true;
+	if (m_recvChunk) {
+		string chunkSizeStr = buffer.substr(0, buffer.find("\r\n"));
+		buffer.erase(buffer.begin(), buffer.begin() + buffer.find("\r\n") + 2);
+		// check endptr?
+		int chunkSize = strtol(chunkSizeStr.c_str(), NULL, 16);
+		if (chunkSize == 0) {
+			m_recvChunk = false;
+			m_requestIsReady = true;
+			return;
+		}
+		buffer.erase(chunkSize);
+		m_request.body.append(buffer);
+	}
+	else {
+		m_request.body.append(buffer);
+		m_bytesRecved += buffer.length();
+		if (m_bytesRecved >= m_bytesExpected) {
+			m_requestIsReady = true;
+		}
 	}
 }
