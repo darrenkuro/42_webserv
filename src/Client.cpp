@@ -21,6 +21,7 @@ Client::Client(int fd, Address addr)
 	m_address = addr;
 	m_responseIsReady = false;
 	m_hasDisconnected = false;
+	m_requestParsed = false;
 
 	m_lastEventTime = std::time(NULL);
 }

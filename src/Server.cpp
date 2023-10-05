@@ -1,10 +1,10 @@
 #include <algorithm>
 #include <sys/stat.h>	// struct stat
+#include <cstdio>		// remove
 #include "Server.hpp"
-#include "utils.hpp"
-#include "http.hpp"
-#include "log.hpp"
-#include "cgi.hpp"
+#include "utils.hpp"	// fullPath, toIPString, toInt
+#include "http.hpp"		// createHttpResponse
+#include "log.hpp"		// log
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -95,7 +95,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 		vector<string>::iterator it;
 		for (it = route.index.begin(); it != route.index.end(); it++) {
 			string filePath = fullPath(path, *it);
-			std::ifstream file(filePath.c_str());
+			ifstream file(filePath.c_str());
 			if (file.good()) {
 				return createHttpResponse(200, filePath);
 			}
@@ -142,7 +142,7 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 		}
 
 		// Save the file content to a file
-		std::ofstream outputFile(fullPath(root, filename).c_str());
+		ofstream outputFile(fullPath(root, filename).c_str());
 		if (!outputFile.is_open()) {
 			throw exception();
 		}
@@ -169,7 +169,7 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 			? root
 			: fullPath(root, req.uri.substr(route.uri.length()));
 
-	if (std::remove(path.c_str()) == 0) {
+	if (::remove(path.c_str()) == 0) {
 		return createHttpResponse(204, "");
 	}
 

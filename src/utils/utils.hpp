@@ -1,22 +1,12 @@
 #pragma once
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <cstring>
-#include <climits>
-#include <unistd.h>
-#include <fstream>
-
 #include "infrastructure.hpp"
 
-string getFileContent(string path);
+bool isAllDigit(const string& str);
 string toString(int value);
 string toIPString(in_addr_t ip);
-in_addr_t toIPv4(string str);
-int toInt(string str);
-bool isAllDigit(string str);
-
+string getExtension(const string& path);
+string getFileContent(const string& path);
 string fullPath(string root, string path);
-string getExtension(string path);
-
-Address getAddressFromFd(int fd);
+int toInt(const string& str);
+in_addr_t toIPv4(string str);

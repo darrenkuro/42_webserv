@@ -1,8 +1,14 @@
 #include "Webserver.hpp"
-#include "http.hpp"
-#include "log.hpp"
-#include "cgi.hpp"
-#include <arpa/inet.h>
+#include "http.hpp"			// parseHttpRequest, createHttpResponse, toString
+#include "log.hpp"			// log
+#include "cgi.hpp"			// processCgiRequest
+#include "utils.hpp"		// toIPv4, toIPString, toInt
+#include "ConfigParser.hpp"	// ConfigParser
+#include <poll.h>			// poll, struct pollfd
+#include <cstring>			// strerror, memset
+#include <unistd.h>			// close
+#include <sys/socket.h>		// accept, bind, listen, socket, getsockopt, getsockname, send, recv
+#include <cerrno>			// errno
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -355,4 +361,19 @@ PollFd Webserver::buildPollFd(int fd, short events)
 	pfd.events = events;
 	pfd.revents = 0;
 	return pfd;
+}
+
+Address Webserver::getAddressFromFd(int fd)
+{
+	Sockaddr_in serverAddress;
+	socklen_t addrLen = sizeof(serverAddress);
+	if (getsockname(fd, (Sockaddr*)&serverAddress, &addrLen) == -1) {
+		throw runtime_error("getsockname() failed");
+	}
+
+	Address addr;
+	addr.ip = ntohl(serverAddress.sin_addr.s_addr);
+	addr.port = ntohs(serverAddress.sin_port);
+	log(INFO, "HH %d", addr.port);
+	return addr;
 }

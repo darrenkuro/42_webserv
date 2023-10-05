@@ -1,11 +1,15 @@
 #pragma once
 
-#include <set>
-#include <map>
-#include <deque>
-#include <vector>
-#include <iostream>
-#include <netinet/in.h>
+#include <set>			// set
+#include <map>			// map
+#include <deque>		// deque
+#include <vector>		// vector
+#include <fstream>		// ifstream, ofstream
+#include <sstream>		// stringstream
+#include <iostream>		// cout, cerr, endl
+#include <exception>	// exception
+#include <stdexcept>	// runtime_error
+#include <netinet/in.h>	// in_addr_t, htonl, htons, ntohl, ntohs
 
 using std::cout;
 using std::cerr;
@@ -16,11 +20,18 @@ using std::deque;
 using std::vector;
 using std::string;
 using std::ostream;
+using std::ifstream;
+using std::ofstream;
+using std::stringstream;
+using std::istringstream;
+using std::ostringstream;
 using std::exception;
 using std::runtime_error;
 
 typedef struct pollfd PollFd;
 typedef struct stat Stat;
+typedef struct sockaddr_in Sockaddr_in;
+typedef struct sockaddr Sockaddr;
 typedef map<string, string> StringMap;
 typedef vector<string> StringVec;
 
@@ -79,7 +90,7 @@ struct ServerConfig
 #define ROOT			"public"
 #define CGI_BIN			"/cgi-bin/"
 #define PY_PATH			"/usr/bin/python3"
-#define PHP_PATH		"/usr/bin/php"
+#define PHP_PATH		"/usr/bin/php-cgi"
 
 #define HTTP_VERSION	"HTTP/1.1"
 #define SERVER_SOFTWARE	"Webserv42/1.0"

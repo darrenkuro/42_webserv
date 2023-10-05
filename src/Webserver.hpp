@@ -1,16 +1,9 @@
 #pragma once
 
-#include <poll.h>
-#include <cstring>
-#include <errno.h>
-#include <unistd.h>
 #include "infrastructure.hpp"
-#include "utils.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
-#include "ConfigParser.hpp"
 
-class Server;
 extern bool g_running;
 
 class Webserver
@@ -44,6 +37,7 @@ private:
 	set<Address> getUniqueAddresses(vector<Server> servers);
 	int createTcpListenSocket(Address addr);
 	PollFd buildPollFd(int fd, short events);
+	Address getAddressFromFd(int fd);
 
 	/* Member Data */
 	size_t m_nbListenSockets;

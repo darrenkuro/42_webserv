@@ -10,5 +10,5 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 char** getEnvPointer(const StringMap& envMap);
 //void freeEnvPointer(char** envPointer);
 
-string executeCgi(const StringMap& envMap, int& code);
+string executeCgi(const StringMap& envMap, const string& reqBody);
 HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Server& server);

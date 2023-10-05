@@ -4,7 +4,6 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/src/http",
                 "${workspaceFolder}/src/utils"
             ],
             "defines": [],

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "infrastructure.hpp"
-#include "utils.hpp"
 
 class ConfigParser
 {
@@ -16,7 +15,7 @@ public:
 	static bool isValidLocationKey(string key);
 
 private:
-	// Logic
+	/* Logic */
 	void lex(const string& content, const string& whitespace, const string& symbol);
 
 	string accept(void);

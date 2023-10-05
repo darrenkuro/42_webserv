@@ -61,7 +61,7 @@ void parseRequestHeader(StringMap& header, string& content)
 	header[key] = value;
 }
 
-
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse createHttpResponse(int code, const string& path)
 {
 	HttpResponse res;

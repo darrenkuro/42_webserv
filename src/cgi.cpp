@@ -1,11 +1,11 @@
 #include "cgi.hpp"
 #include "utils.hpp"
 #include "log.hpp"
-#include <cstring>
-#include <cstdlib>			// exit
-#include <sys/wait.h>		// waitpid
 #include "http.hpp"			// createHttpResponse
-#include "ConfigParser.hpp"	// isValidErrorCode
+#include <cstring>			// strcpy
+//#include <unistd.h>			// chdir
+#include <cstdlib>			// exit, WIFEXITED, WEXITSTATUS
+#include <sys/wait.h>		// waitpid
 
 string getScriptName(const string& uri)
 {
@@ -28,7 +28,7 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 {
 	StringMap metaVars;
 
-	metaVars["CONTENT_LENGTH"] = req.header["Content-Length"];
+	metaVars["CONTENT_LENGTH"] = req.body.size();
 	metaVars["CONTENT_TYPE"] = req.header["Content-Type"];
 	metaVars["GATEWAY_INTERFACE"] = "CGI/1.1";
 	metaVars["PATH_INFO"] = req.uri;
@@ -41,6 +41,7 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 	metaVars["SERVER_PORT"] = toString(server.getAddress().port);
 	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
 	metaVars["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
+	metaVars["REDIRECT_STATUS"] = "200"; // For php-cgi
 	(void) client;
 
 	return metaVars;
@@ -76,11 +77,12 @@ char** getArgvPointer(const StringMap& envMap)
 
 	char** argvPointer = new char*[3];
 	string execPath = ext == ".py" ? PY_PATH : PHP_PATH;
+	string scriptPath = it->second.substr(it->second.find_last_of("/") + 1);
 
 	argvPointer[0] = new char[20];
 	std::strcpy(argvPointer[0], execPath.c_str());
 	argvPointer[1] = new char[it->second.size() + 1];
-	std::strcpy(argvPointer[1], it->second.c_str());
+	std::strcpy(argvPointer[1], scriptPath.c_str());
 	argvPointer[2] = NULL;
 	return argvPointer;
 }
@@ -95,22 +97,18 @@ char** getArgvPointer(const StringMap& envMap)
 //     delete[] ptr;
 // }
 
-string executeCgi(const StringMap& envMap, const string& reqBody, int& code)
+string executeCgi(const StringMap& envMap, const string& reqBody)
 {
 	int pipeIn[2];
 	int pipeOut[2];
 	pid_t pid;
 
 	if (pipe(pipeIn) == -1 || pipe(pipeOut) == -1) {
-		log(ERROR, "pipe() failed");
-		code = 500;
-		return "";
+		throw runtime_error("pipe() failed");
 	}
 
 	if ((pid = fork()) == -1) {
-		log(ERROR, "fork() failed");
-		code = 500;
-		return "";
+		throw runtime_error("fork() failed");
 	}
 
 	string result= "";
@@ -119,40 +117,40 @@ string executeCgi(const StringMap& envMap, const string& reqBody, int& code)
 			char** argv = getArgvPointer(envMap);
 			char** env = getEnvPointer(envMap);
 
+			// Change to the correct directory for relative path file access
+			if (chdir(fullPath(ROOT, CGI_BIN).c_str()) == -1) {
+				throw runtime_error("chdir() failed");
+			}
+
 			dup2(pipeIn[0], 0), dup2(pipeOut[1], 1);
 			close(pipeIn[1]), close(pipeOut[0]);
 
-			// cout << "hello" << endl;
-			// cout << stdin.c_str() << endl;
-			//if (reqBody.size()) write(p[0], reqBody.c_str(), reqBody.size());
-			//else write(fd[0], "1", 1);
-
 			if (execve(argv[0], argv, env) == -1) exit(1);
 		}
-		catch (exception& e) {
+		catch (const exception& e) {
 			log(ERROR, "CGI child process exception: " + string(e.what()) + "!");
 			exit(1);
 		}
 	}
 	else {
 		int status;
-		close(pipeOut[1]), close(pipeIn[0]);
 
-		// use content length and EOF?
+		close(pipeOut[1]), close(pipeIn[0]);
 		write(pipeIn[1], reqBody.c_str(), reqBody.size());
 		close(pipeIn[1]);
 
 		char buffer[RECV_SIZE];
 		ssize_t bytesRead;
 		while((bytesRead = read(pipeOut[0], buffer, RECV_SIZE)) > 0) {
-			result += string(buffer);
+			result += string(buffer, bytesRead);
 		}
-
 		close(pipeOut[0]);
+
 		// Is it okay that the parent wait for the child? Still non-blocking?
 		waitpid(pid, &status, 0);
-		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) code = 200;
-		else code = 500;
+		if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
+			throw runtime_error("child process error");
+		}
 	}
 	return result;
 }
@@ -160,21 +158,15 @@ string executeCgi(const StringMap& envMap, const string& reqBody, int& code)
 HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Server& server)
 {
 	try {
-		int code;
 		StringMap envMap = getCgiEnv(req, client, server);
-		string output = executeCgi(envMap, req.body, code);
+		string output = executeCgi(envMap, req.body);
 
 		// check file exists, and has permission?
 
-		if (code == 200) return createHttpResponse(output);
-		if (ConfigParser::isValidErrorCode(code)) {
-			return createHttpResponse(code, server.getErrorPage(code));
-		}
-
-		return createHttpResponse(500, server.getErrorPage(500));
+		return createHttpResponse(output);
 	}
-	catch (exception& e) {
-		log(WARNING, "CGI process exception:" + string(e.what()) + "!");
+	catch (const exception& e) {
+		log(WARNING, "CGI process exception: " + string(e.what()) + "!");
 		return createHttpResponse(500, server.getErrorPage(500));
 	}
 }

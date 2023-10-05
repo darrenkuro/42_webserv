@@ -1,13 +1,10 @@
 #include "utils.hpp"
-#include "ConfigParser.hpp"
-#include "log.hpp"
-
-#include <sstream>			// stringstream
+#include <climits>		// INT_MAX, INT_MIN
 
 /* --------------------------------------------------------------------------------------------- */
-string getFileContent(string path)
+string getFileContent(const string& path)
 {
-	std::ifstream file(path.c_str());
+	ifstream file(path.c_str());
 	if (!file.is_open()) {
 		throw runtime_error("Failed to open file: " + path);
 	}
@@ -19,7 +16,7 @@ string getFileContent(string path)
 /* --------------------------------------------------------------------------------------------- */
 string toString(int value)
 {
-	std::stringstream ss;
+	stringstream ss;
 	ss << value;
 
 	// Unlikely to happen, bad alloc only
@@ -28,9 +25,9 @@ string toString(int value)
 	return ss.str();
 }
 
-int toInt(string str)
+int toInt(const string& str)
 {
-	std::istringstream iss(str);
+	istringstream iss(str);
 	int result;
 	char remainingChar;
 
@@ -53,9 +50,9 @@ int toInt(string str)
 	return result;
 }
 
-std::string toIPString(in_addr_t ip)
+string toIPString(in_addr_t ip)
 {
-	std::ostringstream oss;
+	ostringstream oss;
 	unsigned char* bytes = reinterpret_cast<unsigned char*>(&ip);
 
 	oss << static_cast<int>(bytes[0]) << '.'
@@ -82,21 +79,17 @@ in_addr_t toIPv4(string str)
 		}
 
 		result = (result << 8) | value;
-
-		if (i < 3)
-			str.erase(str.begin(), str.begin() + str.find('.') + 1);
+		if (i < 3) str.erase(str.begin(), str.begin() + str.find('.') + 1);
 	}
 
 	return htonl(result);
 }
 
 /* --------------------------------------------------------------------------------------------- */
-bool isAllDigit(string str)
+bool isAllDigit(const string& str)
 {
 	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i])) {
-			return false;
-		}
+		if (!std::isdigit(str[i])) return false;
 	}
 	return true;
 }
@@ -120,24 +113,6 @@ string getExtension(string path)
 {
 	size_t pos = path.find_last_of('.');
 
-	if (pos != string::npos && pos != 0) {
-		return path.substr(pos);
-	}
-
+	if (pos != string::npos && pos != 0) return path.substr(pos);
 	return "";
-}
-
-Address getAddressFromFd(int fd)
-{
-	struct sockaddr_in serverAddress;
-	socklen_t addrLen = sizeof(serverAddress);
-	if (getsockname(fd, (struct sockaddr*)&serverAddress, &addrLen) == -1) {
-		throw runtime_error("getsockname() failed");
-	}
-
-	Address addr;
-	addr.ip = ntohl(serverAddress.sin_addr.s_addr);
-	addr.port = ntohs(serverAddress.sin_port);
-	log(INFO, "HH %d", addr.port);
-	return addr;
 }
