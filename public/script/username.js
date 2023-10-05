@@ -18,7 +18,7 @@ function displayUsername() {
 	if (username) {
 		usernameDisplay.innerHTML = `Welcome, ${username}!`;
 	} else {
-		usernameDisplay.innerHTML = 'Guest';
+		usernameDisplay.innerHTML = 'Welcome, Guest!';
 	}
 }
 
