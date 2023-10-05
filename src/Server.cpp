@@ -2,7 +2,7 @@
 #include <sys/stat.h>	// struct stat
 #include <cstdio>		// remove
 #include "Server.hpp"
-#include "utils.hpp"	// fullPath, toIPString, toInt
+#include "utils.hpp"	// fullPath, toIpString, toInt
 #include "http.hpp"		// createHttpResponse
 #include "log.hpp"		// log
 
@@ -16,7 +16,7 @@
 Server::Server(const ServerConfig config) : m_config(config)
 {
 	log(INFO, "Server: %s on %s:%d", getName().c_str(),
-		toIPString(m_config.address.ip).c_str(), m_config.address.port);
+		toIpString(m_config.address.ip).c_str(), m_config.address.port);
 }
 
 Address Server::getAddress() const { return m_config.address; }

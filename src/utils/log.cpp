@@ -1,7 +1,7 @@
 #include "log.hpp"
 #include "utils.hpp"	// toIpString
 #include <ctime>		// time_t, time, ctime
-#include <cstdio>		// vprintf
+#include <cstdio>		// vfprintf
 
 ostream& displayTimestamp(ostream& os)
 {
@@ -35,7 +35,7 @@ void displayLogLevel(int level)
 		break;
 
 	case ERROR:
-		cout << RED << "[ERROR]" << RESET << "   ";
+		cerr << RED << "[ERROR]" << RESET << "   ";
 		break;
 	}
 }
@@ -43,15 +43,18 @@ void displayLogLevel(int level)
 void log(int level, const char* format, ...)
 {
 	if (level > LOG_DISPLAY_LEVEL) return;
-	cout << displayTimestamp << " ";
+	if (level == ERROR)	cerr << displayTimestamp << " ";
+	else cout << displayTimestamp << " ";
 	displayLogLevel(level);
 
 	va_list args;
 	va_start(args, format);
-	vprintf(format, args);
+	if (level == ERROR) vfprintf(stderr, format, args);
+	else vfprintf(stdout, format, args);
 	va_end(args);
 
-	cout << endl;
+	if (level == ERROR) cerr << endl;
+	else cout << endl;
 }
 
 void log(int level, const string& str)
@@ -113,7 +116,7 @@ ostream& operator<<(ostream& os, HttpResponse res)
 
 ostream &operator<<(ostream &os, const Address address)
 {
-	os << "Address[" << toIPString(address.ip) << ":";
+	os << "Address[" << toIpString(address.ip) << ":";
 	os << address.port << "]";
 	return os;
 }

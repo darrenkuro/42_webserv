@@ -2,10 +2,11 @@
 #include "http.hpp"			// parseHttpRequest, createHttpResponse, toString
 #include "log.hpp"			// log
 #include "cgi.hpp"			// processCgiRequest
-#include "utils.hpp"		// toIpNum, toIPString, toInt
+#include "utils.hpp"		// toIpNum, toIpString, toInt
 #include "ConfigParser.hpp"	// ConfigParser
 #include <poll.h>			// poll, struct pollfd
 #include <cstring>			// strerror, memset
+#include <cstdlib>			// exit
 #include <unistd.h>			// close
 #include <sys/socket.h>		// accept, bind, listen, socket, getsockopt, getsockname, send, recv
 #include <cerrno>			// errno
@@ -28,6 +29,7 @@ Webserver::Webserver(string configPath)
 	}
 	catch (const exception& e) {
 		log(ERROR, e.what());
+		exit(1);
 	}
 };
 
@@ -59,7 +61,7 @@ void Webserver::initListenSockets()
 	set<Address>::iterator it;
 	for (it = uniques.begin(); it != uniques.end(); it++) {
 		int fd = createTcpListenSocket(*it);
-		log(DEBUG, "new socket on %s:%d", toIPString(it->ip).c_str(), it->port);
+		log(DEBUG, "new socket on %s:%d", toIpString(it->ip).c_str(), it->port);
 		m_pollFds.push_back(buildPollFd(fd, POLLIN));
 	}
 	m_nbListenSockets = uniques.size();
@@ -195,7 +197,7 @@ void Webserver::addClient(int listenFd)
 	log(INFO, "Port = %d", client.getPort());
 
 	log(INFO, "Client[ID: %d] connected on %s:%d", client.getId(),
-		toIPString(client.getIp()).c_str(), client.getPort());
+		toIpString(client.getIp()).c_str(), client.getPort());
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -262,7 +264,8 @@ Server& Webserver::routeRequest(HttpRequest req, Client& client)
 			}
 		}
 	}
-	catch (...) {
+	catch (const exception& e) {
+		log(WARNING, e.what());
 	}
 
 	// Default server resolution

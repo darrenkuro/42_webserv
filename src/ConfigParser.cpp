@@ -78,7 +78,7 @@ vector<ServerConfig> ConfigParser::parse(const string& filename)
 			parseServer();
 		}
 		catch (const exception& e) {
-			throw runtime_error("Parsing error: " + string(e.what()) + "!");
+			throw runtime_error("Parser: " + string(e.what()) + "!");
 		}
 	} while (!m_tokens.empty());
 
@@ -124,7 +124,7 @@ string ConfigParser::accept(void)
 void ConfigParser::consume(const string& token)
 {
 	if (m_tokens.front() != token) {
-		throw runtime_error("can't find " + token);
+		throw runtime_error("syntax error");
 	}
 	m_tokens.pop_front();
 }
@@ -257,7 +257,7 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		consume(";");
 	}
 	catch (...) {
-		throw runtime_error("Parser: invalid listen!");
+		throw runtime_error("invalid listen");
 	}
 }
 
@@ -267,13 +267,13 @@ void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 	try {
 		int value = toInt(accept());
 		if (value < 0) {
-			throw runtime_error("invalid max body size - negative");
+			throw runtime_error("negative");
 		}
 		server.clientMaxBodySize = value;
 		consume(";");
 	}
-	catch (exception& e) {
-		throw runtime_error("invalid max body size" + string(e.what()));
+	catch (const exception& e) {
+		throw runtime_error("invalid max body size - " + string(e.what()));
 	}
 }
 
@@ -298,17 +298,17 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 			// Check if the key already exist or the code isn't used
 			map<int, string>::iterator it;
 			if (server.errorPages.find(code) != server.errorPages.end()) {
-				throw runtime_error("duplicated error code");
+				throw runtime_error("duplicated code");
 			}
 			if (!isValidErrorCode(code)) {
-				throw runtime_error("invalid error code " + toString(code));
+				throw runtime_error("invalid code " + toString(code));
 			}
 
 			server.errorPages[code] = tokens.back();
 		}
 	}
 	catch (const exception& e) {
-		throw runtime_error("error page - " + string(e.what()));
+		throw runtime_error("invalid error page - " + string(e.what()));
 	}
 }
 
@@ -332,21 +332,17 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 
 void ConfigParser::parseAlias(LocationConfig& location)
 {
-	try {
-		string token = accept();
-		string path = fullPath(ROOT, token);
+	string token = accept();
+	string path = fullPath(ROOT, token);
 
-		// Check if alias is accessible and is a directory
-		struct stat pathInfo;
-		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
-			throw runtime_error("invalid alias " + token);
-		}
+	// Check if alias is accessible and is a directory
+	struct stat pathInfo;
+	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
+		throw runtime_error("invalid alias " + token);
+	}
 
-		location.alias = token;
-		consume(";");
-	}
-	catch (...) {
-	}
+	location.alias = token;
+	consume(";");
 }
 
 void ConfigParser::parseAllowedMethods(LocationConfig& location)
