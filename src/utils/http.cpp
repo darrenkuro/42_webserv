@@ -5,6 +5,7 @@
 #include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
 #include <ctime>			// time, gmtime, strftime
 #include "log.hpp" // temp
+
 /* ============================================================================================== */
 /*                                                                                                */
 /*                                 HTTP Functional Implementation                                 */
