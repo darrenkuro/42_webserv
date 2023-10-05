@@ -145,9 +145,9 @@ HttpResponse createAutoindex(const string& path, const string& root)
 
 	while ((entry = readdir(dir)) != NULL) {
 		string name(entry->d_name);
-		if (name == "." || name == "..") {
-			continue;
-		}
+		// if (name == "." || name == "..") {
+		// 	continue;
+		// }
 
 		Stat fileInfo;
 		string filePath = fullPath(path, name);
@@ -156,11 +156,13 @@ HttpResponse createAutoindex(const string& path, const string& root)
 		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
 
 		body.append("<li class=\"list-item\"><div class=\"name\"><a href=\"");
-		body.append(href).append("\">");
-		body.append(name).append("</div></li>");
+		body.append(href).append("\">").append(name);
+		body.append("</a>").append("</div></li>");
 	}
 	closedir(dir);
-	body.append("</ul></div></body></html>");
+	body.append("</ul></div><div class=\"footer\">");
+	body.append("&copy; Webserv sample page by Luca & Darren, 2023. 42Berlin.</div>");
+	body.append("</body></html>");
 
 	return createHttpResponse(body);
 }
