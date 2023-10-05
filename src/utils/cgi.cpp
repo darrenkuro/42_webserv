@@ -25,7 +25,7 @@ HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Serv
 		return createHttpResponse(output);
 	}
 	catch (const exception& e) {
-		log(WARNING, "CGI process exception: " + string(e.what()) + "!");
+		log(WARNING, "CGI: " + string(e.what()) + "!");
 		return createHttpResponse(500, server.getErrorPage(500));
 	}
 }
@@ -63,7 +63,7 @@ string executeCgi(const StringMap& envMap, const string& reqBody)
 			if (execve(argv[0], argv, env) == -1) exit(1);
 		}
 		catch (const exception& e) {
-			log(ERROR, "CGI child process exception: " + string(e.what()) + "!");
+			log(ERROR, "CGI: " + string(e.what()) + "!");
 			exit(1);
 		}
 	}

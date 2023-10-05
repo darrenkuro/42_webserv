@@ -1,7 +1,6 @@
 #include "Client.hpp"
 #include <ctime>		// time
 #include <cstdlib>		// strtol
-
 #define TIMEOUT_TIME	30
 
 /* ============================================================================================== */
@@ -21,6 +20,9 @@ Client::Client(int fd, Address addr)
 	m_address = addr;
 	m_responseIsReady = false;
 	m_hasDisconnected = false;
+	m_bytesExpected = 0;
+	m_bytesRecved = 0;
+	m_requestIsReady = true;
 	m_requestParsed = false;
 
 	m_lastEventTime = std::time(NULL);
@@ -92,10 +94,10 @@ void Client::appendData(string buffer)
 	// 	m_request.body.append(buffer);
 	// }
 	// else {
-		m_request.body.append(buffer);
-		m_bytesRecved += buffer.length();
-		if (m_bytesRecved >= m_bytesExpected) {
-			m_requestIsReady = true;
-	 	}
+	m_request.body.append(buffer);
+	m_bytesRecved += buffer.length();
+	if (m_bytesRecved >= m_bytesExpected) {
+		m_requestIsReady = true;
+	}
 	// }
 }

@@ -250,14 +250,14 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		// Resolve port portion
 		int port = toInt(token);
 		if (port <= 0 || port > 65535) {
-			throw exception();
+			throw runtime_error("port out of range");
 		}
 		server.address.port = port;
 
 		consume(";");
 	}
-	catch (...) {
-		throw runtime_error("invalid listen");
+	catch (const exception& e) {
+		throw runtime_error("invalid listen - " + string(e.what()));
 	}
 }
 

@@ -2,7 +2,7 @@
 #include <sys/stat.h>	// struct stat
 #include <cstdio>		// remove
 #include "Server.hpp"
-#include "utils.hpp"	// fullPath, toIpString, toInt
+#include "utils.hpp"	// fullPath, toIpString, toInt, getBoundary
 #include "http.hpp"		// createHttpResponse
 #include "log.hpp"		// log
 
@@ -25,7 +25,16 @@ string Server::getName() const { return m_config.serverName; }
 
 string Server::getErrorPage(int code) const {
 	map<int, string>::const_iterator it = m_config.errorPages.find(code);
-	return it == m_config.errorPages.end() ? "" : fullPath(m_config.root, it->second);
+	return it == m_config.errorPages.end() ? "" : fullPath(ROOT, it->second);
+}
+
+int Server::getMaxBodySize() const { return m_config.clientMaxBodySize; }
+
+/* ---------------------------------------------------------------------------------------------- */
+bool Server::bodySizeAllowed(int bytes) const
+{
+	// If clientMaxBodySize is not set (-1) or larger
+	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -96,9 +105,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 		for (it = route.index.begin(); it != route.index.end(); it++) {
 			string filePath = fullPath(path, *it);
 			ifstream file(filePath.c_str());
-			if (file.good()) {
-				return createHttpResponse(200, filePath);
-			}
+			if (file.good()) return createHttpResponse(200, filePath);
 		}
 		if (route.autoindex) {
 			return createAutoindex(path);
@@ -122,11 +129,11 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 	log(DEBUG, "root: %s", root.c_str());
 
 	try {
-		string boundry = getBoundry(req);
+		string boundry = getBoundary(req);
 
 		if (req.body.find(boundry) == string::npos
 			|| req.body.find("filename=\"") == string::npos) {
-			throw exception();
+			throw runtime_error("couldn't find boundry or filename");
 		}
 
 		// Get file name
@@ -142,15 +149,17 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 		}
 
 		// Save the file content to a file
-		ofstream outputFile(fullPath(root, filename).c_str());
+		string path = fullPath(root, filename);
+		ofstream outputFile(path.c_str());
 		if (!outputFile.is_open()) {
-			throw exception();
+			throw runtime_error("failed to create file " + path);
 		}
 		outputFile << req.body;
 		outputFile.close();
 
 	}
-	catch (...) {
+	catch (const exception& e) {
+		log(WARNING, e.what());
 		return createHttpResponse(400, getErrorPage(400));
 	}
 
@@ -173,7 +182,7 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 		return createHttpResponse(204, "");
 	}
 
-	return createHttpResponse(403, getErrorPage(403));
+	return createHttpResponse(404, getErrorPage(404));
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -194,29 +203,4 @@ LocationConfig Server::routeRequest(string uri)
 	size_t endPos = uri.find_last_of('/');
 	uri = endPos == 0 ? "/" : uri.substr(0, uri.find_last_of('/'));
 	return routeRequest(uri);
-}
-
-/* ---------------------------------------------------------------------------------------------- */
-string Server::getBoundry(HttpRequest req)
-{
-	StringMap::iterator it;
-	it = req.header.find("Content-Type");
-	if (it == req.header.end()) {
-		throw exception();
-	}
-
-	size_t pos = it->second.find("boundary=");
-	if (pos == string::npos) {
-		throw exception();
-	}
-	return "--" + it->second.substr(pos + 9);
-}
-
-/* ---------------------------------------------------------------------------------------------- */
-int Server::getMaxBodySize() { return m_config.clientMaxBodySize; }
-
-bool Server::bodySizeAllowed(int bytes)
-{
-	// If clientMaxBodySize is not set (-1) or larger
-	return getMaxBodySize() == -1 || getMaxBodySize() >= bytes;
 }

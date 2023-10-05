@@ -101,9 +101,10 @@ ostream& operator<<(ostream& os, HttpRequest req)
 	os << "Method[" << req.method << "] ";
 	os << "Uri[" << req.uri << "] ";
 	os << "Version[" << req.version << "] ";
-	os << "Host[" << req.header.find("Host")->second << "]" << endl;
+	os << "Host[" << req.header["Host"] << "]" << endl;
 	os << align;
-	os << "Body[" + req.body + "]";
+	os << "Content-Length[" + req.header["Content-Length"] + "] ";
+	// os << "Body[" + req.body + "]";
 	return os;
 }
 

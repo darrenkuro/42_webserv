@@ -11,6 +11,8 @@ public:
 	Address getAddress() const;
 	string getName() const;
 	string getErrorPage(int code) const;
+	int getMaxBodySize() const;
+	bool bodySizeAllowed(int bytes) const;
 
 	// Logic
 	HttpResponse handleRequest(HttpRequest req);
@@ -22,7 +24,4 @@ private:
 	ServerConfig m_config;
 
 	LocationConfig routeRequest(string uri);
-	string getBoundry(HttpRequest req);
-	int getMaxBodySize();
-	bool bodySizeAllowed(int bytes);
 };

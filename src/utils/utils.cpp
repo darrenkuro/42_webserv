@@ -48,7 +48,7 @@ string getFileContent(const string& path)
 {
 	ifstream file(path.c_str());
 	if (!file.is_open()) {
-		throw runtime_error("Failed to open file: " + path);
+		throw runtime_error("failed to open file " + path);
 	}
 
 	string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -78,6 +78,23 @@ string fullPath(string root, string path)
 		return "";
 	}
 	return root + "/" + path;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+string getBoundary(const HttpRequest& req)
+{
+	StringMap::const_iterator it;
+	it = req.header.find("Content-Type");
+	if (it == req.header.end()) {
+		throw runtime_error("couldn't find Content-Type header");
+	}
+
+	size_t pos = it->second.find("boundary=");
+	if (pos == string::npos) {
+		throw runtime_error("couldn't find 'boundary='");
+	}
+
+	return "--" + it->second.substr(pos + 9);
 }
 
 /* ---------------------------------------------------------------------------------------------- */

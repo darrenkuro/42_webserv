@@ -124,7 +124,6 @@ void Webserver::handlePollIn(Client& client)
 			// }
 
 			client.setRequest(parseHttpRequest(bufferStr));
-			// log(client.getRequest(), client.getId());
 
 			// Check Content-Length and set expecting bytes
 			StringMap::iterator it = client.getRequest().header.find("Content-Length");
@@ -144,10 +143,11 @@ void Webserver::handlePollIn(Client& client)
 			log(client.getRequest(), client.getId());
 			HttpResponse res = processRequest(client.getRequest(), client);
 			client.setResponse(res);
-			//client.reset();
+			client.reset();
 		}
 	}
-	catch (...) {
+	catch (const exception& e) {
+		log(DEBUG, e.what());
 		client.setResponse(createHttpResponse(400, DEFAULT_400));
 	}
 }
@@ -161,6 +161,7 @@ HttpResponse Webserver::processRequest(HttpRequest req, Client& client)
 		log(INFO, "%sHTTP Route Client[ID %d]  |  To: %s%s", ORANGE, client.getId(),
 			server.getName().c_str(), RESET);
 
+		// Handle CGI
 		if (req.uri.find(CGI_BIN) == 0) {
 			return processCgiRequest(req, client, server);
 		}
@@ -254,7 +255,7 @@ Server& Webserver::routeRequest(HttpRequest req, Client& client)
 					: 80;
 
 		if (port <= 0 || port > 65535) {
-			throw exception();
+			throw runtime_error("port out of range");
 		}
 
 		for (size_t i = 0; i < m_servers.size(); i++) {
