@@ -104,7 +104,7 @@ ostream& operator<<(ostream& os, HttpRequest req)
 	os << "Host[" << req.header["Host"] << "]" << endl;
 	os << align;
 	os << "Content-Length[" + req.header["Content-Length"] + "] ";
-	// os << "Body[" + req.body + "]";
+	os << "Body[" + req.body + "]";
 	return os;
 }
 

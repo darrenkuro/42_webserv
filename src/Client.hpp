@@ -19,18 +19,20 @@ public:
 	bool getRequestParsed() const;
 	bool getRecvChunk() const;
 	bool didTimeout() const;
+	string getHeaderBuffer() const;
 	HttpRequest& getRequest();
 	HttpResponse& getResponse();
 
 	/* Setters */
 	void setHasDisconnected(bool status);
-	void setRequest(HttpRequest req);
 	void setResponse(HttpResponse res);
 	void setRecvChunk(bool recvChunk);
 	void setBytesExpected(int bytes);
 
 	/* Data Handling */
-	void appendData(string buffer);
+	void appendHeader(string buffer);
+	void appendBody(string buffer);
+	void parseHttpHeader();
 	void reset();
 
 private:
@@ -46,6 +48,8 @@ private:
 	HttpResponse m_response;
 	HttpRequest m_request;
 
+	string m_headerBuffer;
+	string m_chunkedBuffer;
 	string m_dataRecved;
 	int m_bytesRecved;
 	int m_bytesExpected;

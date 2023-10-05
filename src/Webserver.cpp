@@ -108,22 +108,13 @@ void Webserver::handlePollIn(Client& client)
 		return;
 	}
 
-	// HTTP request is longer than buffer
-	if (!client.getRequestParsed() && bytesRead == RECV_SIZE) {
-		client.setResponse(createHttpResponse(400, DEFAULT_400));
-		return;
-	}
-
 	try {
 		if (!client.getRequestParsed()) {
-			// !!!! Come back to this, gotta be a better way
-			// Make sure to read all the headers?
-			// while (bufferStr.find("\r\n\r\n") == string::npos) {
-			// 	bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
-			// 	bufferStr.append(buffer, bytesRead);
-			// }
+			client.appendHeader(bufferStr);
+			if (client.getHeaderBuffer().find("\r\n\r\n") == string::npos) return;
 
-			client.setRequest(parseHttpRequest(bufferStr));
+			// Header buffer is ready, proceed to parse
+			client.parseHttpHeader();
 
 			// Check Content-Length and set expecting bytes
 			StringMap::iterator it = client.getRequest().header.find("Content-Length");
@@ -131,13 +122,13 @@ void Webserver::handlePollIn(Client& client)
 				client.setBytesExpected(toInt(it->second));
 			}
 
-			// it = client.getRequest().header.find("Transfer-Encoding");
-			// if (it != client.getRequest().header.end() && it->second == "chunked") {
-			// 	client.setRecvChunk(true);
-			// }
+			it = client.getRequest().header.find("Transfer-Encoding");
+			if (it != client.getRequest().header.end() && it->second == "chunked") {
+				client.setRecvChunk(true);
+			}
 		}
 
-		if (!client.getRequestIsReady()) client.appendData(bufferStr);
+		if (!client.getRequestIsReady()) client.appendBody(bufferStr);
 
 		if (client.getRequestIsReady()) {
 			log(client.getRequest(), client.getId());
