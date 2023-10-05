@@ -111,7 +111,7 @@ struct ServerConfig
 #define PY_PATH			"/usr/bin/python3"
 #define PHP_PATH		"/usr/bin/php-cgi"
 
-/* Setting Params */
+/* Server Params */
 #define HTTP_VERSION	"HTTP/1.1"
 #define SERVER_SOFTWARE	"Webserv42/1.0"
 

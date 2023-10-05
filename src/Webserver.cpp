@@ -101,9 +101,11 @@ void Webserver::handlePollIn(Client& client)
 	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
 	string bufferStr(buffer, bytesRead);
 
-	if (bytesRead == -1)
-		throw runtime_error("recv() failed");
-	if (bytesRead == 0) {
+	// if (bytesRead == -1) {
+	// 	client.setHasDisconnected(true);
+	// 	throw runtime_error("recv() failed");
+	// }
+	if (bytesRead == -1 || bytesRead == 0) {
 		client.setHasDisconnected(true);
 		return;
 	}
@@ -174,7 +176,10 @@ void Webserver::handlePollOut(Client& client)
 	HttpResponse response = client.getResponse();
 	log(response, client.getId());
 	string responseStr = toString(response);
-	send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
+	ssize_t sendBytes = send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
+	if (sendBytes == -1 || sendBytes == 0) {
+		client.setHasDisconnected(true);
+	};
 }
 
 /* ---------------------------------------------------------------------------------------------- */
