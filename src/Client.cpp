@@ -77,6 +77,7 @@ void Client::reset()
 	m_requestParsed = false;
 	m_headerBuffer.clear();
 	m_chunkedBuffer.clear();
+	m_recvChunk = false;
 }
 
 void Client::appendHeader(string buffer) { m_headerBuffer.append(buffer); }
@@ -107,7 +108,7 @@ void Client::appendBody(string buffer)
 
 			if (m_chunkedBuffer.size() < pos + 2 + size + 2) break;
 
-			m_chunkedBuffer.append(m_chunkedBuffer.substr(pos + 2, size));
+			m_request.body.append(m_chunkedBuffer.substr(pos + 2, size));
 			m_chunkedBuffer.erase(0, pos + 2 + size + 2);
 		}
 	}

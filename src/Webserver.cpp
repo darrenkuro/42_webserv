@@ -115,6 +115,7 @@ void Webserver::handlePollIn(Client& client)
 
 			// Header buffer is ready, proceed to parse
 			client.parseHttpHeader();
+			bufferStr = bufferStr.substr(bufferStr.find("\r\n\r\n") + 4);
 
 			// Check Content-Length and set expecting bytes
 			StringMap::iterator it = client.getRequest().header.find("Content-Length");
