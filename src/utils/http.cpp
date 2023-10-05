@@ -127,20 +127,20 @@ HttpResponse createHttpResponse(const string& str)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-HttpResponse createAutoindex(const string& path)
+HttpResponse createAutoindex(const string& path, const string& root)
 {
 	string body("<!DOCTYPE html>");
 
 	body.append("<html><head><title>Directory Index</title>");
 	body.append("<link rel=\"stylesheet\" type=\"text/css\" ");
-	body.append("href=\"/style/autoindex.css\"></head>");
+	body.append("href=\"/style/standard.css\"></head>");
 	body.append("<body><div class=\"container\"><h1 class=\"heading\">");
 	body.append("Directory Autoindex</h1><ul class=\"list\">");
 
 	DIR* dir;
 	dirent* entry;
 	if ((dir = opendir(path.c_str())) == NULL) {
-		throw runtime_error("opendir failed");
+		throw runtime_error("opendir() failed");
 	}
 
 	while ((entry = readdir(dir)) != NULL) {
@@ -151,10 +151,12 @@ HttpResponse createAutoindex(const string& path)
 
 		Stat fileInfo;
 		string filePath = fullPath(path, name);
+		string href = fullPath(root, name);
 		stat(filePath.c_str(), &fileInfo);
 		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
-		// add a href?
-		body.append("<li class=\"list-item\"><div class=\"name\">");
+
+		body.append("<li class=\"list-item\"><div class=\"name\"><a href=\"");
+		body.append(href).append("\">");
 		body.append(name).append("</div></li>");
 	}
 	closedir(dir);

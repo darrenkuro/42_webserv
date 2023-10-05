@@ -12,7 +12,7 @@ void parseRequestHeader(StringMap& header, string& content);
 /* HTTP Reponse Builders */
 HttpResponse createHttpResponse(int code, const string& path);
 HttpResponse createHttpResponse(const string& str);
-HttpResponse createAutoindex(const string& path);
+HttpResponse createAutoindex(const string& path, const string& root);
 
 /* HTTP Response Utils */
 string getStatusText(int code);

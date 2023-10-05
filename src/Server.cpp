@@ -108,7 +108,7 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 			if (file.good()) return createHttpResponse(200, filePath);
 		}
 		if (route.autoindex) {
-			return createAutoindex(path);
+			return createAutoindex(path, route.uri);
 		}
 		else {
 			return createHttpResponse(403, getErrorPage(403));
