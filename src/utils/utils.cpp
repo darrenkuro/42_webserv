@@ -1,19 +1,22 @@
 #include "utils.hpp"
 #include <climits>		// INT_MAX, INT_MIN
 
-/* --------------------------------------------------------------------------------------------- */
-string getFileContent(const string& path)
-{
-	ifstream file(path.c_str());
-	if (!file.is_open()) {
-		throw runtime_error("Failed to open file: " + path);
-	}
+/* ============================================================================================== */
+/*                                                                                                */
+/*                                  General Utils Implementation                                  */
+/*                                                                                                */
+/* ============================================================================================== */
 
-	string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	return content;
+/* --------------------------------------------------------------------------------------------- */
+bool isAllDigit(const string& str)
+{
+	for (size_t i = 0; i < str.length(); i++) {
+		if (!std::isdigit(str[i])) return false;
+	}
+	return true;
 }
 
-/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------- */
 string toString(int value)
 {
 	stringstream ss;
@@ -25,6 +28,59 @@ string toString(int value)
 	return ss.str();
 }
 
+/* ---------------------------------------------------------------------------------------------- */
+string toIpString(in_addr_t ip)
+{
+	ostringstream oss;
+	unsigned char* bytes = reinterpret_cast<unsigned char*>(&ip);
+
+	oss << static_cast<int>(bytes[0]) << '.'
+		<< static_cast<int>(bytes[1]) << '.'
+		<< static_cast<int>(bytes[2]) << '.'
+		<< static_cast<int>(bytes[3]);
+
+	return oss.str();
+}
+
+
+/* ---------------------------------------------------------------------------------------------- */
+string getFileContent(const string& path)
+{
+	ifstream file(path.c_str());
+	if (!file.is_open()) {
+		throw runtime_error("Failed to open file: " + path);
+	}
+
+	string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	return content;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+string getFileExtension(const string& path)
+{
+	size_t pos = path.find_last_of('.');
+
+	if (pos != string::npos && pos != 0) return path.substr(pos);
+	return "";
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+string fullPath(string root, string path)
+{
+
+	try {
+		// Remove '/' from root and path
+		root = root.at(root.size() - 1) == '/' ? root.substr(0, root.size() - 1) : root;
+		path = path.at(0) == '/' ? path.substr(1) : path;
+	}
+	catch (...) {
+		// Protect against if strings are empty or index out of bound
+		return "";
+	}
+	return root + "/" + path;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
 int toInt(const string& str)
 {
 	istringstream iss(str);
@@ -50,20 +106,8 @@ int toInt(const string& str)
 	return result;
 }
 
-string toIPString(in_addr_t ip)
-{
-	ostringstream oss;
-	unsigned char* bytes = reinterpret_cast<unsigned char*>(&ip);
-
-	oss << static_cast<int>(bytes[0]) << '.'
-		<< static_cast<int>(bytes[1]) << '.'
-		<< static_cast<int>(bytes[2]) << '.'
-		<< static_cast<int>(bytes[3]);
-
-	return oss.str();
-}
-
-in_addr_t toIPv4(string str)
+/* ---------------------------------------------------------------------------------------------- */
+in_addr_t toIpNum(string str)
 {
 	in_addr_t result = 0;
 
@@ -83,36 +127,4 @@ in_addr_t toIPv4(string str)
 	}
 
 	return htonl(result);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-bool isAllDigit(const string& str)
-{
-	for (size_t i = 0; i < str.length(); i++) {
-		if (!std::isdigit(str[i])) return false;
-	}
-	return true;
-}
-
-string fullPath(string root, string path)
-{
-
-	try {
-		// Remove '/' from root and path
-		root = root.at(root.size() - 1) == '/' ? root.substr(0, root.size() - 1) : root;
-		path = path.at(0) == '/' ? path.substr(1) : path;
-	}
-	catch (...) {
-		// Protect against if strings are empty or index out of bound
-		return "";
-	}
-	return root + "/" + path;
-}
-
-string getFileExtension(string path)
-{
-	size_t pos = path.find_last_of('.');
-
-	if (pos != string::npos && pos != 0) return path.substr(pos);
-	return "";
 }

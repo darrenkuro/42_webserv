@@ -4,11 +4,13 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
+/* Main Handler */
+HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Server& server);
+string executeCgi(const StringMap& envMap, const string& reqBody);
+
+/* Environmental variable Getters */
+StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server);
 string getScriptName(const string& uri);
 string getQueryString(const string& uri);
-StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server);
 char** getEnvPointer(const StringMap& envMap);
-//void freeEnvPointer(char** envPointer);
-
-string executeCgi(const StringMap& envMap, const string& reqBody);
-HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Server& server);
+char** getArgvPointer(const StringMap& envMap);

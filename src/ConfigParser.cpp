@@ -230,7 +230,7 @@ void ConfigParser::parseAddress(ServerConfig& server)
 		// Resolve host portion
 		size_t colonPos = token.find(":");
 		if (colonPos != string::npos) {
-			server.address.ip = toIPv4(token.substr(0, colonPos));
+			server.address.ip = toIpNum(token.substr(0, colonPos));
 			token.erase(token.begin(), token.begin() + colonPos + 1);
 		}
 		else {

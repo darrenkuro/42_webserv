@@ -37,7 +37,6 @@ private:
 	void parseAutoindex(LocationConfig& location);
 	void parseAlias(LocationConfig& location);
 	void parseAllowedMethods(LocationConfig& location);
-	void parseCgi(LocationConfig& location);
 	void parseIndex(LocationConfig& location);
 	void parseRedirect(LocationConfig& location);
 

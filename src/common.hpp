@@ -1,5 +1,6 @@
 #pragma once
 
+/* Headers */
 #include <set>			// set
 #include <map>			// map
 #include <deque>		// deque
@@ -11,6 +12,7 @@
 #include <stdexcept>	// runtime_error
 #include <netinet/in.h>	// in_addr_t, htonl, htons, ntohl, ntohs
 
+/* Using */
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -28,6 +30,7 @@ using std::ostringstream;
 using std::exception;
 using std::runtime_error;
 
+/* Typedefs*/
 typedef struct pollfd PollFd;
 typedef struct stat Stat;
 typedef struct sockaddr_in Sockaddr_in;
@@ -35,6 +38,7 @@ typedef struct sockaddr Sockaddr;
 typedef map<string, string> StringMap;
 typedef vector<string> StringVec;
 
+/* Data Structures */
 struct Address
 {
 	in_addr_t ip;
@@ -84,20 +88,7 @@ struct ServerConfig
 	vector<LocationConfig> locations;
 };
 
-#define DEFAULT_400		"public/default_error/400.html"
-#define DEFAULT_404		"public/default_error/404.html"
-#define DEFAULT_CONF	"config/default.conf"
-#define ROOT			"public"
-#define CGI_BIN			"/cgi-bin/"
-#define PY_PATH			"/usr/bin/python3"
-#define PHP_PATH		"/usr/bin/php-cgi"
-
-#define HTTP_VERSION	"HTTP/1.1"
-#define SERVER_SOFTWARE	"Webserv42/1.0"
-
-#define RECV_SIZE		4096
-#define CLIENT_TIMEOUT	60
-
+/* Log Utils */
 #define RESET	"\033[0m"
 #define CYAN	"\033[36m"
 #define YELLOW	"\033[33m"
@@ -111,4 +102,20 @@ struct ServerConfig
 #define WARNING	2
 #define ERROR	1
 
+/* Paths */
+#define DEFAULT_400		"public/default_error/400.html"
+#define DEFAULT_404		"public/default_error/404.html"
+#define DEFAULT_CONF	"config/default.conf"
+#define ROOT			"public"
+#define CGI_BIN			"/cgi-bin/"
+#define PY_PATH			"/usr/bin/python3"
+#define PHP_PATH		"/usr/bin/php-cgi"
+
+/* Setting Params */
+#define HTTP_VERSION	"HTTP/1.1"
+#define SERVER_SOFTWARE	"Webserv42/1.0"
+
+/* Setting Params */
+#define RECV_SIZE			4096
+#define CLIENT_TIMEOUT		60
 #define LOG_DISPLAY_LEVEL	DEBUG

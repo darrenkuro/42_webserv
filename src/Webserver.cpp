@@ -2,7 +2,7 @@
 #include "http.hpp"			// parseHttpRequest, createHttpResponse, toString
 #include "log.hpp"			// log
 #include "cgi.hpp"			// processCgiRequest
-#include "utils.hpp"		// toIPv4, toIPString, toInt
+#include "utils.hpp"		// toIpNum, toIPString, toInt
 #include "ConfigParser.hpp"	// ConfigParser
 #include <poll.h>			// poll, struct pollfd
 #include <cstring>			// strerror, memset
@@ -245,8 +245,8 @@ Server& Webserver::routeRequest(HttpRequest req, Client& client)
 		// Host header ip resolution
 		size_t colonPos = host.find(':');
 		in_addr_t ip = colonPos != string::npos
-					? toIPv4(host.substr(0, colonPos))
-					: toIPv4(host);
+					? toIpNum(host.substr(0, colonPos))
+					: toIpNum(host);
 		int port = colonPos != string::npos
 					? toInt(host.substr(colonPos + 1))
 					: 80;

@@ -1,11 +1,17 @@
 #include "http.hpp"
-#include "ConfigParser.hpp"
-#include "utils.hpp"
-#include <sys/stat.h>	// struct stat
-#include <dirent.h>		// DIR
-#include <ctime>
+#include "ConfigParser.hpp"	// isValidRedirectCode
+#include "utils.hpp"		// toString, getFileContent
+#include <sys/stat.h>		// struct stat
+#include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
+#include <ctime>			// time, gmtime, strftime
 
-/* ---------------------------------------------------------------------------------------------- */
+/* ============================================================================================== */
+/*                                                                                                */
+/*                                 HTTP Functional Implementation                                 */
+/*                                                                                                */
+/* ============================================================================================== */
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ HTTP Request Parser ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 HttpRequest parseHttpRequest(string& content)
 {
 	HttpRequest req;
@@ -24,7 +30,7 @@ HttpRequest parseHttpRequest(string& content)
 	return req;
 }
 
-/* ---------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ HTTP Request Helpers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void parseRequestPart(const string& sep, string& field, string& content)
 {
 	size_t pos = content.find(sep);
@@ -61,13 +67,13 @@ void parseRequestHeader(StringMap& header, string& content)
 	header[key] = value;
 }
 
-/* ---------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ HTTP Reponse Builders ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 HttpResponse createHttpResponse(int code, const string& path)
 {
 	HttpResponse res;
 
 	res.statusCode = code;
-	res.header["Date"] = getDate();
+	res.header["Date"] = getDateString();
 	res.header["Server"] = SERVER_SOFTWARE;
 
 	// Handle POST response
@@ -97,13 +103,14 @@ HttpResponse createHttpResponse(int code, const string& path)
 	return res;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 HttpResponse createHttpResponse(const string& str)
 {
 	HttpResponse res;
 
 	res.statusCode = 200;
 	res.body = str;
-	res.header["Date"] = getDate();
+	res.header["Date"] = getDateString();
 	res.header["Server"] = SERVER_SOFTWARE;
 	res.header["Content-Length"] = toString(res.body.size());
 	res.header["Content-Type"] = "text/html";
@@ -134,7 +141,7 @@ HttpResponse createAutoindex(const string& path)
 			continue;
 		}
 
-		struct stat fileInfo;
+		Stat fileInfo;
 		string filePath = fullPath(path, name);
 		stat(filePath.c_str(), &fileInfo);
 		name = S_ISDIR(fileInfo.st_mode) ? name + "/" : name;
@@ -142,16 +149,13 @@ HttpResponse createAutoindex(const string& path)
 		body.append("<li class=\"list-item\"><div class=\"name\">");
 		body.append(name).append("</div></li>");
 	}
+	closedir(dir);
 	body.append("</ul></div></body></html>");
 
-	HttpResponse response;
-	response.statusCode = 200;
-	response.body = body;
-	return response;
+	return createHttpResponse(body);
 }
 
-
-/* --------------------------------------------------------------------------------------------- */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ HTTP Response Utils ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 string getStatusText(int code)
 {
 	switch(code) {
@@ -224,6 +228,17 @@ string getMimeType(string ext)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+string getDateString(void)
+{
+	time_t t = std::time(NULL);
+	std::tm* timePtr = std::gmtime(&t);
+
+	char buffer[50];
+	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
+	return string(buffer);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 string toString(HttpResponse res)
 {
 	string str;
@@ -237,14 +252,4 @@ string toString(HttpResponse res)
 	}
 	str.append("\r\n").append(res.body);
 	return str;
-}
-
-string getDate(void)
-{
-	std::time_t t = std::time(NULL);
-	std::tm* timePtr = std::gmtime(&t);
-
-	char buffer[50];
-	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", timePtr);
-	return string(buffer);
 }
