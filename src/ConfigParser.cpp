@@ -43,23 +43,26 @@ const vector<int> ConfigParser::validRedirectCodes(redirectCode,
 /* ---------------------------------------------------------------------------------------------- */
 bool ConfigParser::isValidServerKey(string key)
 {
-	return std::find(validServerKeys.begin(), validServerKeys.end(), key) != validServerKeys.end();
+	return std::find(validServerKeys.begin(), validServerKeys.end(), key)
+				!= validServerKeys.end();
 }
 
 bool ConfigParser::isValidLocationKey(string key)
 {
-	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key) != validLocationKeys.end();
+	return std::find(validLocationKeys.begin(), validLocationKeys.end(), key)
+				!= validLocationKeys.end();
 }
 
 bool ConfigParser::isValidErrorCode(int code)
 {
-	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code) != validErrorCodes.end();
+	return std::find(validErrorCodes.begin(), validErrorCodes.end(), code)
+				!= validErrorCodes.end();
 }
 
 bool ConfigParser::isValidRedirectCode(int code)
 {
 	return std::find(validRedirectCodes.begin(), validRedirectCodes.end(), code)
-			!= validRedirectCodes.end();
+				!= validRedirectCodes.end();
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -71,7 +74,12 @@ vector<ServerConfig> ConfigParser::parse(const string& filename)
 
 	// Config file need to have at least one server
 	do {
-		parseServer();
+		try {
+			parseServer();
+		}
+		catch (const exception& e) {
+			throw runtime_error("Parsing error: " + string(e.what()) + "!");
+		}
 	} while (!m_tokens.empty());
 
 	return m_configs;
@@ -105,7 +113,7 @@ void ConfigParser::lex(const string& content, const string& whitespace, const st
 string ConfigParser::accept(void)
 {
 	if (m_tokens.empty()) {
-		throw runtime_error("Parser: syntax error!");
+		throw runtime_error("syntax error");
 	}
 
 	string token = m_tokens.front();
@@ -116,7 +124,7 @@ string ConfigParser::accept(void)
 void ConfigParser::consume(const string& token)
 {
 	if (m_tokens.front() != token) {
-		throw runtime_error("can't find " + token + "!");
+		throw runtime_error("can't find " + token);
 	}
 	m_tokens.pop_front();
 }
@@ -130,7 +138,7 @@ void ConfigParser::parseServer(void)
 	string token;
 	while ((token = accept()) != "}") {
 		if (!isValidServerKey(token)) {
-			throw runtime_error("Parser: unknown server key " + token + "!");
+			throw runtime_error("unknown server key " + token);
 		}
 		if (token == "root") {
 			parseRoot(server);
@@ -152,9 +160,9 @@ void ConfigParser::parseServer(void)
 		}
 	}
 
-	// Check server include the required fields (listen)
+	// Check server include the required fields
 	if (!server.address.ip && !server.address.port) {
-		throw runtime_error("Parser: server has no listen field!");
+		throw runtime_error("server has no listen field");
 	}
 
 	// Fill in the default error pages and '/' location if not provided
@@ -174,13 +182,13 @@ void ConfigParser::parseLocation(ServerConfig& server)
 	vector<LocationConfig>::iterator it;
 	for (it = server.locations.begin(); it != server.locations.end(); it++) {
 		if (it->uri == location.uri)
-			throw runtime_error("Parser: duplication location " + it->uri + "!");
+			throw runtime_error("duplication location " + it->uri);
 	}
 
 	string token;
 	while ((token = accept()) != "}") {
 		if (!isValidLocationKey(token)) {
-			throw runtime_error("Parser: unknown location key " + token + "!");
+			throw runtime_error("unknown location key " + token);
 		}
 		if (token == "autoindex") {
 			parseAutoindex(location);
@@ -216,12 +224,14 @@ void ConfigParser::parseRoot(ServerConfig& server)
 	consume(";");
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseServerName(ServerConfig& server)
 {
 	server.serverName = accept();
 	consume(";");
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseAddress(ServerConfig& server)
 {
 	try {
@@ -251,18 +261,19 @@ void ConfigParser::parseAddress(ServerConfig& server)
 	}
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void ConfigParser::parseClientMaxBodySize(ServerConfig& server)
 {
 	try {
 		int value = toInt(accept());
 		if (value < 0) {
-			throw runtime_error("negative value");
+			throw runtime_error("invalid max body size - negative");
 		}
 		server.clientMaxBodySize = value;
 		consume(";");
 	}
 	catch (exception& e) {
-		throw runtime_error("Parser: body size, " + string(e.what()) + "!");
+		throw runtime_error("invalid max body size" + string(e.what()));
 	}
 }
 
@@ -276,7 +287,7 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 		tokens.push_back(token);
 	}
 	if (tokens.size() < 2) {
-		throw runtime_error("Parser: syntax error!");
+		throw runtime_error("syntax error");
 	}
 
 	// Excluding the last element which is the page path
@@ -290,14 +301,14 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 				throw runtime_error("duplicated error code");
 			}
 			if (!isValidErrorCode(code)) {
-				throw runtime_error("code " + toString(code) + " isn't used");
+				throw runtime_error("invalid error code " + toString(code));
 			}
 
 			server.errorPages[code] = tokens.back();
 		}
 	}
-	catch (exception& e) {
-		throw runtime_error("Parser: error page, " + string(e.what()) + "!");
+	catch (const exception& e) {
+		throw runtime_error("error page - " + string(e.what()));
 	}
 }
 
@@ -313,7 +324,7 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 {
 	string token = accept();
 	if (token != "on" && token != "off") {
-		throw runtime_error("Parser: invalid autoindex value!");
+		throw runtime_error("invalid autoindex");
 	}
 	location.autoindex = token == "on" ? true : false;
 	consume(";");
@@ -328,26 +339,22 @@ void ConfigParser::parseAlias(LocationConfig& location)
 		// Check if alias is accessible and is a directory
 		struct stat pathInfo;
 		if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
-			throw runtime_error("Parser: invalid alias " + token + "!");
+			throw runtime_error("invalid alias " + token);
 		}
 
-		location.alias = token; // path or alias?
+		location.alias = token;
 		consume(";");
 	}
 	catch (...) {
-
 	}
-	// should it return actually path or just the alias?
 }
 
 void ConfigParser::parseAllowedMethods(LocationConfig& location)
 {
 	string token;
 	while ((token = accept()) != ";") {
-		// Define all allowed methods somewhere else in an array?
-		// Potentially more and need to be accessible in other places
 		if (token != "GET" && token != "POST" && token != "DELETE") {
-			throw runtime_error("Parser: unknown method " + token);
+			throw runtime_error("unknown method " + token);
 		}
 
 		location.allowedMethods.push_back(token);
@@ -364,17 +371,12 @@ void ConfigParser::parseIndex(LocationConfig& location)
 
 void ConfigParser::parseRedirect(LocationConfig& location)
 {
-	try {
-		location.redirect.first = toInt(accept());
-		if (!isValidRedirectCode(location.redirect.first)) {
-			throw runtime_error("invalid redirect code");
-		}
-		location.redirect.second = accept(); // need to validate as url?
-		consume(";");
+	location.redirect.first = toInt(accept());
+	if (!isValidRedirectCode(location.redirect.first)) {
+		throw runtime_error("invalid redirect code");
 	}
-	catch (exception& e) {
-		throw runtime_error("Parser: " + string(e.what()) + "!");
-	}
+	location.redirect.second = accept(); // need to validate as url?
+	consume(";");
 }
 
 /* ---------------------------------------------------------------------------------------------- */
