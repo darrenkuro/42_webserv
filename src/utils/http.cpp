@@ -4,7 +4,7 @@
 #include <sys/stat.h>		// struct stat
 #include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
 #include <ctime>			// time, gmtime, strftime
-#include "log.hpp" // temp
+#include "log.hpp"			// log
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -101,7 +101,8 @@ HttpResponse createHttpResponse(int code, const string& path)
 		res.header["Content-Type"] = getMimeType(getFileExtension(path));
 		//res.header["Set-Cookie"] = "username=darren";
 	}
-	catch (...) {
+	catch (const exception& e) {
+		log(DEBUG, e.what());
 		std::ifstream file(DEFAULT_404);
 		res.body = file.is_open() ? getFileContent(DEFAULT_404) : "404 Not found";
 		res.header["Content-Type"] = file.is_open() ? "text/html" : "text/plain";
