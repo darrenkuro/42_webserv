@@ -84,7 +84,7 @@ HttpResponse createHttpResponse(int code, const string& path)
 	try {
 		res.body = getFileContent(path);
 		res.header["Content-Length"] = toString(res.body.size());
-		res.header["Content-Type"] = getMimeType(getExtension(path));
+		res.header["Content-Type"] = getMimeType(getFileExtension(path));
 		//res.header["Set-Cookie"] = "username=darren";
 	}
 	catch (...) {

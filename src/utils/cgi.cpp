@@ -1,10 +1,10 @@
 #include "cgi.hpp"
-#include "utils.hpp"
-#include "log.hpp"
+#include "log.hpp"			// log
+#include "utils.hpp"		// toString, getFileExtension, fullPath
 #include "http.hpp"			// createHttpResponse
 #include <cstring>			// strcpy
-//#include <unistd.h>			// chdir
 #include <cstdlib>			// exit, WIFEXITED, WEXITSTATUS
+#include <unistd.h>			// pipe, fork, chdir, dup2, close, execve, write, read
 #include <sys/wait.h>		// waitpid
 
 string getScriptName(const string& uri)
@@ -70,7 +70,7 @@ char** getArgvPointer(const StringMap& envMap)
 		throw runtime_error("couldn't find PATH_TRANSLATED");
 	}
 
-	string ext = getExtension(it->second);
+	string ext = getFileExtension(it->second);
 	if (ext != ".py" && ext != ".php") {
 		throw runtime_error("extension " + ext + " not supported");
 	}
@@ -86,16 +86,6 @@ char** getArgvPointer(const StringMap& envMap)
 	argvPointer[2] = NULL;
 	return argvPointer;
 }
-
-// void freePointer(char** ptr)
-// {
-//     if (!ptr) return;
-
-//     for (char** i = ptr; *i != NULL; ++i) {
-//         delete[] *i;
-//     }
-//     delete[] ptr;
-// }
 
 string executeCgi(const StringMap& envMap, const string& reqBody)
 {
@@ -114,6 +104,7 @@ string executeCgi(const StringMap& envMap, const string& reqBody)
 	string result= "";
 	if (pid == 0) {
 		try {
+			// Memory allocated inside child process, no need to free
 			char** argv = getArgvPointer(envMap);
 			char** env = getEnvPointer(envMap);
 

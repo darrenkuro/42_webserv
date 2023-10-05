@@ -1,6 +1,6 @@
 #pragma once
 
-#include "infrastructure.hpp"
+#include "common.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
 

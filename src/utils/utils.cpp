@@ -109,7 +109,7 @@ string fullPath(string root, string path)
 	return root + "/" + path;
 }
 
-string getExtension(string path)
+string getFileExtension(string path)
 {
 	size_t pos = path.find_last_of('.');
 
