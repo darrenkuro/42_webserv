@@ -8,7 +8,7 @@
 #include <cstring>			// strerror, memset
 #include <cstdlib>			// exit
 #include <unistd.h>			// close
-#include <sys/socket.h>		// accept, bind, listen, socket, getsockopt, getsockname, send, recv
+#include <sys/socket.h>		// accept, bind, listen, socket, getsockopt, getpeername, send, recv
 #include <cerrno>			// errno
 
 /* ============================================================================================== */
@@ -368,8 +368,8 @@ Address Webserver::getAddressFromFd(int fd)
 {
 	Sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
-	if (getsockname(fd, (Sockaddr*)&serverAddress, &addrLen) == -1) {
-		throw runtime_error("getsockname() failed");
+	if (getpeername(fd, (Sockaddr*)&serverAddress, &addrLen) == -1) {
+		throw runtime_error("getpeername() failed");
 	}
 
 	Address addr;

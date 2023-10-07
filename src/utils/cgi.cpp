@@ -18,11 +18,14 @@ HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Serv
 {
 	try {
 		StringMap envMap = getCgiEnv(req, client, server);
-		string output = executeCgi(envMap, req.body);
 
-		// check file exists, and has permission?
+		// Check file exists and is executable
+		ifstream file(envMap["PATH_TRANSLATED"].c_str());
+		if (!file.good()) {
+			return createHttpResponse(404, server.getErrorPage(404));
+		}
 
-		return createHttpResponse(output);
+		return createHttpResponse(executeCgi(envMap, req.body));
 	}
 	catch (const exception& e) {
 		log(WARNING, "CGI: " + string(e.what()) + "!");
@@ -81,7 +84,6 @@ string executeCgi(const StringMap& envMap, const string& reqBody)
 		}
 		close(pipeOut[0]);
 
-		// Is it okay that the parent wait for the child? Still non-blocking?
 		waitpid(pid, &status, 0);
 		if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
 			throw runtime_error("child process error");
@@ -102,7 +104,7 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 	metaVars["PATH_INFO"] = req.uri;
 	metaVars["PATH_TRANSLATED"] = fullPath(ROOT, getScriptName(req.uri));
 	metaVars["QUERY_STRING"] = getQueryString(req.uri);
-	metaVars["REMOTE_ADDR"] = ""; // MUST, need getpeername??
+	metaVars["REMOTE_ADDR"] = toIpString(client.getIp());
 	metaVars["REQUEST_METHOD"] = req.method;
 	metaVars["SCRIPT_NAME"] = getScriptName(req.uri);
 	metaVars["SERVER_NAME"] = server.getName();
@@ -110,7 +112,6 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
 	metaVars["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
 	metaVars["REDIRECT_STATUS"] = "200"; // For php-cgi
-	(void) client;
 
 	return metaVars;
 }

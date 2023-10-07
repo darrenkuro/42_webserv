@@ -333,13 +333,13 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 void ConfigParser::parseAlias(LocationConfig& location)
 {
 	string token = accept();
-	string path = fullPath(ROOT, token);
+	// string path = fullPath(ROOT, token);
 
-	// Check if alias is accessible and is a directory
-	struct stat pathInfo;
-	if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
-		throw runtime_error("invalid alias " + token);
-	}
+	// // Check if alias is accessible and is a directory
+	// struct stat pathInfo;
+	// if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
+	// 	throw runtime_error("invalid alias " + token);
+	// }
 
 	location.alias = token;
 	consume(";");
