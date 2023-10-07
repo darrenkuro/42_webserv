@@ -104,7 +104,7 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 	metaVars["PATH_INFO"] = req.uri;
 	metaVars["PATH_TRANSLATED"] = fullPath(ROOT, getScriptName(req.uri));
 	metaVars["QUERY_STRING"] = getQueryString(req.uri);
-	metaVars["REMOTE_ADDR"] = toIpString(client.getIp());
+	metaVars["REMOTE_ADDR"] = toIpString(client.getClientIp());
 	metaVars["REQUEST_METHOD"] = req.method;
 	metaVars["SCRIPT_NAME"] = getScriptName(req.uri);
 	metaVars["SERVER_NAME"] = server.getName();

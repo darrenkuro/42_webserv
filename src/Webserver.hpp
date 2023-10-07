@@ -37,7 +37,8 @@ private:
 	set<Address> getUniqueAddresses(vector<Server> servers);
 	int createTcpListenSocket(Address addr);
 	PollFd buildPollFd(int fd, short events);
-	Address getAddressFromFd(int fd);
+	Address getServerAddress(int fd);
+	Address getClientAddress(int fd);
 
 	/* Member Data */
 	size_t m_nbListenSockets;

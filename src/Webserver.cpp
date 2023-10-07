@@ -101,10 +101,6 @@ void Webserver::handlePollIn(Client& client)
 	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
 	string bufferStr(buffer, bytesRead);
 
-	// if (bytesRead == -1) {
-	// 	client.setHasDisconnected(true);
-	// 	throw runtime_error("recv() failed");
-	// }
 	if (bytesRead == -1 || bytesRead == 0) {
 		client.setHasDisconnected(true);
 		return;
@@ -187,7 +183,7 @@ void Webserver::addClient(int listenFd)
 {
 	int clientFd = accept(listenFd, NULL, NULL);
 
-	Client client(clientFd, getAddressFromFd(listenFd));
+	Client client(clientFd, getServerAddress(listenFd), getClientAddress(clientFd));
 	m_clients.insert(std::make_pair(clientFd, client));
 
 	m_pollFds.push_back(buildPollFd(clientFd, POLLIN | POLLOUT));
@@ -195,7 +191,7 @@ void Webserver::addClient(int listenFd)
 	log(INFO, "Port = %d", client.getPort());
 
 	log(INFO, "Client[ID: %d] connected on %s:%d", client.getId(),
-		toIpString(client.getIp()).c_str(), client.getPort());
+		toIpString(client.getServerIp()).c_str(), client.getPort());
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -270,7 +266,7 @@ Server& Webserver::routeRequest(HttpRequest req, Client& client)
 	for (size_t i = 0; i < m_servers.size(); i++) {
 		Address addr = m_servers[i].getAddress();
 		if (client.getPort() == addr.port) {
-			if (addr.ip == 0 || client.getIp() == addr.ip) {
+			if (addr.ip == 0 || client.getServerIp() == addr.ip) {
 				return m_servers[i];
 			}
 		}
@@ -329,11 +325,11 @@ int Webserver::createTcpListenSocket(Address addr)
 	int fd;
 
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		throw runtime_error("socket() failed" + string(strerror(errno)));
+		throw runtime_error("socket() failed: " + string(strerror(errno)));
 	}
 
 	int sockopt = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *) &sockopt, sizeof (int)) == -1) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sockopt), sizeof(int)) == -1) {
 		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
 	}
 
@@ -343,13 +339,13 @@ int Webserver::createTcpListenSocket(Address addr)
 	serverAddr.sin_port = htons(addr.port);
 	serverAddr.sin_addr.s_addr = addr.ip;
 
-	if (bind(fd, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
+	if (bind(fd, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(serverAddr)) < 0) {
 		close(fd);
 		throw runtime_error("bind() failed: " + string(strerror(errno)));
 	}
 
 	if (listen(fd, 10)) {
-		throw runtime_error("listen() failed" + string(strerror(errno)));
+		throw runtime_error("listen() failed: " + string(strerror(errno)));
 	}
 
 	return fd;
@@ -364,17 +360,32 @@ PollFd Webserver::buildPollFd(int fd, short events)
 	return pfd;
 }
 
-Address Webserver::getAddressFromFd(int fd)
+Address Webserver::getServerAddress(int fd)
 {
 	Sockaddr_in serverAddress;
 	socklen_t addrLen = sizeof(serverAddress);
-	if (getpeername(fd, (Sockaddr*)&serverAddress, &addrLen) == -1) {
-		throw runtime_error("getpeername() failed");
+	if (getsockname(fd, reinterpret_cast<Sockaddr*>(&serverAddress), &addrLen) == -1) {
+		throw runtime_error("getsockname() failed: " + string(strerror(errno)));
 	}
 
 	Address addr;
-	addr.ip = ntohl(serverAddress.sin_addr.s_addr);
+	addr.ip = serverAddress.sin_addr.s_addr;
 	addr.port = ntohs(serverAddress.sin_port);
+	log(INFO, "HH %d", addr.port);
+	return addr;
+}
+
+Address Webserver::getClientAddress(int fd)
+{
+	Sockaddr_in clientAddress;
+	socklen_t addrLen = sizeof(clientAddress);
+	if (getpeername(fd, reinterpret_cast<Sockaddr*>(&clientAddress), &addrLen) == -1) {
+		throw runtime_error("getpeername() failed: " + string(strerror(errno)));
+	}
+
+	Address addr;
+	addr.ip = clientAddress.sin_addr.s_addr;
+	addr.port = ntohs(clientAddress.sin_port);
 	log(INFO, "HH %d", addr.port);
 	return addr;
 }

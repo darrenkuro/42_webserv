@@ -11,14 +11,15 @@
 /* ============================================================================================== */
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constructors & Destructors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-Client::Client(int fd, Address addr)
+Client::Client(int fd, Address serverAddr, Address clientAddr)
 {
 	static int clientID = 1;
 	m_id = clientID;
 	clientID++;
 
 	m_socketFd = fd;
-	m_address = addr;
+	m_serverAddr = serverAddr;
+	m_clientAddr = clientAddr;
 	m_responseIsReady = false;
 	m_hasDisconnected = false;
 	m_bytesExpected = 0;
@@ -33,8 +34,9 @@ Client::Client(int fd, Address addr)
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Getters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 int Client::getId() const { return m_id; }
 int Client::getFd() const { return m_socketFd; }
-int Client::getPort() const { return m_address.port; }
-in_addr_t Client::getIp() const { return m_address.ip; }
+int Client::getPort() const { return m_serverAddr.port; }
+in_addr_t Client::getServerIp() const { return m_serverAddr.ip; }
+in_addr_t Client::getClientIp() const { return m_clientAddr.ip; }
 bool Client::hasDisconnected() const { return m_hasDisconnected; }
 bool Client::getResponseIsReady() const { return m_responseIsReady; }
 bool Client::getRequestIsReady() const { return m_requestIsReady; }

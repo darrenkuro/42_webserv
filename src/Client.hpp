@@ -6,13 +6,14 @@ class Client
 {
 public:
 	/* Constructor & Destructor */
-	Client(int fd, Address addr);
+	Client(int fd, Address serverAddr, Address ClientAddr);
 
 	/* Getters */
 	int getId() const;
 	int getFd() const;
 	int getPort() const;
-	in_addr_t getIp() const;
+	in_addr_t getServerIp() const;
+	in_addr_t getClientIp() const;
 	bool hasDisconnected() const ;
 	bool getResponseIsReady() const;
 	bool getRequestIsReady() const;
@@ -44,7 +45,8 @@ private:
 	bool m_requestParsed;
 	bool m_recvChunk;
 	time_t m_lastEventTime;
-	Address m_address;
+	Address m_serverAddr;
+	Address m_clientAddr;
 	HttpResponse m_response;
 	HttpRequest m_request;
 
