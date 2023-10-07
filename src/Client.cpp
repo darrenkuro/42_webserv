@@ -1,7 +1,8 @@
 #include "Client.hpp"
+#include "http.hpp"		// parseHttpRequest
 #include <ctime>		// time
 #include <cstdlib>		// strtol
-#include "http.hpp"		// parseHttpRequest
+
 #define TIMEOUT_TIME	30
 
 /* ============================================================================================== */

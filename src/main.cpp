@@ -19,8 +19,7 @@ int main(int argc, char** argv)
 	}
 
 	signal(SIGINT, signalHandler);
-	string configPath = argc == 1 ? DEFAULT_CONF : argv[1];
-	Webserver webserver(configPath);
+	Webserver webserver(cargc == 1 ? DEFAULT_CONF : argv[1]);
 	webserver.start();
 
 	return 0;

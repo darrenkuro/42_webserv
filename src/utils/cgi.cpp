@@ -1,7 +1,7 @@
 #include "cgi.hpp"
 #include "log.hpp"			// log
-#include "utils.hpp"		// toString, getFileExtension, fullPath
 #include "http.hpp"			// createHttpResponse
+#include "utils.hpp"		// toString, getFileExtension, fullPath
 #include <cstring>			// strcpy
 #include <cstdlib>			// exit, WIFEXITED, WEXITSTATUS
 #include <unistd.h>			// pipe, fork, chdir, dup2, close, execve, write, read
@@ -73,10 +73,12 @@ string executeCgi(const StringMap& envMap, const string& reqBody)
 	else {
 		int status;
 
+		// Pipe stdin
 		close(pipeOut[1]), close(pipeIn[0]);
 		write(pipeIn[1], reqBody.c_str(), reqBody.size());
 		close(pipeIn[1]);
 
+		// Pipe stdout
 		char buffer[RECV_SIZE];
 		ssize_t bytesRead;
 		while((bytesRead = read(pipeOut[0], buffer, RECV_SIZE)) > 0) {

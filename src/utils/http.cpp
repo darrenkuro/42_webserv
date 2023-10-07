@@ -1,10 +1,10 @@
 #include "http.hpp"
-#include "ConfigParser.hpp"	// isValidRedirectCode
 #include "utils.hpp"		// toString, getFileContent
-#include <sys/stat.h>		// struct stat
-#include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
+#include "utils.hpp"		// toString, getFileContent
+#include "ConfigParser.hpp"	// isValidRedirectCode
 #include <ctime>			// time, gmtime, strftime
-#include "log.hpp"			// log
+#include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
+#include <sys/stat.h>		// struct stat
 
 /* ============================================================================================== */
 /*                                                                                                */

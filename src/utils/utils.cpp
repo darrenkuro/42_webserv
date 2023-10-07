@@ -1,6 +1,6 @@
 #include "utils.hpp"
-#include <climits>		// INT_MAX, INT_MIN
 #include "log.hpp"		// log
+#include <climits>		// INT_MAX, INT_MIN
 
 /* ============================================================================================== */
 /*                                                                                                */
