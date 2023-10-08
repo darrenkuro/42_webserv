@@ -2,7 +2,7 @@
 
 #include <climits>		// INT_MAX, INT_MIN
 
-#include "log.hpp"		// log
+#include "Logger.hpp"	// Logger
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -78,7 +78,7 @@ string fullPath(string root, string path)
 	}
 	catch (const exception& e) {
 		// Protect against if strings are empty or index out of bound
-		log(DEBUG, e.what());
+		LOG_DEBUG << "FullPath exception: " << e.what();
 		return "";
 	}
 	return root + "/" + path;
@@ -149,3 +149,76 @@ in_addr_t toIpNum(string str)
 
 	return htonl(result);
 }
+
+/*
+ostream& operator<<(ostream& os, HttpRequest req)
+{
+	os << "Method[" << req.method << "] ";
+	os << "Uri[" << req.uri << "] ";
+	return os;
+}
+
+ostream& operator<<(ostream& os, HttpResponse res)
+{
+	os << "Status[" << res.statusCode << "]";
+	return os;
+}
+
+ostream &operator<<(ostream &os, const Address address)
+{
+	os << "Address[" << toIpString(address.ip) << ":";
+	os << address.port << "]";
+	return os;
+}
+
+ostream &operator<<(ostream &os, const LocationConfig location)
+{
+	os << "URI[" << location.uri << "] ";
+	os << "Alias[" << location.alias << "] ";
+	os << "Autoindex[" << location.autoindex << "] ";
+	os << "Redirect[" << location.redirect.first << ":";
+	os << location.redirect.second << "] AllowedMethods[";
+
+	vector<string>::const_iterator it;
+	for (it = location.allowedMethods.begin(); it != location.allowedMethods.end(); it++) {
+		os << " " << *it;
+	}
+	os << " ] Index[";
+	for (it = location.index.begin(); it != location.index.end(); it++) {
+		os << " " << *it;
+	}
+	os << " ]";
+	return os;
+}
+
+ostream &operator<<(ostream &os, const ServerConfig config)
+{
+	os << "ServerName[" << config.serverName << "] ";
+	os << "Root[" << config.root << "] ";
+	os << "MaxBodySize[" << config.clientMaxBodySize << "] ";
+	os << config.address << endl;
+
+	//os << align;
+	os << "Locations: " << endl;
+	vector<LocationConfig>::const_iterator it2;
+	for (it2 = config.locations.begin(); it2 != config.locations.end(); it2++) {
+		//os << align;
+		os << ">> " << *it2 << endl;
+	}
+
+	//os << align
+	os << "ErrorPages: ";
+	map<int, string>::const_iterator it;
+	int i = 0;
+	for (it = config.errorPages.begin(); it != config.errorPages.end(); it++) {
+		if (i++ % 3 == 0) {
+			os << endl;
+			//os << align
+			os << ">> ";
+		}
+		os << it->first << "[" << it->second << "] ";
+	}
+	os << endl;
+	return os;
+}
+*/

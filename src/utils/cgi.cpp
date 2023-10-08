@@ -1,11 +1,13 @@
 #include "cgi.hpp"
-#include "log.hpp"			// log
-#include "http.hpp"			// createHttpResponse
-#include "utils.hpp"		// toString, getFileExtension, fullPath
+
 #include <cstring>			// strcpy
 #include <cstdlib>			// exit, WIFEXITED, WEXITSTATUS
 #include <unistd.h>			// pipe, fork, chdir, dup2, close, execve, write, read
 #include <sys/wait.h>		// waitpid
+
+#include "http.hpp"			// createHttpResponse
+#include "utils.hpp"		// toString, getFileExtension, fullPath
+#include "Logger.hpp"		// Logger
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -28,7 +30,7 @@ HttpResponse processCgiRequest(HttpRequest req, const Client& client, const Serv
 		return createHttpResponse(executeCgi(envMap, req.body));
 	}
 	catch (const exception& e) {
-		log(WARNING, "CGI: " + string(e.what()) + "!");
+		LOG_DEBUG << "CGI exception: " << e.what();
 		return createHttpResponse(500, server.getErrorPage(500));
 	}
 }
@@ -66,7 +68,7 @@ string executeCgi(const StringMap& envMap, const string& reqBody)
 			if (execve(argv[0], argv, env) == -1) exit(1);
 		}
 		catch (const exception& e) {
-			log(ERROR, "CGI: " + string(e.what()) + "!");
+			LOG_DEBUG << "CGI child process exception: " << e.what();
 			exit(1);
 		}
 	}

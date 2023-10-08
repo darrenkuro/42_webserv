@@ -12,3 +12,10 @@ string fullPath(string root, string path);
 string getBoundary(const HttpRequest& req);
 int toInt(const string& str);
 in_addr_t toIpNum(string str);
+
+/* Struct Stream Operators */
+ostream& operator<<(ostream& os, const HttpRequest req);
+ostream& operator<<(ostream& os, const HttpResponse res);
+ostream& operator<<(ostream& os, const Address address);
+ostream& operator<<(ostream& os, const LocationConfig location);
+ostream& operator<<(ostream& os, const ServerConfig config);

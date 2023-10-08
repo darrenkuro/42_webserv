@@ -85,6 +85,7 @@ void Client::reset()
 	m_recvChunk = false;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void Client::appendHeader(string buffer) { m_headerBuffer.append(buffer); }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -119,6 +120,7 @@ void Client::appendBody(string buffer)
 	}
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 void Client::parseHttpHeader()
 {
 	m_request = parseHttpRequest(m_headerBuffer);

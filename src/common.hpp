@@ -89,18 +89,18 @@ struct ServerConfig
 };
 
 /* Log Utils */
-#define RESET	"\033[0m"
-#define CYAN	"\033[36m"
-#define YELLOW	"\033[33m"
-#define RED		"\033[31m"
-#define ORANGE	"\033[38;5;214m"
-#define DORANGE "\033[37;5;166m"
+// #define RESET	"\033[0m"
+// #define CYAN	"\033[36m"
+// #define YELLOW	"\033[33m"
+// #define RED		"\033[31m"
+// #define ORANGE	"\033[38;5;214m"
+// #define DORANGE "\033[37;5;166m"
 
-#define PADDING	21
-#define DEBUG	4
-#define INFO	3
-#define WARNING	2
-#define ERROR	1
+// #define PADDING	21
+// #define DEBUG	4
+// #define INFO	3
+// #define WARNING	2
+// #define ERROR	1
 
 /* Paths */
 #define DEFAULT_400		"public/default_error/400.html"

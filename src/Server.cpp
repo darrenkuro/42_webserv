@@ -4,7 +4,8 @@
 #include <sys/stat.h>	// struct stat
 #include <cstdio>		// remove
 
-#include "log.hpp"		// log
+//#include "log.hpp"		// log
+#include "Logger.hpp"
 #include "http.hpp"		// createHttpResponse
 #include "utils.hpp"	// fullPath, toIpString, toInt, getBoundary
 
@@ -17,8 +18,9 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Constructors & Destructors ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 Server::Server(const ServerConfig config) : m_config(config)
 {
-	log(INFO, "Server: %s on %s:%d", getName().c_str(),
-		toIpString(m_config.address.ip).c_str(), m_config.address.port);
+	LOG_INFO
+		<< "Server constructor: " << getName() << " on " << toIpString(m_config.address.ip)
+		<< ":" << m_config.address.port;
 }
 
 Address Server::getAddress() const { return m_config.address; }
@@ -72,7 +74,7 @@ HttpResponse Server::handleRequest(HttpRequest req)
 		if (req.method == "DELETE") return handleDeleteRequest(req, route);
 	}
 	catch (const exception& e) {
-		log(WARNING, e.what());
+		LOG_DEBUG << "Server handleRequest exception: " << e.what();
 	}
 
 	return createHttpResponse(500, getErrorPage(500));
@@ -128,8 +130,6 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 			? fullPath(m_config.root, route.uri)
 			: fullPath(ROOT, route.alias);
 
-	log(DEBUG, "root: %s", root.c_str());
-
 	try {
 		string boundry = getBoundary(req);
 
@@ -161,7 +161,7 @@ HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 
 	}
 	catch (const exception& e) {
-		log(WARNING, e.what());
+		LOG_DEBUG << "Server handlePostRequest exception: " << e.what();
 		return createHttpResponse(400, getErrorPage(400));
 	}
 

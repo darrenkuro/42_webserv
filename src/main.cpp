@@ -1,7 +1,7 @@
 #include <signal.h>
 
 #include "Webserver.hpp"
-#include "log.hpp"
+#include "Logger.hpp"
 
 bool g_running = true;
 
@@ -15,7 +15,7 @@ void signalHandler(int signum) {
 int main(int argc, char** argv)
 {
 	if (argc > 2) {
-		log(ERROR, "Invalid argument count!");
+		LOG_ERROR << "Invalid argument count!";
 		return 1;
 	}
 

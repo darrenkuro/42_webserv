@@ -4,8 +4,8 @@
 #include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
 #include <sys/stat.h>		// struct stat
 
-#include "log.hpp"			// log
 #include "utils.hpp"		// toString, getFileContent
+#include "Logger.hpp"		// Logger
 #include "ConfigParser.hpp"	// isValidRedirectCode
 
 /* ============================================================================================== */
@@ -104,7 +104,8 @@ HttpResponse createHttpResponse(int code, const string& path)
 		//res.header["Set-Cookie"] = "username=darren";
 	}
 	catch (const exception& e) {
-		log(DEBUG, e.what());
+		LOG_DEBUG << "createHttpResponse exception: " << e.what();
+
 		std::ifstream file(DEFAULT_404);
 		res.body = file.is_open() ? getFileContent(DEFAULT_404) : "404 Not found";
 		res.header["Content-Type"] = file.is_open() ? "text/html" : "text/plain";

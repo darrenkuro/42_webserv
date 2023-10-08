@@ -7,10 +7,10 @@
 #include <unistd.h>			// close
 #include <sys/socket.h>		// accept, bind, listen, socket, getsockopt, getpeername, send, recv
 
-#include "log.hpp"			// log
 #include "cgi.hpp"			// processCgiRequest
 #include "http.hpp"			// parseHttpRequest, createHttpResponse, toString
 #include "utils.hpp"		// toIpNum, toIpString, toInt
+#include "Logger.hpp"		// Logger
 #include "ConfigParser.hpp"	// ConfigParser
 
 /* ============================================================================================== */
@@ -30,7 +30,7 @@ Webserver::Webserver(string configPath)
 		}
 	}
 	catch (const exception& e) {
-		log(ERROR, e.what());
+		LOG_DEBUG << "Webserver constructor exception: " << e.what();
 		exit(1);
 	}
 };
@@ -51,7 +51,7 @@ void Webserver::start(void)
 		mainloop();
 	}
 	catch(const exception& e) {
-		log(ERROR, e.what());
+		LOG_DEBUG << "Webserver start exception: " << e.what();
 	}
 }
 
@@ -63,7 +63,7 @@ void Webserver::initListenSockets()
 	set<Address>::iterator it;
 	for (it = uniques.begin(); it != uniques.end(); it++) {
 		int fd = createTcpListenSocket(*it);
-		log(DEBUG, "new socket on %s:%d", toIpString(it->ip).c_str(), it->port);
+		LOG_DEBUG << "new socket on " << toIpString(it->ip) << ":" << it->port;
 		m_pollFds.push_back(buildPollFd(fd, POLLIN));
 	}
 	m_nbListenSockets = uniques.size();
@@ -110,6 +110,7 @@ void Webserver::handlePollIn(Client& client)
 
 	try {
 		if (!client.getRequestParsed()) {
+			// Keep appending to buffer until it contains a "\r\n\r\n"
 			client.appendHeader(bufferStr);
 			if (client.getHeaderBuffer().find("\r\n\r\n") == string::npos) return;
 
@@ -132,14 +133,18 @@ void Webserver::handlePollIn(Client& client)
 		if (!client.getRequestIsReady()) client.appendBody(bufferStr);
 
 		if (client.getRequestIsReady()) {
-			log(client.getRequest(), client.getId());
+			LOG_INFO
+				<< BLUE << "HTTP Req>> Client[ID " << client.getId() << "] | "
+				<< "Method[" << client.getRequest().method << "] "
+				<< "URI[" << client.getRequest().uri << "]";
+
 			HttpResponse res = processRequest(client.getRequest(), client);
 			client.setResponse(res);
 			client.reset();
 		}
 	}
 	catch (const exception& e) {
-		log(DEBUG, e.what());
+		LOG_DEBUG << "Webserver handlePollIn exception: " << e.what();
 		client.setResponse(createHttpResponse(400, DEFAULT_400));
 	}
 }
@@ -150,8 +155,9 @@ HttpResponse Webserver::processRequest(HttpRequest req, Client& client)
 	try {
 		Server& server = routeRequest(req, client);
 
-		log(INFO, "%sHTTP Route Client[ID %d]  |  To: %s%s", ORANGE, client.getId(),
-			server.getName().c_str(), RESET);
+		LOG_INFO
+			<< MAGENTA << "HTTP Route Client[ID " << client.getId() << "] | To: "
+			<< server.getName();
 
 		// Handle CGI
 		if (req.uri.find(CGI_BIN) == 0) {
@@ -161,7 +167,7 @@ HttpResponse Webserver::processRequest(HttpRequest req, Client& client)
 		return server.handleRequest(req);
 	}
 	catch (const exception& e) {
-		log(DEBUG, e.what());
+		LOG_DEBUG << "Webserver processRequest Exception: " << e.what();
 		return createHttpResponse(400, DEFAULT_400);
 	}
 }
@@ -172,7 +178,11 @@ void Webserver::handlePollOut(Client& client)
 	if (client.getResponseIsReady() == false) return;
 
 	HttpResponse response = client.getResponse();
-	log(response, client.getId());
+
+	LOG_INFO
+		<< MAGENTA << "HTTP <<Res Client[ID " << client.getId() << "] | "
+		<< "Status[" << response.statusCode << "]";
+
 	string responseStr = toString(response);
 	ssize_t sendBytes = send(client.getFd(), responseStr.c_str(), responseStr.size(), 0);
 	if (sendBytes == -1 || sendBytes == 0) {
@@ -190,10 +200,9 @@ void Webserver::addClient(int listenFd)
 
 	m_pollFds.push_back(buildPollFd(clientFd, POLLIN | POLLOUT));
 
-	log(INFO, "Port = %d", client.getPort());
-
-	log(INFO, "Client[ID: %d] connected on %s:%d", client.getId(),
-		toIpString(client.getServerIp()).c_str(), client.getPort());
+	LOG_INFO
+		<< "Client[ID: " << client.getId() << "] connected on "
+		<< toIpString(client.getServerIp()) << ":" << client.getPort();
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -206,15 +215,15 @@ void Webserver::handleDisconnects(void)
 		Client client = it->second;
 		if (client.hasDisconnected() || client.didTimeout()) {
 			if (client.hasDisconnected()) {
-				log(INFO, "Client[ID: %d] disconnected", client.getId());
+				LOG_INFO << "Client[ID: " << client.getId() << "] disconnected";
 			}
 			else {
-				log(INFO, "Client[ID: %d] timed out", client.getId());
+				LOG_INFO << "Client[ID: " << client.getId() << "] timed out";
 			}
 			removeIterators.push_back(it);
 			removeFdFromPoll(client.getFd());
 			close(client.getFd());
-			log(DEBUG, "Closed fd %d", client.getFd());
+			LOG_DEBUG << "Closed fd " << client.getFd();
 		}
 	}
 
@@ -260,8 +269,7 @@ Server& Webserver::routeRequest(HttpRequest req, Client& client)
 			}
 		}
 	}
-	catch (const exception& e) {
-		log(WARNING, e.what());
+	catch (...) {
 	}
 
 	// Default server resolution
@@ -291,7 +299,7 @@ void Webserver::removeFdFromPoll(int fd)
 {
 	for (size_t i = 0; i < m_pollFds.size(); i++) {
 		if (m_pollFds[i].fd == fd) {
-			log(DEBUG, "Client fd %d removed from poll", fd);
+			LOG_DEBUG << "Client fd " << fd << " removed from poll";
 			m_pollFds.erase(m_pollFds.begin() + i);
 			return;
 		}
@@ -375,7 +383,7 @@ Address Webserver::getServerAddress(int fd)
 	Address addr;
 	addr.ip = serverAddress.sin_addr.s_addr;
 	addr.port = ntohs(serverAddress.sin_port);
-	log(INFO, "HH %d", addr.port);
+
 	return addr;
 }
 
@@ -391,6 +399,6 @@ Address Webserver::getClientAddress(int fd)
 	Address addr;
 	addr.ip = clientAddress.sin_addr.s_addr;
 	addr.port = ntohs(clientAddress.sin_port);
-	log(INFO, "HH %d", addr.port);
+
 	return addr;
 }
