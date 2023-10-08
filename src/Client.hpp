@@ -27,8 +27,8 @@ public:
 	void setResponse(HttpResponse res);
 
 	/* Data Handling */
-	void parseHttpBody(const string& buffer);
 	void parseHttpHeader(string& buffer);
+	void parseHttpBody(const string& buffer);
 	void reset();
 
 private:

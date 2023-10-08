@@ -15,7 +15,7 @@ void signalHandler(int signum) {
 int main(int argc, char** argv)
 {
 	if (argc > 2) {
-		LOG_ERROR << "Invalid argument count!";
+		LOG_ERROR << "Invalid argument count";
 		return 1;
 	}
 

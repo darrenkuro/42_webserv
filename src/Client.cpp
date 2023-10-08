@@ -64,16 +64,38 @@ void Client::setResponse(HttpResponse res)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-void Client::reset()
+void Client::parseHttpHeader(string& buffer)
 {
-	m_bytesExpected = 0;
-	m_bytesRecved = 0;
-	m_requestIsReady = true;
-	m_requestParsed = false;
-	m_httpBuffer.clear();
-	m_chunkedBuffer.clear();
-	m_recvChunk = false;
-	m_sessionCookie = "";
+	// Keep appending to buffer until it contains a "\r\n\r\n"
+	m_httpBuffer.append(buffer);
+	if (m_httpBuffer.find("\r\n\r\n") == string::npos) return;
+
+	// Header buffer is ready, proceed to parse
+	m_request = parseHttpRequest(m_httpBuffer);
+	m_requestParsed = true;
+
+	// Update buffer
+	buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
+
+	// Check Content-Length and set expecting bytes
+	StringMap::iterator it = m_request.header.find("Content-Length");
+	if (it != m_request.header.end()) {
+		m_bytesExpected = toInt(it->second);
+		m_requestIsReady = false;
+	}
+
+	// Check Transfer-Encoding and set chunked
+	it = m_request.header.find("Transfer-Encoding");
+	if (it != m_request.header.end() && it->second == "chunked") {
+		m_recvChunk = true;
+		m_requestIsReady = false;
+	}
+
+	// Check cookie for session management
+	it = m_request.header.find("Cookie");
+	if (it == m_request.header.end()) {
+		m_sessionCookie = "session=" + toString(m_id);
+	}
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -111,36 +133,14 @@ void Client::parseHttpBody(const string& buffer)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-void Client::parseHttpHeader(string& buffer)
+void Client::reset()
 {
-	// Keep appending to buffer until it contains a "\r\n\r\n"
-	m_httpBuffer.append(buffer);
-	if (m_httpBuffer.find("\r\n\r\n") == string::npos) return;
-
-	// Header buffer is ready, proceed to parse
-	m_request = parseHttpRequest(m_httpBuffer);
-	m_requestParsed = true;
-
-	// Update buffer
-	buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
-
-	// Check Content-Length and set expecting bytes
-	StringMap::iterator it = m_request.header.find("Content-Length");
-	if (it != m_request.header.end()) {
-		m_bytesExpected = toInt(it->second);
-		m_requestIsReady = false;
-	}
-
-	// Check Transfer-Encoding and set chunked
-	it = m_request.header.find("Transfer-Encoding");
-	if (it != m_request.header.end() && it->second == "chunked") {
-		m_recvChunk = true;
-		m_requestIsReady = false;
-	}
-
-	// Check cookie for session management
-	it = m_request.header.find("Cookie");
-	if (it == m_request.header.end()) {
-		m_sessionCookie = "session=" + toString(m_id);
-	}
+	m_bytesExpected = 0;
+	m_bytesRecved = 0;
+	m_requestIsReady = true;
+	m_requestParsed = false;
+	m_httpBuffer.clear();
+	m_chunkedBuffer.clear();
+	m_recvChunk = false;
+	m_sessionCookie = "";
 }
