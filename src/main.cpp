@@ -1,6 +1,7 @@
+#include <signal.h>
+
 #include "Webserver.hpp"
 #include "log.hpp"
-#include <signal.h>
 
 bool g_running = true;
 
@@ -19,7 +20,7 @@ int main(int argc, char** argv)
 	}
 
 	signal(SIGINT, signalHandler);
-	Webserver webserver(cargc == 1 ? DEFAULT_CONF : argv[1]);
+	Webserver webserver(argc == 1 ? DEFAULT_CONF : argv[1]);
 	webserver.start();
 
 	return 0;

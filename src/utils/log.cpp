@@ -1,7 +1,9 @@
 #include "log.hpp"
-#include "utils.hpp"	// toIpString
+
 #include <ctime>		// time_t, time, ctime
 #include <cstdio>		// vfprintf
+
+#include "utils.hpp"	// toIpString
 
 ostream& displayTimestamp(ostream& os)
 {

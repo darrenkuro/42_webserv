@@ -1,6 +1,8 @@
 #include "utils.hpp"
-#include "log.hpp"		// log
+
 #include <climits>		// INT_MAX, INT_MIN
+
+#include "log.hpp"		// log
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -75,8 +77,8 @@ string fullPath(string root, string path)
 		path = path.at(0) == '/' ? path.substr(1) : path;
 	}
 	catch (const exception& e) {
-		log(DEBUG, e.what());
 		// Protect against if strings are empty or index out of bound
+		log(DEBUG, e.what());
 		return "";
 	}
 	return root + "/" + path;

@@ -7,14 +7,14 @@ class Server
 public:
 	Server(const ServerConfig config);
 
-	// Getters
+	/* Getters */
 	Address getAddress() const;
 	string getName() const;
 	string getErrorPage(int code) const;
 	int getMaxBodySize() const;
 	bool bodySizeAllowed(int bytes) const;
 
-	// Logic
+	/* Logic */
 	HttpResponse handleRequest(HttpRequest req);
 	HttpResponse handleGetRequest(HttpRequest req, LocationConfig route);
 	HttpResponse handlePostRequest(HttpRequest req, LocationConfig route);

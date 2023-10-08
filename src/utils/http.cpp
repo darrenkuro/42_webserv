@@ -1,10 +1,12 @@
 #include "http.hpp"
-#include "utils.hpp"		// toString, getFileContent
-#include "utils.hpp"		// toString, getFileContent
-#include "ConfigParser.hpp"	// isValidRedirectCode
+
 #include <ctime>			// time, gmtime, strftime
 #include <dirent.h>			// DIR, dirent, opendir, readdir, closedir
 #include <sys/stat.h>		// struct stat
+
+#include "log.hpp"			// log
+#include "utils.hpp"		// toString, getFileContent
+#include "ConfigParser.hpp"	// isValidRedirectCode
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -60,7 +62,7 @@ void parseRequestHeader(StringMap& header, string& content)
 
 	// Handle leading white spaces before value
 	size_t valuePos = content.find_first_not_of(" \t");
-	if (valuePos == string::npos)  {
+	if (valuePos == string::npos) {
 		throw runtime_error("couldn't find ' '");
 	}
 	content.erase(content.begin(), content.begin() + valuePos);
@@ -146,9 +148,6 @@ HttpResponse createAutoindex(const string& path, const string& root)
 
 	while ((entry = readdir(dir)) != NULL) {
 		string name(entry->d_name);
-		// if (name == "." || name == "..") {
-		// 	continue;
-		// }
 
 		Stat fileInfo;
 		string filePath = fullPath(path, name);

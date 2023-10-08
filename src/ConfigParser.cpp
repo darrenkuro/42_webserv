@@ -1,6 +1,8 @@
 #include "ConfigParser.hpp"
-#include "utils.hpp"		// fullPath, toInt, toIpNum
+
 #include <algorithm>		// find
+
+#include "utils.hpp"		// fullPath, toInt, toIpNum
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -17,7 +19,6 @@ const string locationKeyArray[] = {
 	"autoindex", "alias", "allowed_method", "index", "return"
 };
 
-// TODO:CHECK THESE!?
 const int errorCode[] = {400, 403, 404, 405, 408, 411, 413, 500, 501, 505};
 
 const int redirectCode[] = {301, 302, 303, 307, 308};
@@ -331,13 +332,6 @@ void ConfigParser::parseAutoindex(LocationConfig& location)
 void ConfigParser::parseAlias(LocationConfig& location)
 {
 	string token = accept();
-	// string path = fullPath(ROOT, token);
-
-	// // Check if alias is accessible and is a directory
-	// struct stat pathInfo;
-	// if (stat(path.c_str(), &pathInfo) != 0 || !S_ISDIR(pathInfo.st_mode)) {
-	// 	throw runtime_error("invalid alias " + token);
-	// }
 
 	location.alias = token;
 	consume(";");

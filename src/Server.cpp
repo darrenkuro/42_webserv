@@ -1,10 +1,12 @@
 #include "Server.hpp"
-#include "log.hpp"		// log
-#include "http.hpp"		// createHttpResponse
-#include "utils.hpp"	// fullPath, toIpString, toInt, getBoundary
+
 #include <algorithm>	// find
 #include <sys/stat.h>	// struct stat
 #include <cstdio>		// remove
+
+#include "log.hpp"		// log
+#include "http.hpp"		// createHttpResponse
+#include "utils.hpp"	// fullPath, toIpString, toInt, getBoundary
 
 /* ============================================================================================== */
 /*                                                                                                */

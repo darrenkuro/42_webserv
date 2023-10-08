@@ -1,15 +1,17 @@
 #include "Webserver.hpp"
-#include "log.hpp"			// log
-#include "cgi.hpp"			// processCgiRequest
-#include "http.hpp"			// parseHttpRequest, createHttpResponse, toString
-#include "utils.hpp"		// toIpNum, toIpString, toInt
-#include "ConfigParser.hpp"	// ConfigParser
+
 #include <cstring>			// strerror, memset
 #include <cstdlib>			// exit
 #include <cerrno>			// errno
 #include <poll.h>			// poll, struct pollfd
 #include <unistd.h>			// close
 #include <sys/socket.h>		// accept, bind, listen, socket, getsockopt, getpeername, send, recv
+
+#include "log.hpp"			// log
+#include "cgi.hpp"			// processCgiRequest
+#include "http.hpp"			// parseHttpRequest, createHttpResponse, toString
+#include "utils.hpp"		// toIpNum, toIpString, toInt
+#include "ConfigParser.hpp"	// ConfigParser
 
 /* ============================================================================================== */
 /*                                                                                                */
@@ -351,6 +353,7 @@ int Webserver::createTcpListenSocket(Address addr)
 	return fd;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 PollFd Webserver::buildPollFd(int fd, short events)
 {
 	PollFd pfd;
@@ -360,6 +363,7 @@ PollFd Webserver::buildPollFd(int fd, short events)
 	return pfd;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 Address Webserver::getServerAddress(int fd)
 {
 	Sockaddr_in serverAddress;
@@ -375,6 +379,7 @@ Address Webserver::getServerAddress(int fd)
 	return addr;
 }
 
+/* ---------------------------------------------------------------------------------------------- */
 Address Webserver::getClientAddress(int fd)
 {
 	Sockaddr_in clientAddress;
