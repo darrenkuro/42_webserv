@@ -4,6 +4,7 @@
 #include <cstdlib>		// strtol
 
 #include "http.hpp"		// parseHttpRequest
+#include "utils.hpp"	// toString
 
 #define TIMEOUT_TIME	30
 
@@ -44,33 +45,22 @@ bool Client::hasDisconnected() const { return m_hasDisconnected; }
 bool Client::getResponseIsReady() const { return m_responseIsReady; }
 bool Client::getRequestIsReady() const { return m_requestIsReady; }
 bool Client::getRequestParsed() const { return m_requestParsed; }
-bool Client::getRecvChunk() const { return m_recvChunk; }
 bool Client::didTimeout() const { return std::time(NULL) - m_lastEventTime > TIMEOUT_TIME; }
-string Client::getHeaderBuffer() const { return m_headerBuffer; }
 HttpRequest& Client::getRequest() { return m_request; }
 HttpResponse& Client::getResponse() { return m_responseIsReady = false, m_response; }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Setters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 void Client::setHasDisconnected(bool status) { m_hasDisconnected = status; }
-void Client::setRecvChunk(bool recvChunk) {
-	m_recvChunk = recvChunk;
-	m_requestIsReady = false;
-}
 
 /* ---------------------------------------------------------------------------------------------- */
 void Client::setResponse(HttpResponse res)
 {
 	m_response = res;
+	if (!m_sessionCookie.empty()) m_response.header["Set-Cookie"] = m_sessionCookie;
+
 	m_lastEventTime = std::time(NULL);
 	m_responseIsReady = true;
 	m_requestParsed = false;
-}
-
-/* ---------------------------------------------------------------------------------------------- */
-void Client::setBytesExpected(int bytes)
-{
-	m_bytesExpected = bytes;
-	m_requestIsReady = false;
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -80,25 +70,17 @@ void Client::reset()
 	m_bytesRecved = 0;
 	m_requestIsReady = true;
 	m_requestParsed = false;
-	m_headerBuffer.clear();
+	m_httpBuffer.clear();
 	m_chunkedBuffer.clear();
 	m_recvChunk = false;
+	m_sessionCookie = "";
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-void Client::appendHeader(string buffer) { m_headerBuffer.append(buffer); }
-
-/* ---------------------------------------------------------------------------------------------- */
-void Client::appendBody(string buffer)
+void Client::parseHttpBody(const string& buffer)
 {
-	if (!m_recvChunk) {
-		m_request.body.append(buffer);
-		m_bytesRecved += buffer.length();
-		if (m_bytesRecved >= m_bytesExpected) {
-			m_requestIsReady = true;
-		}
-	}
-	else {
+	if (m_recvChunk) {
+		// Handle chunked encoding
 		m_chunkedBuffer.append(buffer);
 		while (true) {
 			size_t pos = m_chunkedBuffer.find("\r\n");
@@ -118,11 +100,47 @@ void Client::appendBody(string buffer)
 			m_chunkedBuffer.erase(0, pos + 2 + size + 2);
 		}
 	}
+	else {
+		// Handle multipart/form-data
+		m_request.body.append(buffer);
+		m_bytesRecved += buffer.length();
+		if (m_bytesRecved >= m_bytesExpected) {
+			m_requestIsReady = true;
+		}
+	}
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-void Client::parseHttpHeader()
+void Client::parseHttpHeader(string& buffer)
 {
-	m_request = parseHttpRequest(m_headerBuffer);
+	// Keep appending to buffer until it contains a "\r\n\r\n"
+	m_httpBuffer.append(buffer);
+	if (m_httpBuffer.find("\r\n\r\n") == string::npos) return;
+
+	// Header buffer is ready, proceed to parse
+	m_request = parseHttpRequest(m_httpBuffer);
 	m_requestParsed = true;
+
+	// Update buffer
+	buffer = buffer.substr(buffer.find("\r\n\r\n") + 4);
+
+	// Check Content-Length and set expecting bytes
+	StringMap::iterator it = m_request.header.find("Content-Length");
+	if (it != m_request.header.end()) {
+		m_bytesExpected = toInt(it->second);
+		m_requestIsReady = false;
+	}
+
+	// Check Transfer-Encoding and set chunked
+	it = m_request.header.find("Transfer-Encoding");
+	if (it != m_request.header.end() && it->second == "chunked") {
+		m_recvChunk = true;
+		m_requestIsReady = false;
+	}
+
+	// Check cookie for session management
+	it = m_request.header.find("Cookie");
+	if (it == m_request.header.end()) {
+		m_sessionCookie = "session=" + toString(m_id);
+	}
 }

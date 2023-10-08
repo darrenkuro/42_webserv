@@ -30,7 +30,7 @@ Webserver::Webserver(string configPath)
 		}
 	}
 	catch (const exception& e) {
-		LOG_DEBUG << "Webserver constructor exception: " << e.what();
+		LOG_ERROR << e.what();
 		exit(1);
 	}
 };
@@ -51,7 +51,7 @@ void Webserver::start(void)
 		mainloop();
 	}
 	catch(const exception& e) {
-		LOG_DEBUG << "Webserver start exception: " << e.what();
+		LOG_ERROR << e.what();
 	}
 }
 
@@ -109,28 +109,8 @@ void Webserver::handlePollIn(Client& client)
 	}
 
 	try {
-		if (!client.getRequestParsed()) {
-			// Keep appending to buffer until it contains a "\r\n\r\n"
-			client.appendHeader(bufferStr);
-			if (client.getHeaderBuffer().find("\r\n\r\n") == string::npos) return;
-
-			// Header buffer is ready, proceed to parse
-			client.parseHttpHeader();
-			bufferStr = bufferStr.substr(bufferStr.find("\r\n\r\n") + 4);
-
-			// Check Content-Length and set expecting bytes
-			StringMap::iterator it = client.getRequest().header.find("Content-Length");
-			if (it != client.getRequest().header.end()) {
-				client.setBytesExpected(toInt(it->second));
-			}
-
-			it = client.getRequest().header.find("Transfer-Encoding");
-			if (it != client.getRequest().header.end() && it->second == "chunked") {
-				client.setRecvChunk(true);
-			}
-		}
-
-		if (!client.getRequestIsReady()) client.appendBody(bufferStr);
+		if (!client.getRequestParsed()) client.parseHttpHeader(bufferStr);
+		if (!client.getRequestIsReady()) client.parseHttpBody(bufferStr);
 
 		if (client.getRequestIsReady()) {
 			LOG_INFO
@@ -144,7 +124,7 @@ void Webserver::handlePollIn(Client& client)
 		}
 	}
 	catch (const exception& e) {
-		LOG_DEBUG << "Webserver handlePollIn exception: " << e.what();
+		LOG_DEBUG << "handlePollIn exception: " << e.what();
 		client.setResponse(createHttpResponse(400, DEFAULT_400));
 	}
 }
@@ -167,7 +147,7 @@ HttpResponse Webserver::processRequest(HttpRequest req, Client& client)
 		return server.handleRequest(req);
 	}
 	catch (const exception& e) {
-		LOG_DEBUG << "Webserver processRequest Exception: " << e.what();
+		LOG_DEBUG << "processRequest Exception: " << e.what();
 		return createHttpResponse(400, DEFAULT_400);
 	}
 }
@@ -339,7 +319,8 @@ int Webserver::createTcpListenSocket(Address addr)
 	}
 
 	int sockopt = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, static_cast<const void *>(&sockopt), sizeof(int)) == -1) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
+		static_cast<const void *>(&sockopt), sizeof(int)) == -1) {
 		throw runtime_error("setsockopt() failed: " + string(strerror(errno)));
 	}
 
