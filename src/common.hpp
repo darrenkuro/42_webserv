@@ -95,7 +95,7 @@ struct ServerConfig
 #define ROOT			"public"
 #define CGI_BIN			"/cgi-bin/"
 #define PY_PATH			"/usr/bin/python3"
-#define PHP_PATH		"/usr/bin/php-cgi"
+#define PHP_PATH		"/usr/bin/php"
 
 /* Server Params */
 #define HTTP_VERSION	"HTTP/1.1"

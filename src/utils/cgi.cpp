@@ -88,6 +88,7 @@ string executeCgi(const StringMap& envMap, const string& reqBody)
 		}
 		close(pipeOut[0]);
 
+		cout << result << endl;
 		waitpid(pid, &status, 0);
 		if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
 			throw runtime_error("child process error");
@@ -115,7 +116,6 @@ StringMap getCgiEnv(HttpRequest& req, const Client& client, const Server& server
 	metaVars["SERVER_PORT"] = toString(server.getAddress().port);
 	metaVars["SERVER_PROTOCOL"] = HTTP_VERSION;
 	metaVars["SERVER_SOFTWARE"] = SERVER_SOFTWARE;
-	metaVars["REDIRECT_STATUS"] = "200"; // For php-cgi
 
 	return metaVars;
 }
