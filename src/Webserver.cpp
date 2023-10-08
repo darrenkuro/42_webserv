@@ -101,7 +101,6 @@ void Webserver::handlePollIn(Client& client)
 {
 	char buffer[RECV_SIZE];
 	ssize_t bytesRead = recv(client.getFd(), buffer, RECV_SIZE, 0);
-	string bufferStr(buffer, bytesRead);
 
 	if (bytesRead == -1 || bytesRead == 0) {
 		client.setHasDisconnected(true);
@@ -109,6 +108,7 @@ void Webserver::handlePollIn(Client& client)
 	}
 
 	try {
+		string bufferStr(buffer, bytesRead);
 		if (!client.getRequestParsed()) client.parseHttpHeader(bufferStr);
 		if (!client.getRequestIsReady()) client.parseHttpBody(bufferStr);
 
@@ -289,6 +289,8 @@ void Webserver::removeFdFromPoll(int fd)
 /* ---------------------------------------------------------------------------------------------- */
 set<Address> Webserver::getUniqueAddresses(vector<Server> servers)
 {
+	// if (checkForDuplicates(servers)) exit(1);
+
 	set<Address> uniques;
 	for (size_t i = 0; i < servers.size(); i++) {
 		if (servers[i].getAddress().ip == 0) {
@@ -307,6 +309,19 @@ set<Address> Webserver::getUniqueAddresses(vector<Server> servers)
 		}
 	}
 	return uniques;
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+bool Webserver::checkForDuplicates(vector<Server> servers)
+{
+	set<Address> dupes;
+	for (size_t i = 0; i < servers.size(); i++) {
+		if (!dupes.insert(servers[i].getAddress()).second) {
+			LOG_ERROR << "Found duplicate!";
+			return true;
+		}
+	}
+	return false;
 }
 
 /* ---------------------------------------------------------------------------------------------- */

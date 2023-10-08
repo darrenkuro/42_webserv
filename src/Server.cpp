@@ -55,6 +55,9 @@ HttpResponse Server::handleRequest(HttpRequest req)
 	if (it != req.header.end() && !bodySizeAllowed(toInt(it->second))) {
 		return createHttpResponse(413, getErrorPage(413));
 	}
+	if (!bodySizeAllowed(req.body.size())) {
+		return createHttpResponse(413, getErrorPage(413));
+	}
 
 	// Check if POST without Content-Length
 	if (req.method == "POST" && it == req.header.end()) {
@@ -124,6 +127,11 @@ HttpResponse Server::handleGetRequest(HttpRequest req, LocationConfig route)
 /* ---------------------------------------------------------------------------------------------- */
 HttpResponse Server::handlePostRequest(HttpRequest req, LocationConfig route)
 {
+	if (req.header["Content-Type"].find("multipart/form-data") != 0) {
+		LOG_WARNING << "Post Content-Type isn't multipart/form-data";
+		return createHttpResponse(204, "");
+	}
+
 	string root =
 		route.alias == ""
 			? fullPath(m_config.root, route.uri)
@@ -183,6 +191,7 @@ HttpResponse Server::handleDeleteRequest(HttpRequest req, LocationConfig route)
 		return createHttpResponse(204, "");
 	}
 
+	LOG_WARNING << "Delete request: " << path << " not found";
 	return createHttpResponse(404, getErrorPage(404));
 }
 

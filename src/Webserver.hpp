@@ -35,6 +35,7 @@ private:
 	Client& getClientFromIdx(int idx);
 	void removeFdFromPoll(int fd);
 	set<Address> getUniqueAddresses(vector<Server> servers);
+	bool checkForDuplicates(vector<Server> servers);
 	int createTcpListenSocket(Address addr);
 	PollFd buildPollFd(int fd, short events);
 	Address getServerAddress(int fd);
