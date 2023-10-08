@@ -4,7 +4,6 @@
 #include <sys/stat.h>	// struct stat
 #include <cstdio>		// remove
 
-//#include "log.hpp"		// log
 #include "Logger.hpp"
 #include "http.hpp"		// createHttpResponse
 #include "utils.hpp"	// fullPath, toIpString, toInt, getBoundary
@@ -57,8 +56,8 @@ HttpResponse Server::handleRequest(HttpRequest req)
 		return createHttpResponse(413, getErrorPage(413));
 	}
 
-	// Check if PUT without Content-Length
-	if (req.method == "PUT" && it == req.header.end()) {
+	// Check if POST without Content-Length
+	if (req.method == "POST" && it == req.header.end()) {
 		return createHttpResponse(411, getErrorPage(411));
 	}
 

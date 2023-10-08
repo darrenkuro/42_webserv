@@ -315,8 +315,6 @@ void ConfigParser::parseErrorPage(ServerConfig& server)
 void ConfigParser::parseUri(LocationConfig& location)
 {
 	location.uri = accept();
-	// validate, it has to start with '/'?
-	// any illegal characters in the uri?
 }
 
 void ConfigParser::parseAutoindex(LocationConfig& location)
@@ -363,7 +361,7 @@ void ConfigParser::parseRedirect(LocationConfig& location)
 	if (!isValidRedirectCode(location.redirect.first)) {
 		throw runtime_error("invalid redirect code");
 	}
-	location.redirect.second = accept(); // need to validate as url?
+	location.redirect.second = accept();
 	consume(";");
 }
 
